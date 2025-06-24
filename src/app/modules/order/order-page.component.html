@@ -1,0 +1,31 @@
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Create Customer Order</h5>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="orderForm" (ngSubmit)="submitOrder()">
+      <div formArrayName="items">
+        <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="row g-2 mb-2 align-items-end">
+          <div class="col-md-4">
+            <input type="text" class="form-control" formControlName="barcode" placeholder="Barcode">
+          </div>
+          <div class="col-md-3">
+            <input type="number" class="form-control" formControlName="quantity" placeholder="Quantity">
+          </div>
+          <div class="col-md-3">
+            <input type="number" class="form-control" formControlName="mrp" placeholder="MRP">
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeItem(i)" [disabled]="items.length === 1">Remove</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-3" (click)="addItem()">Add Row</button>
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary" [disabled]="orderForm.invalid || loading">Create Order</button>
+      </div>
+    </form>
+    <div *ngIf="successMsg" class="alert alert-success mt-3">{{ successMsg }}</div>
+    <div *ngIf="errorMsg" class="alert alert-danger mt-3">{{ errorMsg }}</div>
+  </div>
+</div>

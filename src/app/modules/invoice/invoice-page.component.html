@@ -1,0 +1,16 @@
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Download Invoice</h5>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="downloadInvoice()">
+      <div class="mb-3">
+        <label class="form-label">Order ID</label>
+        <input type="text" class="form-control" formControlName="orderId" placeholder="Enter Order ID">
+      </div>
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">Download Invoice</button>
+    </form>
+    <div *ngIf="successMsg" class="alert alert-success mt-3">{{ successMsg }}</div>
+    <div *ngIf="errorMsg" class="alert alert-danger mt-3">{{ errorMsg }}</div>
+  </div>
+</div> 
