@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Component</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Dashboard Overview</h1>
+      <p class="dashboard-subtitle">Welcome back! Here's what's happening with your business today.</p>
+    </div>
+  
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon clients"><i class="fas fa-users"></i></div>
+          <div class="stat-change positive"><i class="fas fa-arrow-up"></i> +12%</div>
+        </div>
+        <div class="stat-value">1,247</div>
+        <div class="stat-label">Total Clients</div>
+      </div>
+  
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon products"><i class="fas fa-box"></i></div>
+          <div class="stat-change positive"><i class="fas fa-arrow-up"></i> +8%</div>
+        </div>
+        <div class="stat-value">856</div>
+        <div class="stat-label">Products in Stock</div>
+      </div>
+  
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon orders"><i class="fas fa-shopping-cart"></i></div>
+          <div class="stat-change positive"><i class="fas fa-arrow-up"></i> +24%</div>
+        </div>
+        <div class="stat-value">423</div>
+        <div class="stat-label">Orders This Month</div>
+      </div>
+  
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon revenue"><i class="fas fa-dollar-sign"></i></div>
+          <div class="stat-change negative"><i class="fas fa-arrow-down"></i> -3%</div>
+        </div>
+        <div class="stat-value">₹45,678</div>
+        <div class="stat-label">Monthly Revenue</div>
+      </div>
+    </div>
+  
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3 class="quick-actions-title">Quick Actions</h3>
+      <div class="action-buttons">
+        <a routerLink="/client" class="action-btn"><i class="fas fa-plus"></i> Add Client</a>
+        <a routerLink="/product" class="action-btn"><i class="fas fa-box"></i> Add Product</a>
+        <a routerLink="/order" class="action-btn"><i class="fas fa-shopping-cart"></i> New Order</a>
+        <a routerLink="/invoice" class="action-btn"><i class="fas fa-file-invoice"></i> Generate Invoice</a>
+      </div>
+    </div>
+  
+    <!-- Feature Grid -->
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-users"></i></div>
+        <h3 class="feature-title">Client Management</h3>
+        <p class="feature-description">
+          Manage your customer database with advanced search, filtering, and customer insights.
+        </p>
+        <a routerLink="/client" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Manage Clients</a>
+      </div>
+  
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-box"></i></div>
+        <h3 class="feature-title">Product Catalog</h3>
+        <p class="feature-description">
+          Organize inventory with real-time stock tracking and smart categorization.
+        </p>
+        <a routerLink="/product" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Manage Products</a>
+      </div>
+  
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
+        <h3 class="feature-title">Order Processing</h3>
+        <p class="feature-description">
+          Streamline your sales process with easy order creation and delivery tracking.
+        </p>
+        <a routerLink="/order" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Process Orders</a>
+      </div>
+  
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+        <h3 class="feature-title">Analytics & Reports</h3>
+        <p class="feature-description">
+          Analyze your business with detailed performance metrics and reports.
+        </p>
+        <a routerLink="/invoice" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> View Analytics</a>
+      </div>
+    </div>
+  </div>
+  
+  
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
