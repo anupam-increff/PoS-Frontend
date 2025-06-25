@@ -2,37 +2,73 @@
   <div class="feature-card">
     <ul class="nav nav-tabs mb-3">
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab==='master'" (click)="setTab('master')">Product Master Upload</a>
+        <a class="nav-link" [class.active]="tab==='upload'" (click)="setTab('upload')">Upload Product</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab==='inventory'" (click)="setTab('inventory')">Inventory Upload</a>
+        <a class="nav-link" [class.active]="tab==='client'" (click)="setTab('client')">Products by Client</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab==='list'" (click)="setTab('list')">Product List</a>
+        <a class="nav-link" [class.active]="tab==='list'" (click)="setTab('list')">All Products</a>
       </li>
     </ul>
-    <div *ngIf="tab==='master'">
+
+    <!-- Upload Product -->
+    <div *ngIf="tab==='upload'">
       <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="mb-3">
         <div class="mb-3">
           <label class="form-label">Upload Product Master (TSV)</label>
-          <input type="file" class="form-control" (change)="onFileChange($event, productForm)" accept=".tsv">
+          <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv">
         </div>
         <button class="btn btn-primary" type="submit" [disabled]="productForm.invalid">Upload</button>
       </form>
     </div>
-    <div *ngIf="tab==='inventory'">
-      <form [formGroup]="inventoryForm" (ngSubmit)="uploadInventory()" class="mb-3">
-        <div class="mb-3">
-          <label class="form-label">Upload Inventory (TSV)</label>
-          <input type="file" class="form-control" (change)="onFileChange($event, inventoryForm)" accept=".tsv">
-        </div>
-        <button class="btn btn-primary" type="submit" [disabled]="inventoryForm.invalid">Upload</button>
-      </form>
+
+    <!-- Products by Client -->
+    <div *ngIf="tab==='client'">
+      <div class="d-flex mb-3">
+        <input
+          type="text"
+          class="form-control me-2"
+          placeholder="Enter Client ID"
+          [(ngModel)]="searchClientId"
+          name="searchClientId"
+          (keyup.enter)="searchByClientId()"
+          style="max-width: 300px;"
+        >
+        <button class="btn btn-outline-primary" (click)="searchByClientId()">Search</button>
+      </div>
+      <div *ngIf="loading" class="text-center p-4">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+      </div>
+      <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+      <table class="table table-striped" *ngIf="!loading && products.length > 0">
+        <thead class="table-light">
+          <tr>
+            <th>Image</th>
+            <th>Client</th>
+            <th>Barcode</th>
+            <th>Name</th>
+            <th style="width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of products">
+            <td><img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></td>
+            <td>{{ product.clientId }}</td>
+            <td>{{ product.barcode }}</td>
+            <td>{{ product.name }}</td>
+            <td><button class="btn btn-sm btn-outline-primary" (click)="openEditModal(product)">Edit</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="products.length === 0 && !loading" class="text-muted text-center">No products found.</div>
     </div>
+
+    <!-- All Products -->
     <div *ngIf="tab==='list'">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Products</h5>
-        <button class="btn btn-outline-secondary btn-sm" (click)="setTab('master')">Upload Master</button>
+        <button class="btn btn-outline-secondary btn-sm" (click)="setTab('upload')">Upload Product</button>
       </div>
       <div *ngIf="loading" class="text-center p-4">
         <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
@@ -45,7 +81,6 @@
             <th>Client</th>
             <th>Barcode</th>
             <th>Name</th>
-            <!-- <th>Inventory</th> -->
             <th style="width: 120px;">Actions</th>
           </tr>
         </thead>
@@ -55,10 +90,7 @@
             <td>{{ product.clientId }}</td>
             <td>{{ product.barcode }}</td>
             <td>{{ product.name }}</td>
-            <!-- <td>{{ product.inventory }}</td> -->
-            <td>
-              <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(product)">Edit</button>
-            </td>
+            <td><button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(product)">Edit</button></td>
           </tr>
         </tbody>
       </table>
@@ -94,6 +126,3 @@
     </div>
   </div>
 </div>
-
-
-
