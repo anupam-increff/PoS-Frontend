@@ -26,9 +26,15 @@ export class InvoicePageComponent {
   downloadInvoice() {
     if (this.form.invalid) return;
     this.loading = true;
-    this.api.get(`/invoice/${this.form.value.orderId}`, { responseType: 'text' }).subscribe({
-      next: (base64: any) => {
-        this.saveAsPdf(base64);
+    this.api.get(`/invoice/${this.form.value.orderId}`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `invoice_${this.form.value.orderId}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+    
         this.successMsg = 'Invoice downloaded!';
         this.loading = false;
         setTimeout(() => this.successMsg = '', 3000);
@@ -39,6 +45,7 @@ export class InvoicePageComponent {
         setTimeout(() => this.errorMsg = '', 3000);
       }
     });
+    
   }
 
   saveAsPdf(base64: string) {

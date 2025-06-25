@@ -1,9 +1,9 @@
-<div class="card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Clients</h5>
-    <button class="btn btn-success" (click)="openModal()">Add Client</button>
-  </div>
-  <div class="card-body p-0">
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Clients</h5>
+      <button class="btn btn-success" (click)="openModal()">Add Client</button>
+    </div>
     <div *ngIf="loading" class="text-center p-4">
       <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
     </div>
