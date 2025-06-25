@@ -2,29 +2,35 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-order-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './order-page.component.html',
-  styleUrl: './order-page.component.scss'
+  styleUrls: ['./order-page.component.scss']
 })
 export class OrderPageComponent implements OnInit {
   orderForm: FormGroup;
   loading = false;
   successMsg = '';
   errorMsg = '';
+  searchInput = '';
 
-  constructor(private api: ApiService, private fb: FormBuilder) {
-    this.orderForm = this.fb.group({
-      items: this.fb.array([])
-    });
+  tab: 'create' | 'search' | 'list' = 'create';
+
+  constructor(private fb: FormBuilder, private api: ApiService) {
+    this.orderForm = this.fb.group({ items: this.fb.array([]) });
   }
 
   ngOnInit() {
     this.addItem();
+  }
+
+  setTab(tab: 'create' | 'search' | 'list') {
+    this.tab = tab;
+    if (tab === 'search') this.searchInput = '';
   }
 
   get items() {
@@ -34,19 +40,21 @@ export class OrderPageComponent implements OnInit {
   addItem() {
     this.items.push(this.fb.group({
       barcode: ['', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
-      mrp: [0, [Validators.required, Validators.min(0)]]
+      quantity: [null, [Validators.required, Validators.min(1)]],
+      sellingPrice: [null, [Validators.required, Validators.min(0)]]
     }));
   }
 
-  removeItem(i: number) {
-    if (this.items.length > 1) this.items.removeAt(i);
+  removeItem(index: number) {
+    if (this.items.length > 1) this.items.removeAt(index);
   }
 
   submitOrder() {
     if (this.orderForm.invalid) return;
     this.loading = true;
-    this.api.post('/order', { items: this.items.value }).subscribe({
+    const payload = { items: this.items.value };
+
+    this.api.post('/order', payload).subscribe({
       next: () => {
         this.successMsg = 'Order created successfully!';
         this.loading = false;
@@ -57,6 +65,23 @@ export class OrderPageComponent implements OnInit {
       },
       error: () => {
         this.errorMsg = 'Failed to create order.';
+        this.loading = false;
+        setTimeout(() => this.errorMsg = '', 3000);
+      }
+    });
+  }
+
+  searchOrder() {
+    if (!this.searchInput.trim()) return;
+    this.loading = true;
+
+    this.api.get(`/order/search?query=${this.searchInput}`).subscribe({
+      next: (res: any) => {
+        console.log(res); // Optionally update UI with found order
+        this.loading = false;
+      },
+      error: () => {
+        this.errorMsg = 'Order not found.';
         this.loading = false;
         setTimeout(() => this.errorMsg = '', 3000);
       }
