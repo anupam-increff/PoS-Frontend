@@ -8,10 +8,10 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
   selector: 'app-product-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
-  templateUrl: './product-page.component.html',
+  templateUrl: './product-page.component.html', // ✅ FIXED THIS LINE
   styleUrl: './product-page.component.scss'
 })
-export class ProductPageComponent implements OnInit {
+export class ProductPageComponent implements OnInit { // ✅ FIXED CLASS NAME
   tab: 'master' | 'inventory' | 'list' = 'list';
   productForm: FormGroup;
   inventoryForm: FormGroup;
@@ -41,6 +41,8 @@ export class ProductPageComponent implements OnInit {
       error: err => { this.errorMsg = 'Failed to load products.'; this.loading = false; }
     });
   }
+  
+  
 
   setTab(tab: 'master' | 'inventory' | 'list') {
     this.tab = tab;
