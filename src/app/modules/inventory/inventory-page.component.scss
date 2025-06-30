@@ -22,4 +22,19 @@
   .modal-backdrop {
     opacity: 0.5 !important;
   }
+  @media (max-width: 576px) {
+    .order-page .form-control {
+      margin-bottom: 10px;
+    }
+    .order-page .modal-dialog {
+      max-width: 95%;
+    }
+    .order-page table {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .table thead th {
+    white-space: nowrap;
+  }
   

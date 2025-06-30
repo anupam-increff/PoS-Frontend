@@ -1,1 +1,40 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'ngx-toastr/toastr';
+
+#toast-container {
+  position: fixed !important;
+  z-index: 9999 !important;
+  pointer-events: none;
+}
+
+.toast-top-right {
+  top: 1.25rem !important;
+  right: 1.25rem !important;
+  bottom: auto !important;
+  left: auto !important;
+}
+
+.toast {
+  pointer-events: auto;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  min-width: 260px;
+  max-width: 350px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+.toast-success {
+  background-color: #198754 !important;
+  color: #fff !important;
+  border-left: 6px solid #0f5132;
+}
+
+.toast-error {
+  background-color: #dc3545 !important;
+  color: #fff !important;
+  border-left: 6px solid #842029;
+}

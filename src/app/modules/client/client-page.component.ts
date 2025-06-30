@@ -1,87 +1,126 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // For ngModel
+import { ApiService } from '../../services/api.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-client-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './client-page.component.html',
   styleUrl: './client-page.component.scss'
 })
 export class ClientPageComponent implements OnInit {
-  clients: any[] = [];
   clientForm: FormGroup;
+  clients: any[] = [];
   editingId: number | null = null;
   showModal = false;
-  loading = false;
-  errorMsg = '';
 
-  constructor(private api: ApiService, private fb: FormBuilder) {
+  tab: 'list' | 'search' = 'list';
+  loading = false;
+  searchName = '';
+  searchResult: any = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private api: ApiService,
+    private toastr: ToastrService
+  ) {
     this.clientForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(50)]],
-      email: ['', [Validators.required, Validators.email]]
+      name: ['', [Validators.required, Validators.maxLength(50)]]
     });
   }
 
-  ngOnInit() {
-    console.log('ClientPageComponent loaded');
+  ngOnInit(): void {
     this.loadClients();
   }
 
-  loadClients() {
+  loadClients(): void {
     this.loading = true;
-    console.log('Calling API: /client');
     this.api.get<any[]>('/client').subscribe({
-      next: data => { 
-        console.log('API /client response:', data);
-        this.clients = data; this.loading = false; 
+      next: data => {
+        this.clients = data;
+        this.loading = false;
       },
-      error: err => { 
-        console.error('API /client error:', err);
-        this.errorMsg = 'Failed to load clients.'; this.loading = false; 
+      error: () => {
+        this.toastr.error('Failed to load clients.');
+        this.loading = false;
       }
     });
   }
 
-  openModal(client?: any) {
+  openModal(client?: any): void {
     this.showModal = true;
     this.editingId = client ? client.id : null;
     this.clientForm.reset({
-      name: client ? client.name : '',
-      email: client ? client.email : ''
+      name: client ? client.name : ''
     });
   }
 
-  closeModal() {
+  closeModal(): void {
     this.showModal = false;
     this.editingId = null;
     this.clientForm.reset();
   }
+  
 
-  saveClient() {
-    if (this.clientForm.invalid) return;
+  saveClient(): void {
+    if (this.clientForm.invalid) {
+      this.toastr.warning('Please enter a valid name.');
+      return;
+    }
+
     const formValue = {
-      ...this.clientForm.value,
-      name: this.clientForm.value.name.trim().toLowerCase(),
-      email: this.clientForm.value.email.trim().toLowerCase()
+      name: this.clientForm.value.name.trim().toLowerCase()
     };
+
     if (this.editingId) {
-      this.api.put(`/client/${this.editingId}`, formValue).subscribe(() => {
-        this.loadClients();
-        this.closeModal();
+      this.api.put(`/client/${this.editingId}`, formValue).subscribe({
+        next: () => {
+          this.toastr.success('Client updated successfully!');
+          this.loadClients();
+          this.closeModal();
+        },
+        error: err => {
+          this.toastr.error(err.error?.message || 'Failed to update client');
+        }
       });
     } else {
-      this.api.post('/client', formValue).subscribe(() => {
-        this.loadClients();
-        this.closeModal();
+      this.api.post('/client', formValue).subscribe({
+        next: () => {
+          this.toastr.success('Client added successfully!');
+          this.loadClients();
+          this.closeModal();
+        },
+        error: err => {
+          this.toastr.error(err.error?.message || 'Failed to add client');
+        }
       });
     }
   }
 
-  startEdit(client: any) {
+  startEdit(client: any): void {
     this.openModal(client);
+  }
+
+  searchClient(): void {
+    const name = this.searchName.trim().toLowerCase();
+    if (!name) {
+      this.toastr.warning('Please enter a client name to search.');
+      return;
+    }
+
+    this.api.get<any>(`/client/${name}`).subscribe({
+      next: res => {
+        this.searchResult = res;
+        this.toastr.success('Client found!');
+      },
+      error: () => {
+        this.searchResult = null;
+        this.toastr.warning('Client not found.');
+      }
+    });
   }
 }

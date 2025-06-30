@@ -2,18 +2,18 @@
   <div class="feature-card">
     <ul class="nav nav-tabs mb-3">
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab==='upload'" (click)="setTab('upload')">Upload Product</a>
+        <a class="nav-link" [class.active]="tab === 'upload'" (click)="setTab('upload')">Upload Product</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab==='client'" (click)="setTab('client')">Products by Client</a>
+        <a class="nav-link" [class.active]="tab === 'client'" (click)="setTab('client')">Products by Client</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab==='list'" (click)="setTab('list')">All Products</a>
+        <a class="nav-link" [class.active]="tab === 'list'" (click)="setTab('list')">All Products</a>
       </li>
     </ul>
 
     <!-- Upload Product -->
-    <div *ngIf="tab==='upload'">
+    <div *ngIf="tab === 'upload'">
       <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="mb-3">
         <div class="mb-3">
           <label class="form-label">Upload Product Master (TSV)</label>
@@ -24,17 +24,10 @@
     </div>
 
     <!-- Products by Client -->
-    <div *ngIf="tab==='client'">
+    <div *ngIf="tab === 'client'">
       <div class="d-flex mb-3">
-        <input
-          type="text"
-          class="form-control me-2"
-          placeholder="Enter Client ID"
-          [(ngModel)]="searchClientId"
-          name="searchClientId"
-          (keyup.enter)="searchByClientId()"
-          style="max-width: 300px;"
-        >
+        <input type="text" class="form-control me-2" placeholder="Enter Client ID" [(ngModel)]="searchClientId"
+          name="searchClientId" (keyup.enter)="searchByClientId()" style="max-width: 300px;">
         <button class="btn btn-outline-primary" (click)="searchByClientId()">Search</button>
       </div>
       <div *ngIf="loading" class="text-center p-4">
@@ -53,7 +46,10 @@
         </thead>
         <tbody>
           <tr *ngFor="let product of products">
-            <td><img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></td>
+            <td>
+              <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
+                class="product-thumb" (click)="openImageModal(product.imageUrl)">
+            </td>
             <td>{{ product.clientId }}</td>
             <td>{{ product.barcode }}</td>
             <td>{{ product.name }}</td>
@@ -65,7 +61,7 @@
     </div>
 
     <!-- All Products -->
-    <div *ngIf="tab==='list'">
+    <div *ngIf="tab === 'list'">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Products</h5>
         <button class="btn btn-outline-secondary btn-sm" (click)="setTab('upload')">Upload Product</button>
@@ -81,27 +77,33 @@
             <th>Client</th>
             <th>Barcode</th>
             <th>Name</th>
+            <th>MRP</th>
             <th style="width: 120px;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let product of products">
-            <td><img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></td>
+            <td>
+              <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
+                class="product-thumb" (click)="openImageModal(product.imageUrl)">
+            </td>
             <td>{{ product.clientId }}</td>
             <td>{{ product.barcode }}</td>
             <td>{{ product.name }}</td>
+            <td>{{ product.mrp }}</td>
             <td><button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(product)">Edit</button></td>
           </tr>
         </tbody>
       </table>
-      <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products found.</div>
+      <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products
+        found.</div>
     </div>
   </div>
 </div>
 
 <!-- Edit Modal -->
-<div class="modal fade show" tabindex="-1" [ngStyle]="{display: showEditModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)'}" [class.show]="showEditModal" *ngIf="showEditModal">
-  <div class="modal-dialog">
+<div class="modal fade show" tabindex="-1" [ngStyle]="{ display: showEditModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)' }" *ngIf="showEditModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Edit Product</h5>
@@ -109,13 +111,32 @@
       </div>
       <form (ngSubmit)="saveEdit()">
         <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" class="form-control" [(ngModel)]="editProduct.name" name="name">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">SKU</label>
-            <input type="text" class="form-control" [(ngModel)]="editProduct.sku" name="sku">
+          <div class="row g-4">
+            <div class="col-md-5 text-center">
+              <div class="image-box">
+                <img [src]="editProduct.imageUrl" alt="Product Image" class="img-fluid zoomed-img">
+              </div>
+              <label class="form-label mt-3">Image URL</label>
+              <input type="text" class="form-control" [(ngModel)]="editProduct.imageUrl" name="imageUrl">
+            </div>
+            <div class="col-md-7">
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" [(ngModel)]="editProduct.name" name="name">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">MRP</label>
+                <input type="number" class="form-control" [(ngModel)]="editProduct.mrp" name="mrp" min="0">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Barcode</label>
+                <input type="text" class="form-control" [value]="editProduct.barcode" disabled>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Client ID</label>
+                <input type="text" class="form-control" [value]="editProduct.clientId" disabled>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -123,6 +144,18 @@
           <button type="submit" class="btn btn-primary">Save</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Image Zoom Modal -->
+<div class="modal fade show" tabindex="-1" [ngStyle]="{ display: showImageModal ? 'block' : 'none', background: 'rgba(0,0,0,0.7)' }" *ngIf="showImageModal">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body text-center">
+        <img [src]="imageToZoom" class="img-fluid rounded shadow-lg" style="max-height:80vh;">
+        <button class="btn-close position-absolute top-0 end-0 m-3" (click)="closeImageModal()"></button>
+      </div>
     </div>
   </div>
 </div>

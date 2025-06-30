@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
@@ -18,10 +19,12 @@ export class ProductPageComponent implements OnInit {
   loading = false;
   errorMsg = '';
   showEditModal = false;
-  editProduct: any = null;
+  showImageModal = false;
+  imageToZoom = '';
   searchClientId: string = '';
+  editProduct: any = null;
 
-  constructor(private api: ApiService, private fb: FormBuilder) {
+  constructor(private api: ApiService, private fb: FormBuilder, private toastr: ToastrService) {
     this.productForm = this.fb.group({
       file: [null, Validators.required]
     });
@@ -34,7 +37,7 @@ export class ProductPageComponent implements OnInit {
   setTab(tab: 'upload' | 'client' | 'list') {
     this.tab = tab;
     if (tab === 'list') this.loadProducts();
-    if (tab === 'client') this.products = []; // Clear results on tab switch
+    if (tab === 'client') this.products = [];
   }
 
   loadProducts() {
@@ -44,8 +47,8 @@ export class ProductPageComponent implements OnInit {
         this.products = data;
         this.loading = false;
       },
-      error: err => {
-        this.errorMsg = 'Failed to load products.';
+      error: () => {
+        this.toastr.error('Failed to load products');
         this.loading = false;
       }
     });
@@ -61,9 +64,13 @@ export class ProductPageComponent implements OnInit {
     if (this.productForm.invalid) return;
     const formData = new FormData();
     formData.append('file', this.productForm.value.file);
-    this.api.post('/product/upload-tsv', formData).subscribe(() => {
-      this.setTab('list');
-      this.productForm.reset();
+    this.api.post('/product/upload-tsv', formData).subscribe({
+      next: () => {
+        this.toastr.success('Product master uploaded!');
+        this.setTab('list');
+        this.productForm.reset();
+      },
+      error: () => this.toastr.error('Upload failed')
     });
   }
 
@@ -72,14 +79,13 @@ export class ProductPageComponent implements OnInit {
     if (!query) return;
 
     this.loading = true;
-    this.errorMsg = '';
     this.api.get<any[]>(`/product?clientId=${encodeURIComponent(query)}`).subscribe({
       next: data => {
         this.products = data;
         this.loading = false;
       },
-      error: err => {
-        this.errorMsg = 'Failed to load products.';
+      error: () => {
+        this.toastr.error('Failed to load products');
         this.products = [];
         this.loading = false;
       }
@@ -96,10 +102,24 @@ export class ProductPageComponent implements OnInit {
     this.editProduct = null;
   }
 
+  openImageModal(url: string) {
+    this.imageToZoom = url;
+    this.showImageModal = true;
+  }
+
+  closeImageModal() {
+    this.showImageModal = false;
+    this.imageToZoom = '';
+  }
+
   saveEdit() {
-    this.api.put(`/product/${this.editProduct.id}`, this.editProduct).subscribe(() => {
-      this.loadProducts();
-      this.closeEditModal();
+    this.api.put(`/product/${this.editProduct.id}`, this.editProduct).subscribe({
+      next: () => {
+        this.toastr.success('Product updated');
+        this.loadProducts();
+        this.closeEditModal();
+      },
+      error: () => this.toastr.error('Failed to update product')
     });
   }
 }

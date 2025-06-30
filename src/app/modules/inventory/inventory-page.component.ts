@@ -28,12 +28,12 @@ export class InventoryPageComponent implements OnInit {
     });
 
     this.addForm = this.fb.group({
-      productId: [null, Validators.required],
+      barcode: [null, Validators.required],
       quantity: [null, [Validators.required, Validators.min(1)]]
     });
 
     this.editForm = this.fb.group({
-      id: [{ value: null, disabled: true }],
+      barcode: [{ value: null, disabled: true }],
       quantity: [null, [Validators.required, Validators.min(1)]]
     });
   }
@@ -75,7 +75,7 @@ export class InventoryPageComponent implements OnInit {
     if (this.addForm.invalid) return;
 
     const payload = {
-      productId: this.addForm.value.productId,
+      barcode: this.addForm.value.barcode,
       quantity: this.addForm.value.quantity
     };
 
@@ -104,7 +104,7 @@ export class InventoryPageComponent implements OnInit {
 
   openEditModal(item: any) {
     this.editForm.setValue({
-      id: item.id,
+      barcode: item.barcode,
       quantity: item.quantity
     });
     this.showEditModal = true;
@@ -118,11 +118,11 @@ export class InventoryPageComponent implements OnInit {
     if (this.editForm.invalid) return;
 
     const payload = {
-      productId: this.editForm.getRawValue().id,
+      barcode: this.editForm.getRawValue().barcode,
       quantity: this.editForm.value.quantity
     };
 
-    this.api.put(`/inventory/${payload.productId}`, payload).subscribe(() => {
+    this.api.put(`/inventory/${payload.barcode}`, payload).subscribe(() => {
       this.successMsg = 'Inventory updated.';
       this.closeEditModal();
       this.loadInventory();

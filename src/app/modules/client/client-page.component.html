@@ -1,42 +1,64 @@
-<div class="feature-grid">
-  <div class="feature-card">
+<div class="container py-4">
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tab === 'list'" (click)="tab = 'list'">Client List</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tab === 'search'" (click)="tab = 'search'">Search Client</button>
+    </li>
+  </ul>
+
+  <!-- Client List Tab -->
+  <div *ngIf="tab === 'list'" class="card p-4 shadow-sm">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">Clients</h5>
       <button class="btn btn-success" (click)="openModal()">Add Client</button>
     </div>
-    <div *ngIf="loading" class="text-center p-4">
-      <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+
+    <div *ngIf="loading" class="text-center my-4">
+      <div class="spinner-border" role="status"></div>
     </div>
-    <div *ngIf="errorMsg" class="alert alert-danger m-3">
-      {{ errorMsg }}<br>
-      <small>If this persists, check if your backend is running at <code>localhost:8080</code> and CORS is enabled.</small>
-      <button class="btn btn-link p-0 ms-2" (click)="loadClients()">Retry</button>
-    </div>
-    <div *ngIf="!loading && !errorMsg">
-      <table class="table table-striped table-hover mb-0">
-        <thead class="table-light">
+
+    <div *ngIf="!loading && clients.length > 0">
+      <table class="table table-hover table-striped">
+        <thead>
           <tr>
+            <th>ID</th>
             <th>Name</th>
-            <th>Email</th>
-            <th style="width: 120px;">Actions</th>
+            <th style="width: 100px;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let client of clients">
+            <td>{{ client.id }}</td>
             <td>{{ client.name }}</td>
-            <td>{{ client.email }}</td>
             <td>
-              <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(client)">Edit</button>
+              <button class="btn btn-sm btn-outline-primary" (click)="startEdit(client)">Edit</button>
             </td>
           </tr>
         </tbody>
       </table>
-      <div *ngIf="clients.length === 0" class="text-center p-3 text-muted">No clients found.</div>
+    </div>
+
+    <div *ngIf="!loading && clients.length === 0" class="text-muted text-center">No clients found.</div>
+  </div>
+
+  <!-- Search Client Tab -->
+  <div *ngIf="tab === 'search'" class="card p-4 shadow-sm">
+    <div class="input-group mb-3">
+      <input [(ngModel)]="searchName" placeholder="Search by name" class="form-control" />
+      <button class="btn btn-outline-secondary" (click)="searchClient()">Search</button>
+    </div>
+    <div *ngIf="searchResult">
+      <div class="alert alert-info">
+        <strong>ID:</strong> {{ searchResult.id }}<br>
+        <strong>Name:</strong> {{ searchResult.name }}
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Add/Edit Modal -->
 <div class="modal fade show" tabindex="-1" [ngStyle]="{display: showModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)'}" [class.show]="showModal" *ngIf="showModal">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -47,17 +69,11 @@
       <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" class="form-control" formControlName="name" [class.is-invalid]="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
+            <label class="form-label">Client Name</label>
+            <input type="text" class="form-control" formControlName="name"
+              [class.is-invalid]="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
             <div class="invalid-feedback" *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
-              Name is required and must be less than 50 characters.
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" formControlName="email" [class.is-invalid]="clientForm.get('email')?.invalid && clientForm.get('email')?.touched">
-            <div class="invalid-feedback" *ngIf="clientForm.get('email')?.invalid && clientForm.get('email')?.touched">
-              Valid email is required.
+              Name is required and must be under 50 characters.
             </div>
           </div>
         </div>

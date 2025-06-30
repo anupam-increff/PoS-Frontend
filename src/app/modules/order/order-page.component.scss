@@ -65,3 +65,25 @@
     }
   }
 }
+.order-page {
+  form .row {
+    margin-bottom: 0.5rem;
+  }
+
+  .table th, .table td {
+    vertical-align: middle;
+  }
+
+  .btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+  }
+  .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+  }
+  .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+  }
+}

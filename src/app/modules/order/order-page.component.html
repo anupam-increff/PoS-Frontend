@@ -1,73 +1,114 @@
-<div class="feature-grid">
-  <div class="feature-card">
-    <!-- Tabs -->
-    <ul class="nav nav-tabs mb-3">
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'create'" (click)="setTab('create')">
-          <i class="fas fa-plus me-1"></i> Create Order
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'search'" (click)="setTab('search')">
-          <i class="fas fa-search me-1"></i> Search Order
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'list'" (click)="setTab('list')">
-          <i class="fas fa-list me-1"></i> Order List
-        </a>
-      </li>
-    </ul>
+<div class="order-page container py-4">
 
-    <!-- ✅ Create Order Tab -->
-    <div *ngIf="tab === 'create'">
-      <form [formGroup]="orderForm" (ngSubmit)="submitOrder()">
-        <div formArrayName="items">
-          <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="row g-2 mb-3">
-            <div class="col-md-4">
-              <input type="text" class="form-control" formControlName="barcode" placeholder="Barcode">
-            </div>
-            <div class="col-md-3">
-              <input type="number" class="form-control" formControlName="quantity" placeholder="Quantity">
-            </div>
-            <div class="col-md-3">
-              <input type="number" class="form-control" formControlName="sellingPrice" placeholder="Selling Price">
-            </div>
-            <div class="col-md-2 d-grid">
-              <button type="button" class="btn btn-outline-danger" (click)="removeItem(i)" [disabled]="items.length === 1">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            </div>
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="tab==='create'" (click)="setTab('create')">Create Order</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="tab==='list'" (click)="setTab('list')">Orders</a>
+    </li>
+  </ul>
+
+  <!-- Create Order -->
+  <div *ngIf="tab==='create'">
+    <form [formGroup]="orderForm" (ngSubmit)="submitOrder()">
+      <div formArrayName="items">
+        <div *ngFor="let row of items.controls; let i = index" [formGroupName]="i"
+             class="row g-3 align-items-end mb-3">
+          <div class="col-sm-4">
+            <label>Barcode</label>
+            <input formControlName="barcode" class="form-control" placeholder="Scan or type barcode">
+          </div>
+          <div class="col-sm-3">
+            <label>Quantity</label>
+            <input type="number" formControlName="quantity" class="form-control" min="1">
+          </div>
+          <div class="col-sm-3">
+            <label>MRP</label>
+            <input formControlName="mrp" class="form-control" [disabled]="true">
+          </div>
+          <div class="col-sm-2 text-end">
+            <button class="btn btn-danger" (click)="removeItem(i)" type="button" [disabled]="items.length===1">
+              &minus;
+            </button>
+            <button class="btn btn-success ms-1" (click)="addItem()" type="button">
+              &plus;
+            </button>
           </div>
         </div>
-        <button type="button" class="btn btn-outline-secondary btn-sm mb-3" (click)="addItem()">Add Row</button>
-        <div class="d-flex justify-content-end">
-          <button type="submit" class="btn btn-primary" [disabled]="orderForm.invalid || loading">
-            {{ loading ? 'Creating...' : 'Create Order' }}
-          </button>
-        </div>
-      </form>
+      </div>
+      <button class="btn btn-primary" type="submit" [disabled]="orderForm.invalid || loading">
+        {{ loading ? 'Placing...' : 'Place Order' }}
+      </button>
+    </form>
+  </div>
 
-      <div *ngIf="successMsg" class="alert alert-success mt-3">{{ successMsg }}</div>
-      <div *ngIf="errorMsg" class="alert alert-danger mt-3">{{ errorMsg }}</div>
+  <!-- Orders List -->
+  <div *ngIf="tab==='list'">
+    <div *ngIf="loadingOrders" class="text-center py-5">
+      <div class="spinner-border"></div>
     </div>
+    <table *ngIf="!loadingOrders" class="table table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Order ID</th>
+          <th>Placed At</th>
+          <th>Items</th>
+          <th>Invoice</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of orders">
+          <td>{{ o.id }}</td>
+          <td>{{ fmtDate(o.placedAt) }}</td>
+          <td>
+            <button class="btn btn-sm btn-info" (click)="openViewItems(o.id)">
+              View Items
+            </button>
+          </td>
+          <td>
+            <button
+              class="btn btn-sm"
+              [ngClass]="o.invoicePath ? 'btn-success' : 'btn-warning'"
+              (click)="handleInvoice(o)">
+              {{ o.invoicePath ? 'Download' : 'Generate' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-    <!-- 🔍 Search Order Tab -->
-    <div *ngIf="tab === 'search'">
-      <form (ngSubmit)="searchOrder()" class="mb-3">
-        <label class="form-label">Enter Order ID or Barcode</label>
-        <input type="text" class="form-control mb-2" [(ngModel)]="searchInput" name="searchInput" placeholder="Search...">
-        <div class="d-flex justify-content-end">
-          <button type="submit" class="btn btn-primary" [disabled]="!searchInput.trim()">Search</button>
+  <!-- View Items Modal -->
+  <div class="modal-backdrop fade show" *ngIf="showViewModal"></div>
+  <div class="modal fade show d-block" tabindex="-1" *ngIf="showViewModal">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Order #{{ viewedOrderId }} Items</h5>
+          <button type="button" class="btn-close" (click)="closeViewModal()"></button>
         </div>
-      </form>
-      <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
-    </div>
-
-    <!-- 📋 Order List Placeholder Tab -->
-    <div *ngIf="tab === 'list'" class="text-center text-muted p-5">
-      <i class="fas fa-inbox fa-2x mb-3"></i>
-      <p>No order list view implemented yet.</p>
+        <div class="modal-body">
+          <table class="table table-bordered">
+            <thead>
+              <tr><th>#</th><th>Barcode</th><th>Quantity</th><th>Price</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of viewedItems; let idx = index">
+                <td>{{ idx + 1 }}</td>
+                <td>{{ it.barcode }}</td>
+                <td>{{ it.quantity }}</td>
+                <td>{{ it.sellingPrice }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+        </div>
+      </div>
     </div>
   </div>
+
 </div>

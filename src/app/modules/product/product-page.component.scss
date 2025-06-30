@@ -85,68 +85,39 @@
   }
 }
 
-/* Modal Styling (shared with Order Page) */
-.modal.show {
-  display: block;
-  background-color: rgba(0, 0, 0, 0.5);
+.product-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
 
-  .modal-dialog {
-    max-width: 500px;
+  &:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
   }
+}
 
-  .modal-content {
-    border-radius: 12px;
-    overflow: hidden;
+.image-box {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f8f8f8;
+  overflow: hidden;
+  padding: 8px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    .modal-header {
-      background-color: #f9fafb;
-      border-bottom: 1px solid #e5e7eb;
-
-      .modal-title {
-        font-weight: 600;
-        font-size: 1.2rem;
-        color: #1f2937;
-      }
-
-      .btn-close {
-        background: none;
-        border: none;
-      }
-    }
-
-    .modal-body {
-      .form-label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        display: inline-block;
-      }
-
-      .form-control {
-        border-radius: 8px;
-        border: 1px solid #d1d5db;
-        &:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-      }
-    }
-
-    .modal-footer {
-      background-color: #f9fafb;
-      border-top: 1px solid #e5e7eb;
-
-      .btn-secondary {
-        border-radius: 8px;
-      }
-
-      .btn-primary {
-        background-color: #3b82f6;
-        border: none;
-        border-radius: 8px;
-        &:hover {
-          background-color: #2563eb;
-        }
-      }
-    }
+  .zoomed-img {
+    max-height: 200px;
+    max-width: 100%;
+    object-fit: contain;
   }
+}
+
+.modal-body img {
+  max-width: 100%;
+  border-radius: 8px;
 }
