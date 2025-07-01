@@ -22,9 +22,14 @@ export class ProductPageComponent implements OnInit {
   showImageModal = false;
   imageToZoom = '';
   searchClientId: string = '';
+  searchBarcode: string = '';
   editProduct: any = null;
 
-  constructor(private api: ApiService, private fb: FormBuilder, private toastr: ToastrService) {
+  constructor(
+    private api: ApiService,
+    private fb: FormBuilder,
+    private toastr: ToastrService
+  ) {
     this.productForm = this.fb.group({
       file: [null, Validators.required]
     });
@@ -36,12 +41,19 @@ export class ProductPageComponent implements OnInit {
 
   setTab(tab: 'upload' | 'client' | 'list') {
     this.tab = tab;
-    if (tab === 'list') this.loadProducts();
-    if (tab === 'client') this.products = [];
+    if (tab === 'list') {
+      this.searchBarcode = '';
+      this.loadProducts();
+    }
+    if (tab === 'client') {
+      this.products = [];
+      this.errorMsg = '';
+    }
   }
 
   loadProducts() {
     this.loading = true;
+    this.errorMsg = '';
     this.api.get<any[]>('/product').subscribe({
       next: data => {
         this.products = data;
@@ -50,6 +62,7 @@ export class ProductPageComponent implements OnInit {
       error: () => {
         this.toastr.error('Failed to load products');
         this.loading = false;
+        this.errorMsg = 'Unable to fetch products.';
       }
     });
   }
@@ -76,20 +89,51 @@ export class ProductPageComponent implements OnInit {
 
   searchByClientId() {
     const query = this.searchClientId.trim();
-    if (!query) return;
+    if (!query) {
+      this.toastr.warning('Enter a client ID to search');
+      return;
+    }
 
     this.loading = true;
+    this.errorMsg = '';
     this.api.get<any[]>(`/product?clientId=${encodeURIComponent(query)}`).subscribe({
       next: data => {
         this.products = data;
         this.loading = false;
       },
       error: () => {
-        this.toastr.error('Failed to load products');
         this.products = [];
         this.loading = false;
+        this.errorMsg = 'No products found for this client.';
       }
     });
+  }
+
+  searchByBarcode() {
+    const barcode = this.searchBarcode.trim();
+    if (!barcode) {
+      this.toastr.warning('Enter a barcode to search');
+      return;
+    }
+
+    this.loading = true;
+    this.errorMsg = '';
+    this.api.get<any>(`/product/barcode/${encodeURIComponent(barcode)}`).subscribe({
+      next: product => {
+        this.products = [product];
+        this.loading = false;
+      },
+      error: () => {
+        this.products = [];
+        this.loading = false;
+        this.errorMsg = 'Product not found for this barcode.';
+      }
+    });
+  }
+
+  clearBarcodeSearch() {
+    this.searchBarcode = '';
+    this.loadProducts();
   }
 
   openEditModal(product: any) {

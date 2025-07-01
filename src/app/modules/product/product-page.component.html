@@ -1,3 +1,15 @@
+<div class="hero-section">
+  <div class="container">
+    <h1 class="hero-title">
+      <i class="fas fa-box me-3"></i>
+      Product Management
+    </h1>
+    <p class="hero-subtitle">
+      Upload, view and manage your product catalog efficiently with client-level filtering and barcode search
+    </p>
+  </div>
+</div>
+
 <div class="feature-grid">
   <div class="feature-card">
     <ul class="nav nav-tabs mb-3">
@@ -34,8 +46,8 @@
         <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
       </div>
       <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
-      <table class="table table-striped" *ngIf="!loading && products.length > 0">
-        <thead class="table-light">
+      <table class="table table-hover custom-table" *ngIf="!loading && products.length > 0">
+        <thead>
           <tr>
             <th>Image</th>
             <th>Client</th>
@@ -63,15 +75,20 @@
     <!-- All Products -->
     <div *ngIf="tab === 'list'">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Products</h5>
-        <button class="btn btn-outline-secondary btn-sm" (click)="setTab('upload')">Upload Product</button>
+        <h5 class="mb-0">All Products</h5>
+        <div class="d-flex align-items-center">
+          <input type="text" class="form-control me-2" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
+            name="searchBarcode" (keyup.enter)="searchByBarcode()" style="max-width: 250px;">
+          <button class="btn btn-outline-primary me-2" (click)="searchByBarcode()">Search</button>
+          <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">Clear</button>
+        </div>
       </div>
       <div *ngIf="loading" class="text-center p-4">
         <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
       </div>
       <div *ngIf="errorMsg" class="alert alert-danger m-3">{{ errorMsg }}</div>
-      <table class="table table-striped table-hover mb-0" *ngIf="!loading && !errorMsg">
-        <thead class="table-light">
+      <table class="table table-hover custom-table" *ngIf="!loading && !errorMsg">
+        <thead>
           <tr>
             <th>Image</th>
             <th>Client</th>
@@ -91,12 +108,11 @@
             <td>{{ product.barcode }}</td>
             <td>{{ product.name }}</td>
             <td>{{ product.mrp }}</td>
-            <td><button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(product)">Edit</button></td>
+            <td><button class="btn btn-sm btn-outline-primary" (click)="openEditModal(product)">Edit</button></td>
           </tr>
         </tbody>
       </table>
-      <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products
-        found.</div>
+      <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products found.</div>
     </div>
   </div>
 </div>
