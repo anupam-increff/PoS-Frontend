@@ -1,114 +1,430 @@
-<div class="order-page container py-4">
+<div class="hero-section">
+  <div class="container">
+    <h1 class="hero-title">
+      <i class="fas fa-shopping-cart me-3"></i>
+      Order Management
+    </h1>
+    <p class="hero-subtitle">
+      Create and manage orders with real-time inventory tracking and professional invoicing
+    </p>
+  </div>
+</div>
 
-  <!-- Tabs -->
-  <ul class="nav nav-tabs mb-4">
-    <li class="nav-item">
-      <a class="nav-link" [class.active]="tab==='create'" (click)="setTab('create')">Create Order</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" [class.active]="tab==='list'" (click)="setTab('list')">Orders</a>
-    </li>
-  </ul>
+<div class="main-container">
+  <div class="container">
+    <div class="page-container">
+      
+      <!-- Custom Tabs -->
+      <ul class="nav nav-tabs nav-tabs-custom">
+        <li class="nav-item">
+          <a class="nav-link" 
+             [class.active]="tab === 'create'" 
+             (click)="setTab('create')"
+             role="button">
+            <i class="fas fa-plus-circle me-2"></i>
+            Create Order
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             [class.active]="tab === 'list'" 
+             (click)="setTab('list')"
+             role="button">
+            <i class="fas fa-list-ul me-2"></i>
+            Order History
+            <span class="badge bg-primary ms-2" *ngIf="orders.length > 0">{{ orders.length }}</span>
+          </a>
+        </li>
+      </ul>
 
-  <!-- Create Order -->
-  <div *ngIf="tab==='create'">
-    <form [formGroup]="orderForm" (ngSubmit)="submitOrder()">
-      <div formArrayName="items">
-        <div *ngFor="let row of items.controls; let i = index" [formGroupName]="i"
-             class="row g-3 align-items-end mb-3">
-          <div class="col-sm-4">
-            <label>Barcode</label>
-            <input formControlName="barcode" class="form-control" placeholder="Scan or type barcode">
-          </div>
-          <div class="col-sm-3">
-            <label>Quantity</label>
-            <input type="number" formControlName="quantity" class="form-control" min="1">
-          </div>
-          <div class="col-sm-3">
-            <label>MRP</label>
-            <input formControlName="mrp" class="form-control" [disabled]="true">
-          </div>
-          <div class="col-sm-2 text-end">
-            <button class="btn btn-danger" (click)="removeItem(i)" type="button" [disabled]="items.length===1">
-              &minus;
+      <!-- Create Order Tab -->
+      <div *ngIf="tab === 'create'" class="tab-content-area">
+        <div class="content-header">
+          <h4 class="content-title">
+            <i class="fas fa-barcode me-2"></i>
+            New Order Details
+          </h4>
+          <p class="content-subtitle">Add Order Items by entering barcodes</p>
+        </div>
+        <div class="order-creation-container">
+          <form [formGroup]="orderForm" (ngSubmit)="submitOrder()">
+            <div formArrayName="items" class="items-container">
+              <div *ngFor="let row of items.controls; let i = index" 
+                  [formGroupName]="i"
+                  class="item-card">
+                
+                <div class="item-header">
+                  <span class="item-number">Item #{{ i + 1 }}</span>
+                  <div class="item-actions">
+                    <button type="button" 
+                            class="btn btn-success btn-sm btn-icon"
+                            (click)="addItem()"
+                            title="Add Item">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                    <button type="button" 
+                            class="btn btn-danger btn-sm btn-icon ms-2"
+                            (click)="removeItem(i)"
+                            [disabled]="items.length === 1"
+                            title="Remove Item">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">
+                      <i class="fas fa-barcode me-1"></i>
+                      Barcode
+                    </label>
+                    <div class="input-group">
+                      <input formControlName="barcode" 
+                            class="form-control form-control-custom"
+                            placeholder="Scan or type barcode"
+                            (input)="onBarcodeChange(i, $event)">
+                      
+                    </div>
+                    <div class="product-info" *ngIf="getProductInfo(i) as product">
+                      <small class="text-success">
+                        <i class="fas fa-check-circle me-1"></i>
+                        {{ product.name }}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label class="form-label">
+                      <i class="fas fa-sort-numeric-up me-1"></i>
+                      Quantity
+                    </label>
+                    <input type="number" 
+                          formControlName="quantity"
+                          class="form-control form-control-custom"
+                          min="1"
+                          (input)="updateOrderSummary()">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">
+                      <i class="fas fa-tag me-1"></i>
+                      MRP (₹)
+                    </label>
+                    <input formControlName="mrp"
+                          class="form-control form-control-custom"
+                          readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary-card" *ngIf="orderSummary.totalItems > 0">
+              <div class="summary-header">
+                <h5>
+                  <i class="fas fa-calculator me-2"></i>
+                  Order Summary
+                </h5>
+              </div>
+              <div class="summary-body">
+                <div class="summary-row">
+                  <span>Total Items:</span>
+                  <span class="fw-semibold">{{ orderSummary.totalItems }}</span>
+                </div>
+                <div class="summary-row">
+                  <span>Total Quantity:</span>
+                  <span class="fw-semibold">{{ orderSummary.totalQuantity }}</span>
+                </div>
+                <div class="summary-row summary-total">
+                  <span>Total Amount:</span>
+                  <span class="fw-bold text-primary">₹{{ orderSummary.totalAmount | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-actions">
+              <button type="submit" 
+                      class="btn btn-primary-custom btn-lg"
+                      [disabled]="orderForm.invalid || loading">
+                <i class="fas fa-paper-plane me-2"></i>
+                <span *ngIf="!loading">Place Order</span>
+                <span *ngIf="loading">
+                  <i class="fas fa-spinner fa-spin me-2"></i>
+                  Placing Order...
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Orders List Tab -->
+      <div *ngIf="tab === 'list'" class="tab-content-area">
+        <div class="content-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="content-title">
+                <i class="fas fa-history me-2"></i>
+                Order History
+              </h4>
+              <p class="content-subtitle">View and manage all your orders</p>
+            </div>
+            <button class="btn btn-primary-custom" (click)="setTab('create')">
+              <i class="fas fa-plus me-2"></i>
+              New Order
             </button>
-            <button class="btn btn-success ms-1" (click)="addItem()" type="button">
-              &plus;
+          </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-filters-card">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label">
+                <i class="fas fa-search me-1"></i>
+                Search Orders
+              </label>
+              <input type="text" 
+                     class="form-control form-control-custom"
+                     placeholder="Search by Order ID (e.g., 112)"
+                     [(ngModel)]="searchQuery"
+                     (input)="onSearchChange()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">
+                <i class="fas fa-calendar me-1"></i>
+                Date Range
+              </label>
+              <select class="form-select form-control-custom" [(ngModel)]="dateFilter" (change)="applyFilters()">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">
+                <i class="fas fa-filter me-1"></i>
+                Status
+              </label>
+              <select class="form-select form-control-custom" [(ngModel)]="statusFilter" (change)="applyFilters()">
+                <option value="all">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+                <i class="fas fa-times me-1"></i>
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loadingOrders" class="loading-state">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 mb-0">Loading orders...</p>
+        </div>
+
+        <!-- Orders Table -->
+        <div *ngIf="!loadingOrders" class="table-container">
+          <div class="table-responsive">
+            <table class="table table-custom" *ngIf="paginatedOrders.length > 0">
+              <thead>
+                <tr>
+                  <th>
+                    <i class="fas fa-hashtag me-1"></i>
+                    Order ID
+                  </th>
+                  <th>
+                    <i class="fas fa-calendar me-1"></i>
+                    Date & Time
+                  </th>
+                  <th>
+                    <i class="fas fa-box me-1"></i>
+                    Items
+                  </th>
+                  <th>
+                    <i class="fas fa-rupee-sign me-1"></i>
+                    Total Amount
+                  </th>
+                  <th>
+                    <i class="fas fa-file-invoice me-1"></i>
+                    Invoice
+                  </th>
+                  <th>
+                    <i class="fas fa-cogs me-1"></i>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of paginatedOrders; trackBy: trackByOrderId">
+                  <td>
+                    <span class="order-id">#{{ order.id }}</span>
+                  </td>
+                  <td>
+                    <div class="datetime-info">
+                      <div class="fw-semibold">{{ order.placedAt | date:'MMM dd, yyyy' }}</div>
+                      <small class="text-muted">{{ order.placedAt | date:'hh:mm a' }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="items-badge">
+                      {{ order.items?.length || 0 }} item{{ (order.items?.length || 0) !== 1 ? 's' : '' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="amount-display">₹{{ calculateOrderTotal(order) | number:'1.2-2' }}</span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm"
+                            [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
+                            (click)="handleInvoice(order)">
+                      <i class="fas" [ngClass]="order.invoicePath ? 'fa-download' : 'fa-file-invoice'"></i>
+                      {{ order.invoicePath ? 'Download' : 'Generate' }}
+                    </button>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn btn-sm btn-info"
+                              (click)="openViewItems(order.id)"
+                              title="View Items">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-secondary ms-1"
+                              (click)="duplicateOrder(order)"
+                              title="Duplicate Order">
+                        <i class="fas fa-copy"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="paginatedOrders.length === 0" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h5>No Orders Found</h5>
+            <p class="text-muted mb-4">
+              <span *ngIf="searchQuery || dateFilter !== 'all' || statusFilter !== 'all'">
+                No orders match your current filters. Try adjusting your search criteria.
+              </span>
+              <span *ngIf="!searchQuery && dateFilter === 'all' && statusFilter === 'all'">
+                You haven't placed any orders yet. Create your first order to get started!
+              </span>
+            </p>
+            <button class="btn btn-primary-custom" (click)="setTab('create')">
+              <i class="fas fa-plus me-2"></i>
+              Create First Order
             </button>
           </div>
+
+          <!-- Pagination -->
+          <nav *ngIf="paginatedOrders.length > 0 && totalPages > 1" class="pagination-container">
+            <div class="pagination-info">
+              Showing {{ startIndex + 1 }}-{{ endIndex }} of {{ filteredOrders.length }} orders
+            </div>
+            <ul class="pagination pagination-custom">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </li>
+              
+              <li class="page-item" 
+                  *ngFor="let page of getPageNumbers()" 
+                  [class.active]="page === currentPage">
+                <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+              </li>
+              
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
-      <button class="btn btn-primary" type="submit" [disabled]="orderForm.invalid || loading">
-        {{ loading ? 'Placing...' : 'Place Order' }}
-      </button>
-    </form>
-  </div>
-
-  <!-- Orders List -->
-  <div *ngIf="tab==='list'">
-    <div *ngIf="loadingOrders" class="text-center py-5">
-      <div class="spinner-border"></div>
     </div>
-    <table *ngIf="!loadingOrders" class="table table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>Order ID</th>
-          <th>Placed At</th>
-          <th>Items</th>
-          <th>Invoice</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let o of orders">
-          <td>{{ o.id }}</td>
-          <td>{{ fmtDate(o.placedAt) }}</td>
-          <td>
-            <button class="btn btn-sm btn-info" (click)="openViewItems(o.id)">
-              View Items
-            </button>
-          </td>
-          <td>
-            <button
-              class="btn btn-sm"
-              [ngClass]="o.invoicePath ? 'btn-success' : 'btn-warning'"
-              (click)="handleInvoice(o)">
-              {{ o.invoicePath ? 'Download' : 'Generate' }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
+</div>
 
-  <!-- View Items Modal -->
-  <div class="modal-backdrop fade show" *ngIf="showViewModal"></div>
-  <div class="modal fade show d-block" tabindex="-1" *ngIf="showViewModal">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Order #{{ viewedOrderId }} Items</h5>
-          <button type="button" class="btn-close" (click)="closeViewModal()"></button>
-        </div>
-        <div class="modal-body">
-          <table class="table table-bordered">
+<!-- View Items Modal -->
+<div class="modal fade" 
+     id="viewItemsModal" 
+     tabindex="-1" 
+     [class.show]="showViewModal"
+     [style.display]="showViewModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content modal-content-custom">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-shopping-cart me-2"></i>
+          Order #{{ viewedOrderId }} Items
+        </h5>
+        <button type="button" class="btn-close" (click)="closeViewModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-custom">
             <thead>
-              <tr><th>#</th><th>Barcode</th><th>Quantity</th><th>Price</th></tr>
+              <tr>
+                <th>#</th>
+                <th>Barcode</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let it of viewedItems; let idx = index">
+              <tr *ngFor="let item of viewedItems; let idx = index">
                 <td>{{ idx + 1 }}</td>
-                <td>{{ it.barcode }}</td>
-                <td>{{ it.quantity }}</td>
-                <td>{{ it.sellingPrice }}</td>
+                <td><code>{{ item.barcode }}</code></td>
+                <td>{{ getProductName(item.barcode) }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₹{{ item.sellingPrice | number:'1.2-2' }}</td>
+                <td class="fw-semibold">₹{{ (item.quantity * (item.sellingPrice ?? 0)) | number:'1.2-2' }}</td>
               </tr>
             </tbody>
+            <tfoot>
+              <tr class="table-info">
+                <td colspan="5" class="text-end fw-bold">Total:</td>
+                <td class="fw-bold">₹{{ getViewedOrderTotal() | number:'1.2-2' }}</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeViewModal()">
+          <i class="fas fa-times me-2"></i>
+          Close
+        </button>
+        <button type="button" class="btn btn-primary-custom" (click)="duplicateViewedOrder()">
+          <i class="fas fa-copy me-2"></i>
+          Duplicate Order
+        </button>
       </div>
     </div>
   </div>
+</div>
 
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" 
+     [class.show]="showViewModal" 
+     *ngIf="showViewModal"
+     (click)="closeViewModal()">
 </div>
