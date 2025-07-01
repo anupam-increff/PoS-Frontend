@@ -1,81 +1,79 @@
-<div class="container py-4">
-  <ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-      <button class="nav-link" [class.active]="tab === 'list'" (click)="tab = 'list'">Client List</button>
-    </li>
-    <li class="nav-item">
-      <button class="nav-link" [class.active]="tab === 'search'" (click)="tab = 'search'">Search Client</button>
-    </li>
-  </ul>
-
-  <!-- Client List Tab -->
-  <div *ngIf="tab === 'list'" class="card p-4 shadow-sm">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">Clients</h5>
-      <button class="btn btn-success" (click)="openModal()">Add Client</button>
-    </div>
-
-    <div *ngIf="loading" class="text-center my-4">
-      <div class="spinner-border" role="status"></div>
-    </div>
-
-    <div *ngIf="!loading && clients.length > 0">
-      <table class="table table-hover table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th style="width: 100px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let client of clients">
-            <td>{{ client.id }}</td>
-            <td>{{ client.name }}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-primary" (click)="startEdit(client)">Edit</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div *ngIf="!loading && clients.length === 0" class="text-muted text-center">No clients found.</div>
-  </div>
-
-  <!-- Search Client Tab -->
-  <div *ngIf="tab === 'search'" class="card p-4 shadow-sm">
-    <div class="input-group mb-3">
-      <input [(ngModel)]="searchName" placeholder="Search by name" class="form-control" />
-      <button class="btn btn-outline-secondary" (click)="searchClient()">Search</button>
-    </div>
-    <div *ngIf="searchResult">
-      <div class="alert alert-info">
-        <strong>ID:</strong> {{ searchResult.id }}<br>
-        <strong>Name:</strong> {{ searchResult.name }}
-      </div>
-    </div>
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="container">
+    <h1 class="hero-title">
+      <i class="fas fa-users me-3"></i>
+      Client Management
+    </h1>
+    <p class="hero-subtitle">
+      Manage your client directory efficiently. Add, update, and search client records easily.
+    </p>
   </div>
 </div>
 
+<!-- Main Content -->
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Client List</h5>
+    <button class="btn btn-success" (click)="openModal()">Add Client</button>
+  </div>
+
+  <div class="input-group mb-4 w-50">
+    <input [(ngModel)]="searchName" placeholder="Search by name" class="form-control" />
+    <button class="btn btn-outline-primary" (click)="searchClient()">Search</button>
+    <button class="btn btn-outline-secondary" (click)="clearSearch()">Clear</button>
+  </div>
+
+  <div *ngIf="loading" class="text-center my-4">
+    <div class="spinner-border" role="status"></div>
+  </div>
+
+  <div *ngIf="!loading && clients.length > 0" class="card p-4 shadow-sm">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 60px;">#</th>
+          <th>Client Name</th>
+          <th style="width: 120px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of clients; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ client.name }}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary" (click)="startEdit(client)">Edit</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && clients.length === 0" class="text-muted text-center mt-4">No clients found.</div>
+</div>
+
 <!-- Add/Edit Modal -->
-<div class="modal fade show" tabindex="-1" [ngStyle]="{display: showModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)'}" [class.show]="showModal" *ngIf="showModal">
+<div class="modal fade show" tabindex="-1"
+  [ngStyle]="{ display: showModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)' }"
+  [class.show]="showModal" *ngIf="showModal">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ editingId ? 'Edit Client' : 'Add Client' }}</h5>
-        <button type="button" class="btn-close" (click)="closeModal()"></button>
-      </div>
       <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editingId ? 'Edit Client' : 'Add Client' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">Client Name</label>
             <input type="text" class="form-control" formControlName="name"
               [class.is-invalid]="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
-            <div class="invalid-feedback" *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
+            <div class="invalid-feedback"
+              *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
               Name is required and must be under 50 characters.
             </div>
           </div>
+          
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>

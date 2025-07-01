@@ -1,7 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // For ngModel
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ToastrService } from 'ngx-toastr';
 
@@ -10,7 +15,7 @@ import { ToastrService } from 'ngx-toastr';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './client-page.component.html',
-  styleUrl: './client-page.component.scss'
+  styleUrls: ['./client-page.component.scss']
 })
 export class ClientPageComponent implements OnInit {
   clientForm: FormGroup;
@@ -18,7 +23,7 @@ export class ClientPageComponent implements OnInit {
   editingId: number | null = null;
   showModal = false;
 
-  tab: 'list' | 'search' = 'list';
+  tab: 'list' = 'list';
   loading = false;
   searchName = '';
   searchResult: any = null;
@@ -64,7 +69,6 @@ export class ClientPageComponent implements OnInit {
     this.editingId = null;
     this.clientForm.reset();
   }
-  
 
   saveClient(): void {
     if (this.clientForm.invalid) {
@@ -115,12 +119,20 @@ export class ClientPageComponent implements OnInit {
     this.api.get<any>(`/client/${name}`).subscribe({
       next: res => {
         this.searchResult = res;
+        this.clients = [res];
         this.toastr.success('Client found!');
       },
       error: () => {
         this.searchResult = null;
+        this.clients = [];
         this.toastr.warning('Client not found.');
       }
     });
+  }
+
+  clearSearch(): void {
+    this.searchName = '';
+    this.searchResult = null;
+    this.loadClients();
   }
 }
