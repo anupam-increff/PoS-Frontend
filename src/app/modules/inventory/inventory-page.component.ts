@@ -1,108 +1,170 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators
+} from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-inventory-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './inventory-page.component.html',
-  styleUrls: ['./inventory-page.component.scss']
+  styleUrls: ['./inventory-page.component.scss'],
 })
 export class InventoryPageComponent implements OnInit {
   tab: 'upload' | 'add' | 'snapshot' = 'snapshot';
-  uploadForm: FormGroup;
-  addForm: FormGroup;
-  editForm: FormGroup;
-  inventory: any[] = [];
-  showEditModal = false;
-  loading = false;
-  errorMsg = '';
-  successMsg = '';
 
-  constructor(private fb: FormBuilder, private api: ApiService) {
+  uploadForm!: FormGroup;
+  addForm!: FormGroup;
+  editForm!: FormGroup;
+
+  inventory: Array<{ barcode: string; quantity: number; name?: string }> = [];
+  loading = false;
+
+  // Search
+  searchBarcode = '';
+
+  // Messages
+  successMsg = '';
+  errorMsg = '';
+
+  // Edit modal state
+  showEditModal = false;
+  private selectedItem: { barcode: string; quantity: number } | null = null;
+
+  constructor(private fb: FormBuilder, private api: ApiService) {}
+
+  ngOnInit(): void {
+    // Initialize forms
     this.uploadForm = this.fb.group({
-      file: [null, Validators.required]
+      file: [null, Validators.required],
     });
 
     this.addForm = this.fb.group({
-      barcode: [null, Validators.required],
-      quantity: [null, [Validators.required, Validators.min(1)]]
+      barcode: ['', Validators.required],
+      quantity: [null, [Validators.required, Validators.min(1)]],
     });
 
     this.editForm = this.fb.group({
-      barcode: [{ value: null, disabled: true }],
-      quantity: [null, [Validators.required, Validators.min(1)]]
+      barcode: [{ value: '', disabled: true }],
+      quantity: [null, [Validators.required, Validators.min(1)]],
     });
-  }
 
-  ngOnInit() {
+    // Load initial data
     this.loadInventory();
   }
 
-  setTab(tab: 'upload' | 'add' | 'snapshot') {
-    this.tab = tab;
-    if (tab === 'snapshot') {
+  // Tab navigation
+  setTab(t: 'upload' | 'add' | 'snapshot'): void {
+    this.tab = t;
+    this.clearMessages();
+    if (t === 'snapshot') {
       this.loadInventory();
     }
   }
 
-  onFileChange(event: any) {
-    if (event.target.files.length > 0) {
-      this.uploadForm.patchValue({ file: event.target.files[0] });
-    }
+  // Load all inventory
+  loadInventory(): void {
+    this.loading = true;
+    this.api.get<{ barcode: string; quantity: number; name?: string }[]>('/inventory')
+      .subscribe({
+        next: (data) => {
+          this.inventory = data;
+          this.loading = false;
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.errorMsg = 'Failed to load inventory.';
+          this.loading = false;
+        }
+      });
   }
 
-  uploadInventory() {
+  // Handle file input
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.uploadForm.patchValue({ file });
+  }
+
+  // Upload TSV file
+  uploadInventory(): void {
     if (this.uploadForm.invalid) return;
     const formData = new FormData();
     formData.append('file', this.uploadForm.value.file);
 
-    this.api.post('/inventory/upload', formData).subscribe(() => {
-      this.successMsg = 'Inventory uploaded.';
-      this.uploadForm.reset();
-      this.loadInventory();
-      setTimeout(() => this.successMsg = '', 3000);
-    }, () => {
-      this.errorMsg = 'Upload failed.';
-      setTimeout(() => this.errorMsg = '', 3000);
-    });
+    this.api.post<void>('/inventory/upload', formData)
+      .subscribe({
+        next: () => {
+          this.successMsg = 'File uploaded successfully!';
+          this.uploadForm.reset();
+          this.loadInventory();
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.errorMsg = 'Upload failed.';
+        }
+      });
   }
 
-  addInventory() {
+  // Add a new item
+  addInventory(): void {
     if (this.addForm.invalid) return;
+    const payload = this.addForm.value;
 
-    const payload = {
-      barcode: this.addForm.value.barcode,
-      quantity: this.addForm.value.quantity
-    };
+    this.api.post<void>('/inventory', payload)
+      .subscribe({
+        next: () => {
+          this.successMsg = 'Item added successfully!';
+          this.addForm.reset();
+          this.loadInventory();
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.errorMsg = 'Add failed.';
+        }
+      });
+  }
 
-    this.api.post('/inventory', payload).subscribe(() => {
-      this.successMsg = 'Inventory added.';
-      this.addForm.reset();
+  // Search by barcode via backend
+  searchInventory(): void {
+    const code = this.searchBarcode.trim();
+    if (!code) {
       this.loadInventory();
-      setTimeout(() => this.successMsg = '', 3000);
-    }, () => {
-      this.errorMsg = 'Failed to add inventory.';
-      setTimeout(() => this.errorMsg = '', 3000);
-    });
-  }
+      return;
+    }
 
-  loadInventory() {
     this.loading = true;
-    this.api.get<any[]>('/inventory').subscribe(data => {
-      this.inventory = data;
-      this.loading = false;
-    }, () => {
-      this.errorMsg = 'Failed to load inventory.';
-      this.loading = false;
+    this.api.get<{ barcode: string; quantity: number; name?: string }[]>('/inventory/search', {
+      params: { barcode: code }
+    }).subscribe({
+      next: (data) => {
+        this.inventory = data;
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.errorMsg = 'Search failed.';
+        this.loading = false;
+      }
     });
   }
-  
 
-  openEditModal(item: any) {
+  // Clear search and reload
+  clearSearch(): void {
+    this.searchBarcode = '';
+    this.loadInventory();
+  }
+
+  // Open edit modal
+  openEditModal(item: { barcode: string; quantity: number }): void {
+    this.selectedItem = item;
     this.editForm.setValue({
       barcode: item.barcode,
       quantity: item.quantity
@@ -110,26 +172,42 @@ export class InventoryPageComponent implements OnInit {
     this.showEditModal = true;
   }
 
-  closeEditModal() {
-    this.showEditModal = false;
+  // Save edited (delta) quantity
+  saveEdit(): void {
+    if (!this.selectedItem || this.editForm.invalid) return;
+    const newQty = this.editForm.value.quantity;
+    const delta = newQty - this.selectedItem.quantity;
+
+    // Send only delta
+    this.api.put<void>(`/inventory/${this.selectedItem.barcode}`, { quantity: delta })
+      .subscribe({
+        next: () => {
+          this.successMsg = 'Quantity updated!';
+          this.closeEditModal();
+          this.loadInventory();
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.errorMsg = 'Update failed.';
+        }
+      });
   }
 
-  saveEdit() {
-    if (this.editForm.invalid) return;
+  // Close modal
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.selectedItem = null;
+    this.editForm.reset();
+  }
 
-    const payload = {
-      barcode: this.editForm.getRawValue().barcode,
-      quantity: this.editForm.value.quantity
-    };
+  // TrackBy for table rows
+  trackByBarcode(_: number, item: { barcode: string }): string {
+    return item.barcode;
+  }
 
-    this.api.put(`/inventory/${payload.barcode}`, payload).subscribe(() => {
-      this.successMsg = 'Inventory updated.';
-      this.closeEditModal();
-      this.loadInventory();
-      setTimeout(() => this.successMsg = '', 3000);
-    }, () => {
-      this.errorMsg = 'Failed to update inventory.';
-      setTimeout(() => this.errorMsg = '', 3000);
-    });
+  // Clear messages
+  private clearMessages(): void {
+    this.successMsg = '';
+    this.errorMsg = '';
   }
 }
