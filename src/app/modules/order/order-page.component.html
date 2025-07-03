@@ -277,7 +277,7 @@
                   </td>
                   <td>
                     <span class="items-badge">
-                      {{ order.items?.length || 0 }} item{{ (order.items?.length || 0) !== 1 ? 's' : '' }}
+                      {{ order.items.length || 0 }} item{{ (order.items.length || 0) !== 1 ? 's' : '' }}
                     </span>
                   </td>
                   <td>
@@ -396,7 +396,7 @@
                 <td>{{ getProductName(item.barcode) }}</td>
                 <td>{{ item.quantity }}</td>
                 <td>₹{{ item.sellingPrice | number:'1.2-2' }}</td>
-                <td class="fw-semibold">₹{{ (item.quantity * (item.sellingPrice ?? 0)) | number:'1.2-2' }}</td>
+                <td class="fw-semibold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
               </tr>
             </tbody>
             <tfoot>

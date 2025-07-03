@@ -29,24 +29,37 @@
   </div>
 
   <div *ngIf="!loading && clients.length > 0" class="card p-4 shadow-sm">
-    <table class="table table-bordered table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th style="width: 60px;">#</th>
-          <th>Client Name</th>
-          <th style="width: 120px;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let client of clients; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ client.name }}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-primary" (click)="startEdit(client)">Edit</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper" tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 60px;">#</th>
+            <th>Client Name</th>
+            <th style="width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of clients; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <ng-container *ngIf="editIndex === i; else viewName">
+                <input [(ngModel)]="editClient.name" class="form-control form-control-sm" />
+              </ng-container>
+              <ng-template #viewName>{{ client.name }}</ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="editIndex === i; else editBtn">
+                <button class="btn btn-sm btn-success me-1" (click)="saveEdit()">Save</button>
+                <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
+              </ng-container>
+              <ng-template #editBtn>
+                <button class="btn btn-sm btn-outline-primary" (click)="startEdit(i, client)">Edit</button>
+              </ng-template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div *ngIf="!loading && clients.length === 0" class="text-muted text-center mt-4">No clients found.</div>

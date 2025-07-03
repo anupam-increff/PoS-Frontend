@@ -24,6 +24,7 @@ export class ProductPageComponent implements OnInit {
   searchClientId: string = '';
   searchBarcode: string = '';
   editProduct: any = null;
+  editIndex: number | null = null;
 
   constructor(
     private api: ApiService,
@@ -136,14 +137,26 @@ export class ProductPageComponent implements OnInit {
     this.loadProducts();
   }
 
-  openEditModal(product: any) {
+  startEdit(i: number, product: any) {
+    this.editIndex = i;
     this.editProduct = { ...product };
-    this.showEditModal = true;
   }
 
-  closeEditModal() {
-    this.showEditModal = false;
+  cancelEdit() {
+    this.editIndex = null;
     this.editProduct = null;
+  }
+
+  saveEdit() {
+    if (!this.editProduct) return;
+    this.api.put(`/product/${this.editProduct.id}`, this.editProduct).subscribe({
+      next: () => {
+        this.toastr.success('Product updated');
+        this.products[this.editIndex!] = { ...this.editProduct };
+        this.cancelEdit();
+      },
+      error: () => this.toastr.error('Failed to update product')
+    });
   }
 
   openImageModal(url: string) {
@@ -154,16 +167,5 @@ export class ProductPageComponent implements OnInit {
   closeImageModal() {
     this.showImageModal = false;
     this.imageToZoom = '';
-  }
-
-  saveEdit() {
-    this.api.put(`/product/${this.editProduct.id}`, this.editProduct).subscribe({
-      next: () => {
-        this.toastr.success('Product updated');
-        this.loadProducts();
-        this.closeEditModal();
-      },
-      error: () => this.toastr.error('Failed to update product')
-    });
   }
 }

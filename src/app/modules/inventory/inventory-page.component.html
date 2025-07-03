@@ -57,28 +57,41 @@
           No inventory data available.
         </div>
   
-        <table class="table table-striped table-hover" *ngIf="inventory.length > 0 && !loading">
-          <thead>
-            <tr>
+        <div class="table-wrapper" tabindex="0" *ngIf="inventory.length > 0 && !loading">
+          <table>
+            <thead>
+              <tr>
                 <th>Product ID</th>
-              <th>Barcode</th>
-              <th>Name</th>
-              <th>Quantity</th>
-              <th style="width: 100px;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of inventory">
-            <td>{{ item.productId }}</td>
-              <td>{{ item.barcode || '—' }}</td>
-              <td>{{ item.name }}</td>
-              <td>{{ item.quantity }}</td>
-              <td>
-                <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(item)">Edit</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <th>Barcode</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th style="width: 100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of inventory; let i = index">
+                <td>{{ item.productId }}</td>
+                <td>{{ item.barcode || '—' }}</td>
+                <td>{{ item.name }}</td>
+                <td>
+                  <ng-container *ngIf="editIndex === i; else viewQty">
+                    <input type="number" [(ngModel)]="editItem.quantity" class="form-control form-control-sm" />
+                  </ng-container>
+                  <ng-template #viewQty>{{ item.quantity }}</ng-template>
+                </td>
+                <td>
+                  <ng-container *ngIf="editIndex === i; else editBtn">
+                    <button class="btn btn-sm btn-success me-1" (click)="saveEdit()">Save</button>
+                    <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
+                  </ng-container>
+                  <ng-template #editBtn>
+                    <button class="btn btn-sm btn-outline-primary" (click)="startEdit(i, item)">Edit</button>
+                  </ng-template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
   
       <!-- Edit Modal -->

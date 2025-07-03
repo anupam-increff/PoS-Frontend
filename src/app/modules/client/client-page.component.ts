@@ -28,6 +28,9 @@ export class ClientPageComponent implements OnInit {
   searchName = '';
   searchResult: any = null;
 
+  editIndex: number | null = null;
+  editClient: any = null;
+
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
@@ -105,8 +108,26 @@ export class ClientPageComponent implements OnInit {
     }
   }
 
-  startEdit(client: any): void {
-    this.openModal(client);
+  startEdit(i: number, client: any) {
+    this.editIndex = i;
+    this.editClient = { ...client };
+  }
+
+  cancelEdit() {
+    this.editIndex = null;
+    this.editClient = null;
+  }
+
+  saveEdit() {
+    if (!this.editClient) return;
+    this.api.put(`/client/${this.editClient.id}`, this.editClient).subscribe({
+      next: () => {
+        this.toastr.success('Client updated');
+        this.clients[this.editIndex!] = { ...this.editClient };
+        this.cancelEdit();
+      },
+      error: () => this.toastr.error('Failed to update client')
+    });
   }
 
   searchClient(): void {

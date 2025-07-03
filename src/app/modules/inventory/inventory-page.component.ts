@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-inventory-page',
@@ -21,8 +22,10 @@ export class InventoryPageComponent implements OnInit {
   loading = false;
   errorMsg = '';
   successMsg = '';
+  editIndex: number | null = null;
+  editItem: any = null;
 
-  constructor(private fb: FormBuilder, private api: ApiService) {
+  constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService) {
     this.uploadForm = this.fb.group({
       file: [null, Validators.required]
     });
@@ -114,22 +117,25 @@ export class InventoryPageComponent implements OnInit {
     this.showEditModal = false;
   }
 
+  startEdit(i: number, item: any) {
+    this.editIndex = i;
+    this.editItem = { ...item };
+  }
+
+  cancelEdit() {
+    this.editIndex = null;
+    this.editItem = null;
+  }
+
   saveEdit() {
-    if (this.editForm.invalid) return;
-
-    const payload = {
-      barcode: this.editForm.getRawValue().barcode,
-      quantity: this.editForm.value.quantity
-    };
-
-    this.api.put(`/inventory/${payload.barcode}`, payload).subscribe(() => {
-      this.successMsg = 'Inventory updated.';
-      this.closeEditModal();
-      this.loadInventory();
-      setTimeout(() => this.successMsg = '', 3000);
-    }, () => {
-      this.errorMsg = 'Failed to update inventory.';
-      setTimeout(() => this.errorMsg = '', 3000);
+    if (!this.editItem) return;
+    this.api.put(`/inventory/${this.editItem.productId}`, this.editItem).subscribe({
+      next: () => {
+        this.toastr.success('Inventory updated');
+        this.inventory[this.editIndex!] = { ...this.editItem };
+        this.cancelEdit();
+      },
+      error: () => this.toastr.error('Failed to update inventory')
     });
   }
 }

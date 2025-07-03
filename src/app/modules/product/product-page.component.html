@@ -46,29 +46,51 @@
         <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
       </div>
       <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
-      <table class="table table-hover custom-table" *ngIf="!loading && products.length > 0">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Client</th>
-            <th>Barcode</th>
-            <th>Name</th>
-            <th style="width: 120px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let product of products">
-            <td>
-              <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
-                class="product-thumb" (click)="openImageModal(product.imageUrl)">
-            </td>
-            <td>{{ product.clientId }}</td>
-            <td>{{ product.barcode }}</td>
-            <td>{{ product.name }}</td>
-            <td><button class="btn btn-sm btn-outline-primary" (click)="openEditModal(product)">Edit</button></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrapper" tabindex="0" *ngIf="!loading && products.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Client</th>
+              <th>Barcode</th>
+              <th>Name</th>
+              <th>MRP</th>
+              <th style="width: 120px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of products; let i = index">
+              <td>
+                <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
+                  class="product-thumb" (click)="openImageModal(product.imageUrl)">
+              </td>
+              <td>{{ product.clientId }}</td>
+              <td>{{ product.barcode }}</td>
+              <td>
+                <ng-container *ngIf="editIndex === i; else viewName">
+                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm" />
+                </ng-container>
+                <ng-template #viewName>{{ product.name }}</ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="editIndex === i; else viewMrp">
+                  <input type="number" [(ngModel)]="editProduct.mrp" class="form-control form-control-sm" />
+                </ng-container>
+                <ng-template #viewMrp>{{ product.mrp }}</ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="editIndex === i; else editBtn">
+                  <button class="btn btn-sm btn-success me-1" (click)="saveEdit()">Save</button>
+                  <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
+                </ng-container>
+                <ng-template #editBtn>
+                  <button class="btn btn-sm btn-outline-primary" (click)="startEdit(i, product)">Edit</button>
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div *ngIf="products.length === 0 && !loading" class="text-muted text-center">No products found.</div>
     </div>
 
@@ -87,79 +109,52 @@
         <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
       </div>
       <div *ngIf="errorMsg" class="alert alert-danger m-3">{{ errorMsg }}</div>
-      <table class="table table-hover custom-table" *ngIf="!loading && !errorMsg">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Client</th>
-            <th>Barcode</th>
-            <th>Name</th>
-            <th>MRP</th>
-            <th style="width: 120px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let product of products">
-            <td>
-              <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
-                class="product-thumb" (click)="openImageModal(product.imageUrl)">
-            </td>
-            <td>{{ product.clientId }}</td>
-            <td>{{ product.barcode }}</td>
-            <td>{{ product.name }}</td>
-            <td>{{ product.mrp }}</td>
-            <td><button class="btn btn-sm btn-outline-primary" (click)="openEditModal(product)">Edit</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products found.</div>
-    </div>
-  </div>
-</div>
-
-<!-- Edit Modal -->
-<div class="modal fade show" tabindex="-1" [ngStyle]="{ display: showEditModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)' }" *ngIf="showEditModal">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Product</h5>
-        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      <div class="table-wrapper" tabindex="0" *ngIf="!loading && !errorMsg">
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Client</th>
+              <th>Barcode</th>
+              <th>Name</th>
+              <th>MRP</th>
+              <th style="width: 120px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of products; let i = index">
+              <td>
+                <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
+                  class="product-thumb" (click)="openImageModal(product.imageUrl)">
+              </td>
+              <td>{{ product.clientId }}</td>
+              <td>{{ product.barcode }}</td>
+              <td>
+                <ng-container *ngIf="editIndex === i; else viewNameList">
+                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm" />
+                </ng-container>
+                <ng-template #viewNameList>{{ product.name }}</ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="editIndex === i; else viewMrpList">
+                  <input type="number" [(ngModel)]="editProduct.mrp" class="form-control form-control-sm" />
+                </ng-container>
+                <ng-template #viewMrpList>{{ product.mrp }}</ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="editIndex === i; else editBtnList">
+                  <button class="btn btn-sm btn-success me-1" (click)="saveEdit()">Save</button>
+                  <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
+                </ng-container>
+                <ng-template #editBtnList>
+                  <button class="btn btn-sm btn-outline-primary" (click)="startEdit(i, product)">Edit</button>
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <form (ngSubmit)="saveEdit()">
-        <div class="modal-body">
-          <div class="row g-4">
-            <div class="col-md-5 text-center">
-              <div class="image-box">
-                <img [src]="editProduct.imageUrl" alt="Product Image" class="img-fluid zoomed-img">
-              </div>
-              <label class="form-label mt-3">Image URL</label>
-              <input type="text" class="form-control" [(ngModel)]="editProduct.imageUrl" name="imageUrl">
-            </div>
-            <div class="col-md-7">
-              <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input type="text" class="form-control" [(ngModel)]="editProduct.name" name="name">
-              </div>
-              <div class="mb-3">
-                <label class="form-label">MRP</label>
-                <input type="number" class="form-control" [(ngModel)]="editProduct.mrp" name="mrp" min="0">
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Barcode</label>
-                <input type="text" class="form-control" [value]="editProduct.barcode" disabled>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Client ID</label>
-                <input type="text" class="form-control" [value]="editProduct.clientId" disabled>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-      </form>
+      <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products found.</div>
     </div>
   </div>
 </div>

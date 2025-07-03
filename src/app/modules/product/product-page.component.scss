@@ -6,31 +6,6 @@
   color: var(--text-dark);
 }
 
-// Hero Section
-.hero-section {
-  background: linear-gradient(120deg, #e8f2ff 0%, #f0f7ff 100%);
-  padding: 3rem 1rem 2rem;
-  text-align: center;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 2rem;
-
-  .hero-title {
-    font-family: 'Poppins', sans-serif;
-    font-size: 2.2rem;
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-    color: var(--text-light);
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
-}
-
 // Custom Tabs
 .nav-tabs-custom {
   background: var(--light-bg);
@@ -143,40 +118,6 @@
     border-radius: 12px;
     box-shadow: var(--card-shadow);
     border: 1px solid var(--border-color);
-  }
-}
-
-// Table Styles
-.table {
-  margin-bottom: 0;
-
-  thead {
-    background: linear-gradient(135deg, var(--accent-color) 0%, #2563eb 100%);
-
-    th {
-      color: rgb(50, 49, 49);
-      font-weight: 600;
-      border: 0.5;
-      padding: 0rem;
-      font-size: 1rem;
-    }
-  }
-
-  tbody {
-    tr {
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: rgba(59, 130, 246, 0.05);
-      }
-
-      td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-color: var(--border-color);
-        color: var(--text-dark);
-      }
-    }
   }
 }
 

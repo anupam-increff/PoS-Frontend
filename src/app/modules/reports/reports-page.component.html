@@ -1,0 +1,47 @@
+<div class="reports-container">
+  <h1 class="reports-title">Reports</h1>
+
+  <!-- Sales Report Section -->
+  <section class="report-section">
+    <h2>Sales Report</h2>
+    <div class="table-wrapper" tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th *ngFor="let col of salesColumns">{{ col }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of salesData">
+            <td>{{ row.sku }}</td>
+            <td>{{ row.product }}</td>
+            <td>{{ row.quantity }}</td>
+            <td>{{ row.revenue }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Day-on-Day Sales Report Section -->
+  <section class="report-section">
+    <h2>Day-on-Day Sales Report</h2>
+    <div class="table-wrapper" tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th *ngFor="let col of daySalesColumns">{{ col }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of daySalesData">
+            <td>{{ row.date }}</td>
+            <td>{{ row.orders }}</td>
+            <td>{{ row.items }}</td>
+            <td>{{ row.revenue }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div> 

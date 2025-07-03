@@ -156,3 +156,21 @@
       width: 100%;
     }
   }
+
+.app-footer {
+  width: 100%;
+  background: var(--accent-color);
+  color: #060606;
+  padding: 0.7rem 0;
+  text-align: center;
+//   position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  font-size: 0.95rem;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+}
+.footer-content {
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
