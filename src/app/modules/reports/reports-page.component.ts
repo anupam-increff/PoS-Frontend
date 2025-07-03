@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { EditableTableComponent } from '../../shared/components/editable-table/editable-table.component';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-reports-page',
   standalone: true,
-  imports: [EditableTableComponent, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './reports-page.component.html',
   styleUrls: ['./reports-page.component.scss']
 })

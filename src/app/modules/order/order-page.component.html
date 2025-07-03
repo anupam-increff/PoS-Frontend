@@ -12,8 +12,7 @@
 
 <div class="main-container">
   <div class="container">
-    <div class="page-container">
-      
+    <div class="feature-card">
       <!-- Custom Tabs -->
       <ul class="nav nav-tabs nav-tabs-custom">
         <li class="nav-item">
@@ -111,8 +110,9 @@
                       MRP (₹)
                     </label>
                     <input formControlName="mrp"
-                          class="form-control form-control-custom"
-                          readonly>
+                          class="form-control form-control-custom mrp-highlight"
+                          readonly
+                          tabindex="-1">
                   </div>
                 </div>
               </div>
@@ -233,129 +233,99 @@
         </div>
 
         <!-- Orders Table -->
-        <div *ngIf="!loadingOrders" class="table-container">
-          <div class="table-responsive">
-            <table class="table table-custom" *ngIf="paginatedOrders.length > 0">
-              <thead>
-                <tr>
-                  <th>
-                    <i class="fas fa-hashtag me-1"></i>
-                    Order ID
-                  </th>
-                  <th>
-                    <i class="fas fa-calendar me-1"></i>
-                    Date & Time
-                  </th>
-                  <th>
-                    <i class="fas fa-box me-1"></i>
-                    Items
-                  </th>
-                  <th>
-                    <i class="fas fa-rupee-sign me-1"></i>
-                    Total Amount
-                  </th>
-                  <th>
-                    <i class="fas fa-file-invoice me-1"></i>
-                    Invoice
-                  </th>
-                  <th>
-                    <i class="fas fa-cogs me-1"></i>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let order of paginatedOrders; trackBy: trackByOrderId">
-                  <td>
-                    <span class="order-id">#{{ order.id }}</span>
-                  </td>
-                  <td>
-                    <div class="datetime-info">
-                      <div class="fw-semibold">{{ order.placedAt | date:'MMM dd, yyyy' }}</div>
-                      <small class="text-muted">{{ order.placedAt | date:'hh:mm a' }}</small>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="items-badge">
-                      {{ order.items.length || 0 }} item{{ (order.items.length || 0) !== 1 ? 's' : '' }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="amount-display">₹{{ calculateOrderTotal(order) | number:'1.2-2' }}</span>
-                  </td>
-                  <td>
-                    <button class="btn btn-sm"
-                            [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
-                            (click)="handleInvoice(order)">
-                      <i class="fas" [ngClass]="order.invoicePath ? 'fa-download' : 'fa-file-invoice'"></i>
-                      {{ order.invoicePath ? 'Download' : 'Generate' }}
+        <div *ngIf="!loadingOrders" class="table-container table-responsive">
+          <table class="table table-custom" *ngIf="paginatedOrders.length > 0">
+            <thead>
+              <tr>
+                <th><i class="fas fa-hashtag me-1"></i>Order ID</th>
+                <th><i class="fas fa-calendar me-1"></i>Date & Time</th>
+                <th><i class="fas fa-rupee-sign me-1"></i>Total Amount</th>
+                <th><i class="fas fa-file-invoice me-1"></i>Invoice</th>
+                <th><i class="fas fa-cogs me-1"></i>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of paginatedOrders; trackBy: trackByOrderId">
+                <td><code>#{{ order.id }}</code></td>
+                <td>
+                  <div class="datetime-info">
+                    <div class="fw-semibold">{{ order.placedAt | date:'MMM dd, yyyy' }}</div>
+                    <small class="text-muted">{{ order.placedAt | date:'hh:mm a' }}</small>
+                  </div>
+                </td>
+                <td><span class="amount-display">₹{{ order.total | number:'1.2-2' }}</span></td>
+                <td>
+                  <button class="btn btn-sm"
+                          [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
+                          (click)="handleInvoice(order)">
+                    <i class="fas" [ngClass]="order.invoicePath ? 'fa-download' : 'fa-file-invoice'"></i>
+                    {{ order.invoicePath ? 'Download' : 'Generate' }}
+                  </button>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-sm btn-info"
+                            (click)="openViewItems(order.id)"
+                            title="View Items">
+                      <i class="fas fa-eye"></i>
                     </button>
-                  </td>
-                  <td>
-                    <div class="action-buttons">
-                      <button class="btn btn-sm btn-info"
-                              (click)="openViewItems(order.id)"
-                              title="View Items">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                      <button class="btn btn-sm btn-secondary ms-1"
-                              (click)="duplicateOrder(order)"
-                              title="Duplicate Order">
-                        <i class="fas fa-copy"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Empty State -->
-          <div *ngIf="paginatedOrders.length === 0" class="empty-state">
-            <div class="empty-icon">
-              <i class="fas fa-shopping-cart"></i>
-            </div>
-            <h5>No Orders Found</h5>
-            <p class="text-muted mb-4">
-              <span *ngIf="searchQuery || dateFilter !== 'all' || statusFilter !== 'all'">
-                No orders match your current filters. Try adjusting your search criteria.
-              </span>
-              <span *ngIf="!searchQuery && dateFilter === 'all' && statusFilter === 'all'">
-                You haven't placed any orders yet. Create your first order to get started!
-              </span>
-            </p>
-            <button class="btn btn-primary-custom" (click)="setTab('create')">
-              <i class="fas fa-plus me-2"></i>
-              Create First Order
-            </button>
-          </div>
-
-          <!-- Pagination -->
-          <nav *ngIf="paginatedOrders.length > 0 && totalPages > 1" class="pagination-container">
-            <div class="pagination-info">
-              Showing {{ startIndex + 1 }}-{{ endIndex }} of {{ filteredOrders.length }} orders
-            </div>
-            <ul class="pagination pagination-custom">
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <button class="page-link" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
-                  <i class="fas fa-chevron-left"></i>
-                </button>
-              </li>
-              
-              <li class="page-item" 
-                  *ngFor="let page of getPageNumbers()" 
-                  [class.active]="page === currentPage">
-                <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
-              </li>
-              
-              <li class="page-item" [class.disabled]="currentPage === totalPages">
-                <button class="page-link" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
-                  <i class="fas fa-chevron-right"></i>
-                </button>
-              </li>
-            </ul>
-          </nav>
+                    <button class="btn btn-sm btn-secondary ms-1"
+                            (click)="duplicateOrder(order)"
+                            title="Duplicate Order">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <!-- Empty State -->
+        <div *ngIf="paginatedOrders.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <h5>No Orders Found</h5>
+          <p class="text-muted mb-4">
+            <span *ngIf="searchQuery || dateFilter !== 'all' || statusFilter !== 'all'">
+              No orders match your current filters. Try adjusting your search criteria.
+            </span>
+            <span *ngIf="!searchQuery && dateFilter === 'all' && statusFilter === 'all'">
+              You haven't placed any orders yet. Create your first order to get started!
+            </span>
+          </p>
+          <button class="btn btn-primary-custom" (click)="setTab('create')">
+            <i class="fas fa-plus me-2"></i>
+            Create First Order
+          </button>
+        </div>
+
+        <!-- Pagination -->
+        <nav *ngIf="paginatedOrders.length > 0 && totalPages > 1" class="pagination-container">
+          <div class="pagination-info">
+            Showing {{ startIndex + 1 }}-{{ endIndex }} of {{ filteredOrders.length }} orders
+          </div>
+          <ul class="pagination pagination-custom">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+            </li>
+            
+            <li class="page-item" 
+                *ngFor="let page of getPageNumbers()" 
+                [class.active]="page === currentPage">
+              <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+            </li>
+            
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
   </div>

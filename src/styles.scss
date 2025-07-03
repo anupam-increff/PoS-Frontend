@@ -112,107 +112,174 @@ p {
   border-radius: 6px;
 }
 
+:root {
+  --table-bg: #fff;
+  --table-header-bg: #f5f5f5;
+  --table-header-color: #444;
+  --table-row-focus: #eaf3ff;
+  --table-row-blur: 0.5;
+  --table-row-blur-filter: blur(2px) grayscale(0.2) opacity(0.5);
+  --table-edit-btn-bg: #e0e7ff;
+  --table-edit-btn-color: #2563eb;
+  --table-edit-btn-hover-bg: #2563eb;
+  --table-edit-btn-hover-color: #fff;
+  --table-save-btn-bg: #2563eb;
+  --table-save-btn-color: #fff;
+  --table-save-btn-hover-bg: #1746a0;
+}
+
+/* Table base styles */
 table {
-  font-size: 0.875rem;
-  border-collapse: collapse;
-  background: #0000;
-  color: var(--color);
+  font-size: 1rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--table-bg);
+  color: #222;
+  width: 100%;
+  min-width: 700px;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.04);
+  font-family: 'Inter', 'Poppins', Arial, sans-serif;
+  transition: box-shadow 0.2s;
 }
 
 thead {
-  background: var(--head);
+  background: var(--table-header-bg);
 }
 
-th,
-td:first-of-type {
-  padding: 0.25rem 1rem;
-}
-
-:is(td, th) {
-  height: 40px;
-  white-space: nowrap;
-  font-weight: 400;
-  font-size: 0.875rem;
-}
-
-table th {
-  text-align: left;
-  font-weight: 500;
-  color: color-mix(in hsl, canvasText, #0000 35%);
-}
-
-td {
-  font-weight: 300;
-}
-
-td:not(:has(input)) {
-  padding: 0.5rem 1rem;
+th {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--table-header-color);
+  padding: 0.75rem 1.2rem;
+  background: var(--table-header-bg);
+  border-bottom: 2px solid #e0e0e0;
 }
 
 tr {
-  transition-property: filter, background, opacity;
-  transition-duration: 0.2s;
-  transition-timing-function: ease-out;
+  transition: box-shadow 0.18s, background 0.18s, filter 0.18s, opacity 0.18s;
 }
 
-tr:not(:last-of-type) {
-  border-bottom: 1px solid var(--head);
-}
-
-tr:focus-within {
-  background: var(--selected);
-}
-
-tr:focus-within td,
-tr:focus-within input {
-  color: canvasText;
-}
-
-table:focus-within tbody tr:not(:focus-within) {
-  filter: blur(4px) saturate(0.2);
+/* Focus mode: blur all rows except the focused one */
+table.focus-mode tbody tr:not(.focused-row) {
+  filter: var(--table-row-blur-filter);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: var(--table-row-blur);
 }
 
-table input {
-  font-size: inherit;
-  height: 40px;
-  font-weight: inherit;
-  border: 0;
-  padding: 0.5rem 1rem;
-  height: 100%;
-  background: #0000;
-  border-radius: 0;
-  caret-color: var(--accent);
-  transition: color 0.26s ease-out;
+table.focus-mode tbody tr.focused-row {
+  background: var(--table-row-focus) !important;
+  box-shadow: 0 0 0 2px #2563eb33;
+  border-radius: 0.75rem;
+  pointer-events: auto;
+  opacity: 1;
 }
 
-table input:hover:not(:focus-visible) {
-  background: var(--hover-background);
+tr.focused-row td.non-editable {
+  background: #f0f0f0 !important;
+  color: #888;
+  transition: background 0.18s, color 0.18s;
 }
 
-tr:focus-within input:hover:not(:focus-visible) {
-  background: color-mix(in oklch, var(--accent), #0000 75%);
+tr:not(.focused-row):hover {
+  background: #f8fafc;
 }
 
-table input::selection {
-  background: var(--accent);
-  color: white;
+td {
+  font-weight: 400;
+  padding: 0.65rem 1.1rem;
+  transition: background 0.18s, color 0.18s;
 }
 
-table input:focus-visible {
-  background: light-dark(#fff, #000);
-  outline: 2px solid var(--accent);
+/* Remove editable cell color */
+td.editable-cell {
+  cursor: pointer;
+  font-weight: 500;
+  color: #2563eb;
+  background: none;
+  border-radius: 0.5rem;
+  transition: background 0.18s, color 0.18s;
+}
+td.editable-cell.editing {
+  background: none;
+  color: #222;
 }
 
-input:not(:focus, :focus-visible) {
+/* Edit button on row hover */
+tr .edit-row-btn {
+  display: none;
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--table-edit-btn-bg);
+  color: var(--table-edit-btn-color);
+  border: none;
+  border-radius: 50%;
+  width: 2.1rem;
+  height: 2.1rem;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px 0 #2563eb22;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  z-index: 2;
   cursor: pointer;
 }
+tr:hover .edit-row-btn {
+  display: inline-block;
+}
+tr .edit-row-btn:hover, tr .edit-row-btn:focus {
+  background: var(--table-edit-btn-hover-bg);
+  color: var(--table-edit-btn-hover-color);
+}
 
-table img {
-  border-radius: 50%;
-  width: 24px;
-  aspect-ratio: 1;
+/* Save button in focused row */
+tr.focused-row .save-row-btn {
+  display: inline-block;
+  background: var(--table-save-btn-bg);
+  color: var(--table-save-btn-color);
+  border: none;
+  border-radius: 1.5rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-left: 1rem;
+  box-shadow: 0 2px 8px 0 #2563eb22;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  outline: none;
+}
+tr.focused-row .save-row-btn:hover, tr.focused-row .save-row-btn:focus {
+  background: var(--table-save-btn-hover-bg);
+  color: #fff;
+  box-shadow: 0 4px 16px 0 #2563eb33;
+  transform: translateY(-2px) scale(1.04);
+}
+tr:not(.focused-row) .save-row-btn {
+  display: none;
+}
+
+/* Position edit button in last cell */
+td.edit-btn-cell {
+  position: relative;
+  width: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0;
+}
+
+/* Remove default input outline for a cleaner look */
+table input[type="text"], table input[type="number"] {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 1rem;
+  font-family: 'Inter', 'Poppins', Arial, sans-serif;
+  outline: none;
+  transition: border 0.2s;
+}
+table input[type="text"]:focus, table input[type="number"]:focus {
+  border: 1.5px solid #2563eb;
 }
 
 /* Hero Section (moved from modules for reuse) */
@@ -236,4 +303,25 @@ table img {
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
+}
+
+/* Close/cancel edit button */
+.close-row-btn {
+  background: #e0e0e0;
+  color: #444;
+  border: none;
+  border-radius: 1.5rem;
+  padding: 0.5rem 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  box-shadow: 0 2px 8px 0 #8882;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  outline: none;
+}
+.close-row-btn:hover, .close-row-btn:focus {
+  background: #bdbdbd;
+  color: #222;
+  box-shadow: 0 4px 16px 0 #8883;
+  transform: translateY(-2px) scale(1.04);
 }

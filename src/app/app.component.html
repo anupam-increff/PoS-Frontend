@@ -26,39 +26,44 @@
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container">
-    <a class="navbar-brand" routerLink="/">PoS App</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <a class="navbar-brand" [routerLink]="['/']">PoS App</a>
+    <button class="navbar-toggler" type="button" (click)="navbarCollapsed = !navbarCollapsed">
       <i class="fas fa-bars"></i>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
+    <div class="collapse navbar-collapse" [class.show]="!navbarCollapsed" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/client" routerLinkActive="active">
+          <a class="nav-link" [routerLink]="['/client']" routerLinkActive="active">
             <i class="fas fa-users me-2"></i>Client
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/product" routerLinkActive="active">
+          <a class="nav-link" [routerLink]="['/product']" routerLinkActive="active">
             <i class="fas fa-box me-2"></i>Product
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/order" routerLinkActive="active">
+          <a class="nav-link" [routerLink]="['/order']" routerLinkActive="active">
             <i class="fas fa-shopping-cart me-2"></i>Order
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/invoice" routerLinkActive="active">
+          <a class="nav-link" [routerLink]="['/invoice']" routerLinkActive="active">
             <i class="fas fa-file-invoice me-2"></i>Invoice
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/inventory" routerLinkActive="active">
+          <a class="nav-link" [routerLink]="['/inventory']" routerLinkActive="active">
             <i class="fas fa-warehouse me-2"></i>Inventory
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/auth" routerLinkActive="active">
+          <a class="nav-link" [routerLink]="['/reports']" routerLinkActive="active">
+            <i class="fas fa-chart-bar me-2"></i>Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/auth']" routerLinkActive="active">
             <i class="fas fa-user me-2"></i>Login
           </a>
         </li>

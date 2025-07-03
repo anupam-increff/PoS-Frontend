@@ -61,10 +61,10 @@
     <div class="quick-actions">
       <h3 class="quick-actions-title">Quick Actions</h3>
       <div class="action-buttons">
-        <a routerLink="/client" class="action-btn"><i class="fas fa-plus"></i> Add Client</a>
-        <a routerLink="/product" class="action-btn"><i class="fas fa-box"></i> Add Product</a>
-        <a routerLink="/order" class="action-btn"><i class="fas fa-shopping-cart"></i> New Order</a>
-        <a routerLink="/invoice" class="action-btn"><i class="fas fa-file-invoice"></i> Generate Invoice</a>
+        <a [routerLink]="['/client']" class="action-btn"><i class="fas fa-plus"></i> Add Client</a>
+        <a [routerLink]="['/product']" class="action-btn"><i class="fas fa-box"></i> Add Product</a>
+        <a [routerLink]="['/order']" class="action-btn"><i class="fas fa-shopping-cart"></i> New Order</a>
+        <a [routerLink]="['/invoice']" class="action-btn"><i class="fas fa-file-invoice"></i> Generate Invoice</a>
       </div>
     </div>
   
@@ -76,7 +76,7 @@
         <p class="feature-description">
           Manage your customer database with advanced search, filtering, and customer insights.
         </p>
-        <a routerLink="/client" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Manage Clients</a>
+        <a [routerLink]="['/client']" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Manage Clients</a>
       </div>
   
       <div class="feature-card">
@@ -85,7 +85,7 @@
         <p class="feature-description">
           Organize inventory with real-time stock tracking and smart categorization.
         </p>
-        <a routerLink="/product" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Manage Products</a>
+        <a [routerLink]="['/product']" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Manage Products</a>
       </div>
   
       <div class="feature-card">
@@ -94,7 +94,7 @@
         <p class="feature-description">
           Streamline your sales process with easy order creation and delivery tracking.
         </p>
-        <a routerLink="/order" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Process Orders</a>
+        <a [routerLink]="['/order']" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> Process Orders</a>
       </div>
   
       <div class="feature-card">
@@ -103,7 +103,7 @@
         <p class="feature-description">
           Analyze your business with detailed performance metrics and reports.
         </p>
-        <a routerLink="/invoice" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> View Analytics</a>
+        <a [routerLink]="['/reports']" class="btn-primary-custom"><i class="fas fa-arrow-right"></i> View Analytics</a>
       </div>
     </div>
   </div>

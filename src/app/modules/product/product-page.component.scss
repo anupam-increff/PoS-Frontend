@@ -169,3 +169,15 @@
   width: 2rem;
   height: 2rem;
 }
+
+.mrp-input {
+  min-width: 120px;
+  max-width: 200px;
+  font-size: 1.1rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}

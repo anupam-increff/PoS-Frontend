@@ -23,8 +23,9 @@ export class ProductPageComponent implements OnInit {
   imageToZoom = '';
   searchClientId: string = '';
   searchBarcode: string = '';
-  editProduct: any = null;
   editIndex: number | null = null;
+  editProduct: any = null;
+  searchClientName: string = '';
 
   constructor(
     private api: ApiService,
@@ -153,10 +154,17 @@ export class ProductPageComponent implements OnInit {
       next: () => {
         this.toastr.success('Product updated');
         this.products[this.editIndex!] = { ...this.editProduct };
-        this.cancelEdit();
+        this.editIndex = null;
+        this.editProduct = null;
       },
-      error: () => this.toastr.error('Failed to update product')
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Failed to update product');
+      }
     });
+  }
+
+  trackByProductId(index: number, product: any) {
+    return product.id;
   }
 
   openImageModal(url: string) {
@@ -167,5 +175,26 @@ export class ProductPageComponent implements OnInit {
   closeImageModal() {
     this.showImageModal = false;
     this.imageToZoom = '';
+  }
+
+  searchByClientName() {
+    const query = this.searchClientName.trim();
+    if (!query) {
+      this.toastr.warning('Enter a client name to search');
+      return;
+    }
+    this.loading = true;
+    this.errorMsg = '';
+    this.api.get<any[]>(`/product?clientName=${encodeURIComponent(query)}`).subscribe({
+      next: data => {
+        this.products = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.products = [];
+        this.loading = false;
+        this.errorMsg = 'No products found for this client.';
+      }
+    });
   }
 }

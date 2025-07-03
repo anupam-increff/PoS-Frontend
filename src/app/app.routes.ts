@@ -7,6 +7,7 @@ import { AuthPageComponent } from './modules/auth/auth-page.component';
 import { TestPageComponent } from './modules/test/test-page.component';
 import { DashboardPageComponent } from './modules/dashboard/dashboard-page.component';
 import { InventoryPageComponent } from './modules/inventory/inventory-page.component';
+import { ReportsPageComponent } from './modules/reports/reports-page.component';
 
 export const routes: Routes = [
   { path: 'dashboard', component: DashboardPageComponent },
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'inventory', component: InventoryPageComponent },
   { path: 'auth', component: AuthPageComponent },
   { path: 'test', component: TestPageComponent },
+  { path: 'reports', component: ReportsPageComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }
 

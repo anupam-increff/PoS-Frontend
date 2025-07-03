@@ -38,54 +38,61 @@
     <!-- Products by Client -->
     <div *ngIf="tab === 'client'">
       <div class="d-flex mb-3">
-        <input type="text" class="form-control me-2" placeholder="Enter Client ID" [(ngModel)]="searchClientId"
-          name="searchClientId" (keyup.enter)="searchByClientId()" style="max-width: 300px;">
-        <button class="btn btn-outline-primary" (click)="searchByClientId()">Search</button>
+        <input type="text" class="form-control me-2" placeholder="Enter Client Name" [(ngModel)]="searchClientName"
+          name="searchClientName" (keyup.enter)="searchByClientName()" style="max-width: 300px;">
+        <button class="btn btn-outline-primary" (click)="searchByClientName()">Search</button>
       </div>
       <div *ngIf="loading" class="text-center p-4">
         <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
       </div>
       <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
       <div class="table-wrapper" tabindex="0" *ngIf="!loading && products.length > 0">
-        <table>
+        <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 700px; max-width: 1100px; margin: 0 auto;">
           <thead>
             <tr>
               <th>Image</th>
-              <th>Client</th>
+              <th>Client Name</th>
               <th>Barcode</th>
               <th>Name</th>
               <th>MRP</th>
-              <th style="width: 120px;">Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let product of products; let i = index">
-              <td>
-                <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
-                  class="product-thumb" (click)="openImageModal(product.imageUrl)">
+            <tr *ngFor="let product of products; let i = index; trackBy: trackByProductId" [ngClass]="{'focused-row': editIndex === i}">
+              <td [ngClass]="editIndex === i ? 'non-editable' : ''">
+                <ng-container *ngIf="editIndex === i; else viewImage">
+                  <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
+                </ng-container>
+                <ng-template #viewImage>
+                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb">
+                </ng-template>
               </td>
-              <td>{{ product.clientId }}</td>
-              <td>{{ product.barcode }}</td>
-              <td>
+              <td class="non-editable">{{ product.clientName }}</td>
+              <td class="non-editable"><code>{{ product.barcode }}</code></td>
+              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
                 <ng-container *ngIf="editIndex === i; else viewName">
-                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm" />
+                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" />
                 </ng-container>
                 <ng-template #viewName>{{ product.name }}</ng-template>
               </td>
-              <td>
+              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
                 <ng-container *ngIf="editIndex === i; else viewMrp">
-                  <input type="number" [(ngModel)]="editProduct.mrp" class="form-control form-control-sm" />
+                  <input
+                    type="number"
+                    [(ngModel)]="editProduct.mrp"
+                    class="form-control form-control-custom mrp-input"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
                 </ng-container>
                 <ng-template #viewMrp>{{ product.mrp }}</ng-template>
               </td>
-              <td>
-                <ng-container *ngIf="editIndex === i; else editBtn">
-                  <button class="btn btn-sm btn-success me-1" (click)="saveEdit()">Save</button>
-                  <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
-                </ng-container>
-                <ng-template #editBtn>
-                  <button class="btn btn-sm btn-outline-primary" (click)="startEdit(i, product)">Edit</button>
-                </ng-template>
+              <td class="edit-btn-cell">
+                <button *ngIf="editIndex !== i" class="edit-row-btn" (click)="startEdit(i, product)" title="Edit"><i class="fas fa-pen"></i></button>
+                <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save"><span style="font-size:1.2em;">&#10003; Save</span></button>
+                <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel"><i class="fas fa-times"></i></button>
               </td>
             </tr>
           </tbody>
@@ -110,45 +117,52 @@
       </div>
       <div *ngIf="errorMsg" class="alert alert-danger m-3">{{ errorMsg }}</div>
       <div class="table-wrapper" tabindex="0" *ngIf="!loading && !errorMsg">
-        <table>
+        <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 700px; max-width: 1100px; margin: 0 auto;">
           <thead>
             <tr>
               <th>Image</th>
-              <th>Client</th>
+              <th>Client Name</th>
               <th>Barcode</th>
               <th>Name</th>
               <th>MRP</th>
-              <th style="width: 120px;">Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let product of products; let i = index">
-              <td>
-                <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img"
-                  class="product-thumb" (click)="openImageModal(product.imageUrl)">
+            <tr *ngFor="let product of products; let i = index; trackBy: trackByProductId" [ngClass]="{'focused-row': editIndex === i}">
+              <td [ngClass]="editIndex === i ? 'non-editable' : ''">
+                <ng-container *ngIf="editIndex === i; else viewImageList">
+                  <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
+                </ng-container>
+                <ng-template #viewImageList>
+                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb">
+                </ng-template>
               </td>
-              <td>{{ product.clientId }}</td>
-              <td>{{ product.barcode }}</td>
-              <td>
+              <td class="non-editable">{{ product.clientName }}</td>
+              <td class="non-editable"><code>{{ product.barcode }}</code></td>
+              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
                 <ng-container *ngIf="editIndex === i; else viewNameList">
-                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm" />
+                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" />
                 </ng-container>
                 <ng-template #viewNameList>{{ product.name }}</ng-template>
               </td>
-              <td>
+              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
                 <ng-container *ngIf="editIndex === i; else viewMrpList">
-                  <input type="number" [(ngModel)]="editProduct.mrp" class="form-control form-control-sm" />
+                  <input
+                    type="number"
+                    [(ngModel)]="editProduct.mrp"
+                    class="form-control form-control-custom mrp-input"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
                 </ng-container>
                 <ng-template #viewMrpList>{{ product.mrp }}</ng-template>
               </td>
-              <td>
-                <ng-container *ngIf="editIndex === i; else editBtnList">
-                  <button class="btn btn-sm btn-success me-1" (click)="saveEdit()">Save</button>
-                  <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
-                </ng-container>
-                <ng-template #editBtnList>
-                  <button class="btn btn-sm btn-outline-primary" (click)="startEdit(i, product)">Edit</button>
-                </ng-template>
+              <td class="edit-btn-cell">
+                <button *ngIf="editIndex !== i" class="edit-row-btn" (click)="startEdit(i, product)" title="Edit"><i class="fas fa-pen"></i></button>
+                <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save"><span style="font-size:1.2em;">&#10003; Save</span></button>
+                <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel"><i class="fas fa-times"></i></button>
               </td>
             </tr>
           </tbody>

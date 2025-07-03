@@ -113,9 +113,8 @@ export class ClientPageComponent implements OnInit {
     this.editClient = { ...client };
   }
 
-  cancelEdit() {
-    this.editIndex = null;
-    this.editClient = null;
+  trackByClientId(index: number, client: any) {
+    return client.id;
   }
 
   saveEdit() {
@@ -124,9 +123,12 @@ export class ClientPageComponent implements OnInit {
       next: () => {
         this.toastr.success('Client updated');
         this.clients[this.editIndex!] = { ...this.editClient };
-        this.cancelEdit();
+        this.editIndex = null;
+        this.editClient = null;
       },
-      error: () => this.toastr.error('Failed to update client')
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Failed to update client');
+      }
     });
   }
 
@@ -155,5 +157,10 @@ export class ClientPageComponent implements OnInit {
     this.searchName = '';
     this.searchResult = null;
     this.loadClients();
+  }
+
+  cancelEdit() {
+    this.editIndex = null;
+    this.editClient = null;
   }
 }

@@ -30,31 +30,27 @@
 
   <div *ngIf="!loading && clients.length > 0" class="card p-4 shadow-sm">
     <div class="table-wrapper" tabindex="0">
-      <table>
+      <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 600px; max-width: 900px; margin: 0 auto;">
         <thead>
           <tr>
-            <th style="width: 60px;">#</th>
+            <th>Client ID</th>
             <th>Client Name</th>
-            <th style="width: 120px;">Actions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let client of clients; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td>
+          <tr *ngFor="let client of clients; let i = index; trackBy: trackByClientId" [ngClass]="{'focused-row': editIndex === i}">
+            <td class="non-editable"><code>{{ client.id }}</code></td>
+            <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
               <ng-container *ngIf="editIndex === i; else viewName">
-                <input [(ngModel)]="editClient.name" class="form-control form-control-sm" />
+                <input [(ngModel)]="editClient.name" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
               </ng-container>
               <ng-template #viewName>{{ client.name }}</ng-template>
             </td>
-            <td>
-              <ng-container *ngIf="editIndex === i; else editBtn">
-                <button class="btn btn-sm btn-success me-1" (click)="saveEdit()">Save</button>
-                <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
-              </ng-container>
-              <ng-template #editBtn>
-                <button class="btn btn-sm btn-outline-primary" (click)="startEdit(i, client)">Edit</button>
-              </ng-template>
+            <td class="edit-btn-cell">
+              <button *ngIf="editIndex !== i" class="edit-row-btn" (click)="startEdit(i, client)" title="Edit"><i class="fas fa-pen"></i></button>
+              <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save"><span style="font-size:1.2em;">&#10003; Save</span></button>
+              <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel"><i class="fas fa-times"></i></button>
             </td>
           </tr>
         </tbody>

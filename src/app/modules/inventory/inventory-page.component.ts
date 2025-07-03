@@ -24,6 +24,7 @@ export class InventoryPageComponent implements OnInit {
   successMsg = '';
   editIndex: number | null = null;
   editItem: any = null;
+  searchBarcode: string = '';
 
   constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService) {
     this.uploadForm = this.fb.group({
@@ -127,15 +128,44 @@ export class InventoryPageComponent implements OnInit {
     this.editItem = null;
   }
 
+  trackByInventoryId(index: number, item: any) {
+    return item.productId;
+  }
+
+  searchByBarcode() {
+    const barcode = this.searchBarcode.trim();
+    if (!barcode) {
+      this.toastr.warning('Enter a barcode to search');
+      return;
+    }
+    this.loading = true;
+    this.errorMsg = '';
+    this.api.get<any>(`/inventory/barcode/${encodeURIComponent(barcode)}`).subscribe({
+      next: item => {
+        this.inventory = [item];
+        this.loading = false;
+      },
+      error: () => {
+        this.inventory = [];
+        this.loading = false;
+        this.errorMsg = 'No inventory found for this barcode.';
+      }
+    });
+  }
+
   saveEdit() {
     if (!this.editItem) return;
-    this.api.put(`/inventory/${this.editItem.productId}`, this.editItem).subscribe({
+    const payload = { ...this.editItem, barcode: this.editItem.barcode };
+    this.api.put(`/inventory/${this.editItem.barcode}`, payload).subscribe({
       next: () => {
         this.toastr.success('Inventory updated');
         this.inventory[this.editIndex!] = { ...this.editItem };
-        this.cancelEdit();
+        this.editIndex = null;
+        this.editItem = null;
       },
-      error: () => this.toastr.error('Failed to update inventory')
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Failed to update inventory');
+      }
     });
   }
 }

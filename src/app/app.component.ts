@@ -13,6 +13,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 })
 export class AppComponent {
   title = 'PoS-Frontend';
+  navbarCollapsed = true;
   get sessionStorage() {
     return window.sessionStorage;
   }
