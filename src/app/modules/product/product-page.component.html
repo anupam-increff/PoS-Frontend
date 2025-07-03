@@ -12,20 +12,76 @@
 
 <div class="feature-grid">
   <div class="feature-card">
-    <ul class="nav nav-tabs mb-3">
+    <ul class="nav nav-tabs">
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'upload'" (click)="setTab('upload')">Upload Product</a>
+        <a class="nav-link" [class.active]="tab === 'upload'" (click)="setTab('upload')">
+          <i class="fas fa-upload me-1"></i>
+          Upload Product
+        </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'client'" (click)="setTab('client')">Products by Client</a>
+        <a class="nav-link" [class.active]="tab === 'client'" (click)="setTab('client')">
+          <i class="fas fa-users me-1"></i>
+          Products by Client
+        </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'list'" (click)="setTab('list')">All Products</a>
+        <a class="nav-link" [class.active]="tab === 'list'" (click)="setTab('list')">
+          <i class="fas fa-list me-1"></i>
+          All Products
+        </a>
       </li>
     </ul>
 
     <!-- Upload Product -->
     <div *ngIf="tab === 'upload'">
+      <div class="upload-section">
+        <div class="schema-info">
+          <h5 class="schema-title">
+            <i class="fas fa-info-circle me-2"></i>
+            TSV Schema Information
+          </h5>
+          <div class="schema-details">
+            <p class="schema-description">
+              Upload a Tab-Separated Values (TSV) file with the following columns:
+            </p>
+            <div class="schema-columns">
+              <div class="schema-column">
+                <strong>clientName</strong> - Name of the client/company
+              </div>
+              <div class="schema-column">
+                <strong>barcode</strong> - Unique product barcode
+              </div>
+              <div class="schema-column">
+                <strong>name</strong> - Product name/description
+              </div>
+              <div class="schema-column">
+                <strong>mrp</strong> - Maximum Retail Price (numeric)
+              </div>
+              <div class="schema-column">
+                <strong>imageUrl</strong> - Product image URL (optional)
+              </div>
+            </div>
+            <div class="schema-note">
+              <i class="fas fa-exclamation-triangle me-1"></i>
+              <strong>Note:</strong> First row should contain column headers. Values should be tab-separated.
+            </div>
+          </div>
+        </div>
+        
+        <div class="sample-download">
+          <h6 class="sample-title">
+            <i class="fas fa-download me-2"></i>
+            Download Sample TSV
+          </h6>
+          <p class="sample-description">Get a sample TSV file with 2 example products to understand the format.</p>
+          <button class="btn btn-outline-primary" (click)="downloadSampleTSV()">
+            <i class="fas fa-file-download me-2"></i>
+            Download Sample TSV
+          </button>
+        </div>
+      </div>
+      
       <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="mb-3">
         <div class="mb-3">
           <label class="form-label">Upload Product Master (TSV)</label>

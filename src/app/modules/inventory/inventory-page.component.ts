@@ -129,7 +129,7 @@ export class InventoryPageComponent implements OnInit {
   }
 
   trackByInventoryId(index: number, item: any) {
-    return item.productId;
+    return item.barcode;
   }
 
   searchByBarcode() {
@@ -167,5 +167,23 @@ export class InventoryPageComponent implements OnInit {
         this.toastr.error(err?.error?.message || 'Failed to update inventory');
       }
     });
+  }
+
+  downloadSampleTSV() {
+    const sampleData = [
+      ['barcode', 'quantity'],
+      ['1234567890123', '50'],
+      ['9876543210987', '25']
+    ];
+    
+    const tsvContent = sampleData.map(row => row.join('\t')).join('\n');
+    const blob = new Blob([tsvContent], { type: 'text/tab-separated-values' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sample_inventory.tsv';
+    link.click();
+    window.URL.revokeObjectURL(url);
+    this.toastr.success('Sample inventory TSV file downloaded successfully!');
   }
 }

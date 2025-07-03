@@ -197,4 +197,22 @@ export class ProductPageComponent implements OnInit {
       }
     });
   }
+
+  downloadSampleTSV() {
+    const sampleData = [
+      ['clientName', 'barcode', 'name', 'mrp', 'imageUrl'],
+      ['ABC Company', '1234567890123', 'Premium Wireless Headphones', '2999.00', 'https://example.com/headphones.jpg'],
+      ['XYZ Electronics', '9876543210987', 'Smart LED TV 55 inch', '45999.00', 'https://example.com/tv.jpg']
+    ];
+    
+    const tsvContent = sampleData.map(row => row.join('\t')).join('\n');
+    const blob = new Blob([tsvContent], { type: 'text/tab-separated-values' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sample_products.tsv';
+    link.click();
+    window.URL.revokeObjectURL(url);
+    this.toastr.success('Sample TSV file downloaded successfully!');
+  }
 }

@@ -13,20 +13,67 @@
 </div>
 <div class="feature-grid">
     <div class="feature-card">
-      <ul class="nav nav-tabs mb-3">
+      <ul class="nav nav-tabs">
         <li class="nav-item">
-          <a class="nav-link" [class.active]="tab === 'upload'" (click)="setTab('upload')">Upload Inventory</a>
+          <a class="nav-link" [class.active]="tab === 'upload'" (click)="setTab('upload')">
+            <i class="fas fa-upload me-1"></i>
+            Upload Inventory
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" [class.active]="tab === 'add'" (click)="setTab('add')">Add Inventory</a>
+          <a class="nav-link" [class.active]="tab === 'add'" (click)="setTab('add')">
+            <i class="fas fa-plus me-1"></i>
+            Add Inventory
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" [class.active]="tab === 'snapshot'" (click)="setTab('snapshot')">Inventory Snapshot</a>
+          <a class="nav-link" [class.active]="tab === 'snapshot'" (click)="setTab('snapshot')">
+            <i class="fas fa-camera me-1"></i>
+            Inventory Snapshot
+          </a>
         </li>
       </ul>
   
       <!-- Upload Inventory -->
       <form *ngIf="tab === 'upload'" [formGroup]="uploadForm" (ngSubmit)="uploadInventory()">
+        <div class="upload-section">
+          <div class="schema-info">
+            <h5 class="schema-title">
+              <i class="fas fa-info-circle me-2"></i>
+              Inventory TSV Schema Information
+            </h5>
+            <div class="schema-details">
+              <p class="schema-description">
+                Upload a Tab-Separated Values (TSV) file with the following columns:
+              </p>
+              <div class="schema-columns">
+                <div class="schema-column">
+                  <strong>barcode</strong> - Product barcode (must exist in products)
+                </div>
+                <div class="schema-column">
+                  <strong>quantity</strong> - Stock quantity (numeric)
+                </div>
+              </div>
+              <div class="schema-note">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>Note:</strong> First row should contain column headers. Values should be tab-separated.
+              </div>
+            </div>
+          </div>
+          
+          <div class="sample-download">
+            <h6 class="sample-title">
+              <i class="fas fa-download me-2"></i>
+              Download Sample Inventory TSV
+            </h6>
+            <p class="sample-description">Get a sample TSV file with 2 example inventory entries to understand the format.</p>
+            <button type="button" class="btn btn-outline-primary" (click)="downloadSampleTSV()">
+              <i class="fas fa-file-download me-2"></i>
+              Download Sample TSV
+            </button>
+          </div>
+        </div>
+        
         <div class="mb-3">
           <label class="form-label">Upload TSV File</label>
           <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv" />
@@ -37,14 +84,14 @@
       <!-- Add Inventory -->
       <form *ngIf="tab === 'add'" [formGroup]="addForm" (ngSubmit)="addInventory()">
         <div class="mb-3">
-          <label class="form-label">Product ID</label>
-          <input type="number" class="form-control" formControlName="productId" placeholder="Enter product ID" />
+          <label class="form-label">Barcode</label>
+          <input type="text" class="form-control" formControlName="barcode" placeholder="Enter product barcode" />
         </div>
         <div class="mb-3">
           <label class="form-label">Quantity</label>
-          <input type="number" class="form-control" formControlName="quantity" placeholder="Enter quantity" />
+          <input type="number" class="form-control" formControlName="quantity" placeholder="Enter quantity" min="1" />
         </div>
-        <button class="btn btn-primary" type="submit" [disabled]="addForm.invalid">Add</button>
+        <button class="btn btn-primary" type="submit" [disabled]="addForm.invalid">Add Inventory</button>
       </form>
   
       <!-- Snapshot Table -->

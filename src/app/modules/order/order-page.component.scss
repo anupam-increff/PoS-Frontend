@@ -51,40 +51,6 @@
   overflow: hidden;
 }
 
-// Custom Tabs
-.nav-tabs-custom {
-  background: var(--light-bg);
-  border-bottom: 1px solid var(--border-color);
-  padding: 0;
-  
-  .nav-link {
-    border: none;
-    border-radius: 0;
-    padding: 1rem 1.5rem;
-    color: var(--text-light);
-    font-weight: 500;
-    background: transparent;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background: rgba(59, 130, 246, 0.05);
-      color: var(--accent-color);
-    }
-    
-    &.active {
-      background: var(--white);
-      color: var(--accent-color);
-      border-bottom-color: var(--accent-color);
-      font-weight: 600;
-    }
-    
-    .badge {
-      font-size: 0.75rem;
-    }
-  }
-}
-
 // Tab Content Area
 .tab-content-area {
   padding: 2rem;
