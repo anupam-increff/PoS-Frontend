@@ -1,20 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface User {
   userId: string;
-  username: string;
-  role: 'admin' | 'standard';
+  email: string;
+  role: string;
   name?: string;
 }
 
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
+}
+
+export interface LoginResponse {
+  email: string;
+  role: string;
 }
 
 @Injectable({
@@ -42,34 +47,20 @@ export class AuthService {
     }
   }
 
-  login(credentials: LoginCredentials): Observable<any> {
-    // Create Basic Auth header
-    const authString = btoa(`${credentials.username}:${credentials.password}`);
-    const headers = new HttpHeaders({
-      'Authorization': `Basic ${authString}`,
-      'Content-Type': 'application/json'
-    });
-
-    // Make a request to any protected endpoint to get JSESSIONID
-    return this.http.get(`${environment.apiBaseUrl}/client`, { 
-      headers,
+  login(credentials: LoginCredentials): Observable<LoginResponse> {
+    // Call the actual backend login endpoint
+    return this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/login`, credentials, {
       withCredentials: true // Important for JSESSIONID
     }).pipe(
-      tap(() => {
+      tap((response) => {
         // Extract JSESSIONID from cookies
         const sessionId = this.extractSessionId();
         if (sessionId) {
-          // Determine role based on username
-          let role: 'admin' | 'standard' = 'standard';
-          if (credentials.username === 'admin') {
-            role = 'admin';
-          }
-          
           const user: User = {
-            userId: credentials.username,
-            username: credentials.username,
-            role: role,
-            name: credentials.username
+            userId: response.email,
+            email: response.email,
+            role: response.role,
+            name: response.email.split('@')[0]
           };
           
           // Store user data and session ID
@@ -87,15 +78,19 @@ export class AuthService {
   }
 
   logout(): void {
-    // Clear session on backend
-    this.http.post(`${environment.apiBaseUrl}/logout`, {}, { 
+    // Clear session on backend (if endpoint exists)
+    this.http.post(`${environment.apiBaseUrl}/auth/logout`, {}, { 
       withCredentials: true 
-    }).subscribe(() => {
-      this.clearSession();
-      this.router.navigate(['/auth']);
-    }, () => {
-      this.clearSession();
-      this.router.navigate(['/auth']);
+    }).subscribe({
+      next: () => {
+        this.clearSession();
+        this.router.navigate(['/auth']);
+      },
+      error: () => {
+        // If logout endpoint doesn't exist, just clear local session
+        this.clearSession();
+        this.router.navigate(['/auth']);
+      }
     });
   }
 
@@ -109,7 +104,7 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  getUserRole(): 'admin' | 'standard' | null {
+  getUserRole(): string | null {
     const user = this.getCurrentUser();
     return user ? user.role : null;
   }

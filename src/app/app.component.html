@@ -69,13 +69,13 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
             <i class="fas fa-user-circle me-2"></i>
-            {{ currentUser?.username }}
+            {{ currentUser?.email }}
             <span class="badge bg-primary ms-2">{{ currentUser?.role | titlecase }}</span>
             <i class="fas fa-chevron-down ms-1"></i>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li class="dropdown-header">
-              <strong>{{ currentUser?.username }}</strong>
+              <strong>{{ currentUser?.email }}</strong>
               <br>
               <small class="text-muted">Role: {{ currentUser?.role | titlecase }}</small>
             </li>

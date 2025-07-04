@@ -14,16 +14,17 @@
   <div class="feature-card">
     <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="mb-3">
       <div class="mb-3">
-        <label class="form-label">Username</label>
+        <label class="form-label">Email</label>
         <input 
-          type="text" 
+          type="email" 
           class="form-control" 
-          formControlName="username" 
-          placeholder="Enter username"
-          [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+          formControlName="email" 
+          placeholder="Enter email"
+          [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
         />
-        <div class="invalid-feedback" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
-          Username is required
+        <div class="invalid-feedback" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email</span>
         </div>
       </div>
       
