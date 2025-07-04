@@ -1,39 +1,79 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service'
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-auth-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './auth-page.component.html',
-  styleUrl: './auth-page.component.scss'
+  styleUrls: ['./auth-page.component.scss']
 })
-export class AuthPageComponent {
-  form: FormGroup;
+export class AuthPageComponent implements OnInit {
+  loginForm: FormGroup;
   loading = false;
-  errorMsg = '';
-  role: 'SUPERVISOR' | 'OPERATOR' | null = null;
+  errorMessage = '';
+  showPassword = false;
 
-  constructor(private api: ApiService, private fb: FormBuilder) {
-    this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private toastr: ToastrService
+  ) {
+    this.loginForm = this.fb.group({
+      username: ['', [Validators.required]],
+      password: ['', [Validators.required]]
     });
   }
 
-  login() {
-    if (this.form.invalid) return;
+  ngOnInit() {
+    // If already logged in, redirect to dashboard
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  onLogin() {
+    if (this.loginForm.invalid) {
+      this.markFormGroupTouched();
+      return;
+    }
+
     this.loading = true;
-    // Simulate API call for role assignment
-    const email = this.form.value.email.trim().toLowerCase();
-    // Example: check email against a hardcoded supervisor list
-    const supervisorList = ['admin@increff.com'];
-    this.role = supervisorList.includes(email) ? 'SUPERVISOR' : 'OPERATOR';
-    sessionStorage.setItem('userId', email);
-    sessionStorage.setItem('lastCheckTime', Date.now().toString());
-    sessionStorage.setItem('role', this.role);
-    this.loading = false;
+    this.errorMessage = '';
+
+    const credentials = {
+      username: this.loginForm.value.username,
+      password: this.loginForm.value.password
+    };
+
+    this.authService.login(credentials).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.toastr.success('Login successful!');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.loading = false;
+        this.errorMessage = error.error?.message || 'Login failed. Please check your credentials.';
+        this.toastr.error(this.errorMessage);
+      }
+    });
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
+  private markFormGroupTouched() {
+    Object.keys(this.loginForm.controls).forEach(key => {
+      const control = this.loginForm.get(key);
+      control?.markAsTouched();
+    });
   }
 } 

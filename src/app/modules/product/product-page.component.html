@@ -35,60 +35,70 @@
 
     <!-- Upload Product -->
     <div *ngIf="tab === 'upload'">
-      <div class="upload-section">
-        <div class="schema-info">
-          <h5 class="schema-title">
-            <i class="fas fa-info-circle me-2"></i>
-            TSV Schema Information
-          </h5>
-          <div class="schema-details">
-            <p class="schema-description">
-              Upload a Tab-Separated Values (TSV) file with the following columns:
-            </p>
-            <div class="schema-columns">
-              <div class="schema-column">
-                <strong>clientName</strong> - Name of the client/company
-              </div>
-              <div class="schema-column">
-                <strong>barcode</strong> - Unique product barcode
-              </div>
-              <div class="schema-column">
-                <strong>name</strong> - Product name/description
-              </div>
-              <div class="schema-column">
-                <strong>mrp</strong> - Maximum Retail Price (numeric)
-              </div>
-              <div class="schema-column">
-                <strong>imageUrl</strong> - Product image URL (optional)
-              </div>
-            </div>
-            <div class="schema-note">
-              <i class="fas fa-exclamation-triangle me-1"></i>
-              <strong>Note:</strong> First row should contain column headers. Values should be tab-separated.
-            </div>
-          </div>
-        </div>
-        
-        <div class="sample-download">
-          <h6 class="sample-title">
-            <i class="fas fa-download me-2"></i>
-            Download Sample TSV
-          </h6>
-          <p class="sample-description">Get a sample TSV file with 2 example products to understand the format.</p>
-          <button class="btn btn-outline-primary" (click)="downloadSampleTSV()">
-            <i class="fas fa-file-download me-2"></i>
-            Download Sample TSV
-          </button>
+      <div class="access-denied" *ngIf="!canAccessFeature('product-upload')">
+        <div class="access-denied-content">
+          <i class="fas fa-lock access-denied-icon"></i>
+          <h4>Access Restricted</h4>
+          <p>Only admins can upload product masters. Please contact your administrator for access.</p>
         </div>
       </div>
       
-      <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="mb-3">
-        <div class="mb-3">
-          <label class="form-label">Upload Product Master (TSV)</label>
-          <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv">
+      <div *ngIf="canAccessFeature('product-upload')">
+        <div class="upload-section">
+          <div class="schema-info">
+            <h5 class="schema-title">
+              <i class="fas fa-info-circle me-2"></i>
+              TSV Schema Information
+            </h5>
+            <div class="schema-details">
+              <p class="schema-description">
+                Upload a Tab-Separated Values (TSV) file with the following columns:
+              </p>
+              <div class="schema-columns">
+                <div class="schema-column">
+                  <strong>clientName</strong> - Name of the client/company
+                </div>
+                <div class="schema-column">
+                  <strong>barcode</strong> - Unique product barcode
+                </div>
+                <div class="schema-column">
+                  <strong>name</strong> - Product name/description
+                </div>
+                <div class="schema-column">
+                  <strong>mrp</strong> - Maximum Retail Price (numeric)
+                </div>
+                <div class="schema-column">
+                  <strong>imageUrl</strong> - Product image URL (optional)
+                </div>
+              </div>
+              <div class="schema-note">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>Note:</strong> First row should contain column headers. Values should be tab-separated.
+              </div>
+            </div>
+          </div>
+          
+          <div class="sample-download">
+            <h6 class="sample-title">
+              <i class="fas fa-download me-2"></i>
+              Download Sample TSV
+            </h6>
+            <p class="sample-description">Get a sample TSV file with 2 example products to understand the format.</p>
+            <button class="btn btn-outline-primary" (click)="downloadSampleTSV()">
+              <i class="fas fa-file-download me-2"></i>
+              Download Sample TSV
+            </button>
+          </div>
         </div>
-        <button class="btn btn-primary" type="submit" [disabled]="productForm.invalid">Upload</button>
-      </form>
+        
+        <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="mb-3">
+          <div class="mb-3">
+            <label class="form-label">Upload Product Master (TSV)</label>
+            <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv">
+          </div>
+          <button class="btn btn-primary" type="submit" [disabled]="productForm.invalid">Upload</button>
+        </form>
+      </div>
     </div>
 
     <!-- Products by Client -->

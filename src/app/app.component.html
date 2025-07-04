@@ -26,45 +26,74 @@
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container">
-    <a class="navbar-brand" [routerLink]="['/']">PoS App</a>
+    <a class="navbar-brand" [routerLink]="['/dashboard']">PoS App</a>
     <button class="navbar-toggler" type="button" (click)="navbarCollapsed = !navbarCollapsed">
       <i class="fas fa-bars"></i>
     </button>
     <div class="collapse navbar-collapse" [class.show]="!navbarCollapsed" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link" [routerLink]="['/client']" routerLinkActive="active">
             <i class="fas fa-users me-2"></i>Client
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="canAccessFeature('product-management')">
           <a class="nav-link" [routerLink]="['/product']" routerLinkActive="active">
             <i class="fas fa-box me-2"></i>Product
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="canAccessFeature('order-view')">
           <a class="nav-link" [routerLink]="['/order']" routerLinkActive="active">
             <i class="fas fa-shopping-cart me-2"></i>Order
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link" [routerLink]="['/invoice']" routerLinkActive="active">
             <i class="fas fa-file-invoice me-2"></i>Invoice
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="canAccessFeature('inventory-view')">
           <a class="nav-link" [routerLink]="['/inventory']" routerLinkActive="active">
             <i class="fas fa-warehouse me-2"></i>Inventory
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAdmin">
           <a class="nav-link" [routerLink]="['/reports']" routerLinkActive="active">
             <i class="fas fa-chart-bar me-2"></i>Reports
           </a>
         </li>
+      </ul>
+      
+      <!-- User Menu -->
+      <ul class="navbar-nav" *ngIf="isAuthenticated">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-2"></i>
+            {{ currentUser?.username }}
+            <span class="badge bg-primary ms-2">{{ currentUser?.role | titlecase }}</span>
+            <i class="fas fa-chevron-down ms-1"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li class="dropdown-header">
+              <strong>{{ currentUser?.username }}</strong>
+              <br>
+              <small class="text-muted">Role: {{ currentUser?.role | titlecase }}</small>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="#" (click)="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      
+      <!-- Login Link for non-authenticated users -->
+      <ul class="navbar-nav" *ngIf="!isAuthenticated">
         <li class="nav-item">
           <a class="nav-link" [routerLink]="['/auth']" routerLinkActive="active">
-            <i class="fas fa-user me-2"></i>Login
+            <i class="fas fa-sign-in-alt me-2"></i>Login
           </a>
         </li>
       </ul>

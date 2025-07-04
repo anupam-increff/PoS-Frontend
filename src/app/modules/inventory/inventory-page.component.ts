@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
@@ -26,7 +27,7 @@ export class InventoryPageComponent implements OnInit {
   editItem: any = null;
   searchBarcode: string = '';
 
-  constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService) {
+  constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService, private authService: AuthService) {
     this.uploadForm = this.fb.group({
       file: [null, Validators.required]
     });
@@ -185,5 +186,9 @@ export class InventoryPageComponent implements OnInit {
     link.click();
     window.URL.revokeObjectURL(url);
     this.toastr.success('Sample inventory TSV file downloaded successfully!');
+  }
+
+  canAccessFeature(feature: string): boolean {
+    return this.authService.canAccessFeature(feature);
   }
 }

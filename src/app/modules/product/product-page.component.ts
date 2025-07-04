@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -29,6 +30,7 @@ export class ProductPageComponent implements OnInit {
 
   constructor(
     private api: ApiService,
+    private authService: AuthService,
     private fb: FormBuilder,
     private toastr: ToastrService
   ) {
@@ -165,6 +167,10 @@ export class ProductPageComponent implements OnInit {
 
   trackByProductId(index: number, product: any) {
     return product.id;
+  }
+
+  canAccessFeature(feature: string): boolean {
+    return this.authService.canAccessFeature(feature);
   }
 
   openImageModal(url: string) {
