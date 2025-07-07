@@ -7,7 +7,7 @@ import {
 } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ToastrService } from 'ngx-toastr';
-import { DatePipe, CommonModule, NgClass } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 interface OrderItem {
@@ -20,21 +20,15 @@ interface Order {
   id: number;
   time: string;
   placedAt: Date;
-  status: 'completed' | 'pending';
-  items: OrderItem[];
   invoicePath?: string;
   total?: number;
+  items?: OrderItem[];
 }
 
 @Component({
   selector: 'app-order-page',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    NgClass
-  ],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   providers: [DatePipe],
   templateUrl: './order-page.component.html',
   styleUrls: ['./order-page.component.scss']
@@ -43,30 +37,24 @@ export class OrderPageComponent implements OnInit {
   tab: 'create' | 'list' = 'create';
   orderForm: FormGroup;
   orders: Order[] = [];
-  filteredOrders: Order[] = [];
-  paginatedOrders: Order[] = [];
-  loadingOrders = false;
-  showViewModal = false;
   viewedItems: OrderItem[] = [];
   viewedOrderId!: number;
+  loadingOrders = false;
   loading = false;
+  showConfirmModal = false;
+  showViewModal = false;
+  confirmSummary: OrderItem[] = [];
+  confirmTotal = 0;
 
-  // Filters & pagination
   searchQuery = '';
-  dateFilter: 'all' | 'today' | 'week' | 'month' = 'all';
-  statusFilter: 'all' | 'completed' | 'pending' = 'all';
-  currentPage = 1;
-  pageSize = 5;
+  startDate = '';
+  endDate = '';
+  invoiceStatus: 'all' | 'true' | 'false' = 'all';
+  currentPage = 0;
+  pageSize = 10;
   totalPages = 1;
-  startIndex = 0;
-  endIndex = 0;
-
-  // Order summary
-  orderSummary = {
-    totalItems: 0,
-    totalQuantity: 0,
-    totalAmount: 0
-  };
+  totalItems = 0;
+  Math = Math;
 
   constructor(
     private fb: FormBuilder,
@@ -79,7 +67,7 @@ export class OrderPageComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.addItem();
     this.loadOrders();
   }
@@ -94,78 +82,77 @@ export class OrderPageComponent implements OnInit {
   }
 
   addItem() {
-    const fg = this.fb.group({
+    const group = this.fb.group({
       barcode: ['', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
-      sellingPrice: [{ value: null, disabled: true }, Validators.required]
+      sellingPrice: [{ value: '', disabled: true }, Validators.required]
     });
 
-    fg.get('barcode')!.valueChanges.subscribe(code => {
-      if (code && code.length > 2) {
-        this.api.get<any>(`/product/barcode/${encodeURIComponent(code)}`).subscribe({
-          next: p => {
-            fg.get('sellingPrice')!.setValue(p.mrp);
-            this.updateOrderSummary();
-          },
-          error: () => {
-            fg.get('sellingPrice')!.reset();
-            this.toastr.error(`Product not found: ${code}`);
-            this.updateOrderSummary();
-          }
-        });
-      } else {
-        fg.get('sellingPrice')!.reset();
-        this.updateOrderSummary();
-      }
-    });
-
-    fg.get('quantity')!.valueChanges.subscribe(() => this.updateOrderSummary());
-
-    this.items.push(fg);
-    this.updateOrderSummary();
+    this.items.push(group);
   }
 
-  removeItem(i: number) {
+  removeItem(index: number) {
     if (this.items.length > 1) {
-      this.items.removeAt(i);
-      this.updateOrderSummary();
+      this.items.removeAt(index);
     }
   }
 
-  onBarcodeChange(i: number, event: Event) {
-    const val = (event.target as HTMLInputElement).value;
-    this.items.at(i).get('barcode')!.setValue(val);
-  }
+  updateMRPForItem(index: number) {
+    const group = this.items.at(index);
+    const barcode = group.get('barcode')!.value;
 
-  updateOrderSummary() {
-    const values = this.items.getRawValue() as OrderItem[];
-    this.orderSummary.totalItems = values.length;
-    this.orderSummary.totalQuantity = values.reduce((sum, it) => sum + (it.quantity || 0), 0);
-    this.orderSummary.totalAmount = values.reduce(
-      (sum, it) => sum + ((it.sellingPrice || 0) * it.quantity), 0
-    );
+    if (!barcode || barcode.length < 3) return;
+
+    this.api.get<any>(`/product/barcode/${encodeURIComponent(barcode)}`).subscribe({
+      next: (product) => {
+        group.get('sellingPrice')!.setValue(product.mrp);
+      },
+      error: () => {
+        group.get('sellingPrice')!.reset();
+        this.toastr.error(`Product with barcode ${barcode} not found.`);
+      }
+    });
   }
 
   submitOrder() {
     if (this.orderForm.invalid) {
-      this.toastr.error('Fix the form before submitting');
+      this.toastr.error('Fix the form before placing order');
       return;
     }
 
-    const payload = {
-      items: this.items.getRawValue().map(i => ({
-        barcode: i.barcode,
-        quantity: i.quantity,
-        sellingPrice: i.sellingPrice
-      }))
-    };
+    const summary = this.items.getRawValue() as OrderItem[];
+    const grouped: { [barcode: string]: OrderItem } = {};
 
+    for (const item of summary) {
+      if (!item.barcode) continue;
+      if (!grouped[item.barcode]) {
+        grouped[item.barcode] = {
+          barcode: item.barcode,
+          quantity: 0,
+          sellingPrice: item.sellingPrice || 0
+        };
+      }
+      grouped[item.barcode].quantity += item.quantity;
+    }
+
+    this.confirmSummary = Object.values(grouped);
+    this.confirmTotal = this.confirmSummary.reduce(
+      (sum, it) => sum + it.quantity * it.sellingPrice,
+      0
+    );
+    this.showConfirmModal = true;
+  }
+
+  confirmOrderSubmit() {
     this.loading = true;
+    const payload = { items: this.confirmSummary };
+
     this.api.post<number>('/order', payload).subscribe({
-      next: orderId => {
-        this.toastr.success(`Order #${orderId} placed`);
-        this.resetForm();
+      next: (id) => {
+        this.toastr.success(`Order #${id} placed`);
         this.loading = false;
+        this.showConfirmModal = false;
+        this.resetForm();
         this.setTab('list');
       },
       error: () => {
@@ -181,97 +168,65 @@ export class OrderPageComponent implements OnInit {
     this.addItem();
   }
 
-  loadOrders() {
+  loadOrders(page = 0) {
     this.loadingOrders = true;
-    this.api.get<Order[]>('/order').subscribe({
-      next: data => {
-        this.orders = data.map(o => ({
+    this.currentPage = page;
+    const params: any = {
+      page,
+      size: this.pageSize
+    };
+    if (this.startDate) params.startDate = this.startDate;
+    if (this.endDate) params.endDate = this.endDate;
+    if (this.invoiceStatus !== 'all') params.invoiceGenerated = this.invoiceStatus;
+    if (this.searchQuery) params.query = this.searchQuery;
+    
+    this.api.get<any>('/order/search', { params }).subscribe({
+      next: (res) => {
+        this.orders = res.content.map((o: any) => ({
           ...o,
-          placedAt: new Date(Number(o.time) * 1000)
+          placedAt: new Date(Number(o.time) * 1000),
+          items: []
         }));
-        this.applyFilters();
+        this.totalItems = res.totalItems;
+        this.totalPages = res.totalPages;
+        this.currentPage = res.currentPage;
+        this.pageSize = res.pageSize;
         this.loadingOrders = false;
       },
       error: () => {
-        this.toastr.error('Could not load orders');
+        this.toastr.error('Failed to fetch orders');
         this.loadingOrders = false;
       }
     });
   }
 
-  onSearchChange() {
-    this.currentPage = 1;
-    this.applyFilters();
-  }
-
   applyFilters() {
-    let filtered = [...this.orders];
-
-    if (this.searchQuery) {
-      filtered = filtered.filter(o => o.id.toString().includes(this.searchQuery));
-    }
-
-    const now = new Date();
-    if (this.dateFilter !== 'all') {
-      filtered = filtered.filter(o => {
-        const diff = (now.getTime() - o.placedAt.getTime()) / (1000 * 60 * 60 * 24);
-        if (this.dateFilter === 'today') return diff < 1;
-        if (this.dateFilter === 'week') return diff < 7;
-        if (this.dateFilter === 'month') return diff < 30;
-        return true;
-      });
-    }
-
-    if (this.statusFilter !== 'all') {
-      filtered = filtered.filter(o => o.status === this.statusFilter);
-    }
-
-    this.filteredOrders = filtered;
-    this.totalPages = Math.ceil(filtered.length / this.pageSize) || 1;
-    this.paginate();
+    this.currentPage = 0;
+    this.loadOrders();
   }
 
   clearFilters() {
     this.searchQuery = '';
-    this.dateFilter = 'all';
-    this.statusFilter = 'all';
-    this.currentPage = 1;
+    this.startDate = '';
+    this.endDate = '';
+    this.invoiceStatus = 'all';
+    this.currentPage = 0;
     this.applyFilters();
   }
 
-  paginate() {
-    this.startIndex = (this.currentPage - 1) * this.pageSize;
-    this.endIndex = Math.min(this.startIndex + this.pageSize, this.filteredOrders.length);
-    this.paginatedOrders = this.filteredOrders.slice(this.startIndex, this.endIndex);
-  }
-
-  goToPage(page: number) {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.paginate();
-  }
-
-  getPageNumbers(): number[] {
-    const delta = 2;
-    const range: number[] = [];
-    for (let i = Math.max(1, this.currentPage - delta); i <= Math.min(this.totalPages, this.currentPage + delta); i++) {
-      range.push(i);
-    }
-    return range;
-  }
-
-  trackByOrderId(index: number, order: Order) {
-    return order.id;
+  onSearchChange() {
+    this.currentPage = 0;
+    this.applyFilters();
   }
 
   openViewItems(orderId: number) {
     this.viewedOrderId = orderId;
     this.api.get<OrderItem[]>(`/order/${orderId}`).subscribe({
-      next: items => {
+      next: (items) => {
         this.viewedItems = items;
         this.showViewModal = true;
       },
-      error: () => this.toastr.error('Could not fetch items')
+      error: () => this.toastr.error('Could not fetch order items')
     });
   }
 
@@ -281,59 +236,67 @@ export class OrderPageComponent implements OnInit {
   }
 
   handleInvoice(order: Order) {
-    window.location.href = `/api/invoice/${order.id}`;
+    if (order.invoicePath) {
+      window.location.href = `/api/invoice/${order.id}`;
+      this.toastr.success('Invoice downloaded');
+    } else {
+      this.api.get(`/invoice/generate/${order.id}`).subscribe({
+        next: () => {
+          this.toastr.success('Invoice generated successfully');
+          this.loadOrders(this.currentPage);
+        },
+        error: () => {
+          this.toastr.error('Failed to generate invoice');
+        }
+      });
+    }
+  }
+
+  fmtDate(date: Date): string {
+    return this.datePipe.transform(date, 'dd/MM/yyyy, hh:mm a') || '';
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    const delta = 2;
+    const range: number[] = [];
+    const start = Math.max(0, current - delta);
+    const end = Math.min(total - 1, current + delta);
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
+  }
+
+  onPageChange(p: number) {
+    this.currentPage = p;
+    this.loadOrders(p);
   }
 
   duplicateOrder(order: Order) {
-    this.resetForm();
-    order.items.forEach(item => {
+    this.setTab('create');
+    this.items.clear();
+    for (const item of order.items || []) {
       const fg = this.fb.group({
         barcode: [item.barcode, Validators.required],
         quantity: [item.quantity, [Validators.required, Validators.min(1)]],
-        sellingPrice: [{ value: item.sellingPrice ?? 0, disabled: true }, Validators.required]
+        sellingPrice: [{ value: item.sellingPrice, disabled: true }, Validators.required]
       });
       this.items.push(fg);
-    });
-    this.tab = 'create';
-    this.updateOrderSummary();
+    }
   }
 
   duplicateViewedOrder() {
-    this.duplicateOrder({
-      id: this.viewedOrderId,
+    const fakeOrder: Order = {
+      id: 0,
       time: '',
       placedAt: new Date(),
-      status: 'pending',
       items: this.viewedItems
-    });
+    };
+    this.duplicateOrder(fakeOrder);
     this.closeViewModal();
   }
 
-  getProductInfo(i: number) {
-    const fg = this.items.at(i);
-    return fg.get('sellingPrice')!.value ? { name: fg.get('barcode')!.value } : null;
-  }
-
-  getProductName(barcode: string): string {
-    return barcode;
-  }
-
-  calculateOrderTotal(order: Order): number {
-    if (!order.items || order.items.length === 0) {
-      return order.total ?? 0;
-    }
-    return order.items.reduce(
-      (sum, it) => sum + ((it.sellingPrice ?? 0) * it.quantity), 0
-    );
-  }
-
-  fmtDate(dt: Date): string {
-    return this.datePipe.transform(dt, 'MMM dd, yyyy hh:mm a', 'Asia/Kolkata')!;
-  }
-
   getViewedOrderTotal(): number {
-    return (this.viewedItems ?? []).reduce(
-      (sum, it) => sum + ((it.sellingPrice ?? 0) * it.quantity), 0
-    );
+    return this.viewedItems.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0);
   }
 }

@@ -533,3 +533,18 @@
   margin-bottom: 2.5rem;
   padding: 2rem 1.5rem;
 }
+
+// Remove MRP input highlighting
+.form-control[readonly] {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #495057;
+  cursor: not-allowed;
+}
+
+// Ensure MRP input has clean styling
+.mrp-input {
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6 !important;
+  color: #495057 !important;
+}
