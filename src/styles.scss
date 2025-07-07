@@ -136,14 +136,36 @@ table {
   background: var(--table-bg);
   color: #222;
   width: 100%;
-  min-width: 700px;
-  max-width: 1100px;
+  min-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 2px 16px 0 rgba(0,0,0,0.04);
   font-family: 'Inter', 'Poppins', Arial, sans-serif;
   transition: box-shadow 0.2s;
+}
+
+/* Consistent table widths across all modules */
+.table-custom {
+  width: 100%;
+  min-width: 800px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Navbar active link highlighting */
+.navbar-nav .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: #fff !important;
 }
 
 thead {

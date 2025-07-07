@@ -76,4 +76,25 @@ export class ApiService {
   private getRequestHeaders(): HttpHeaders {
     return this.authService.getAuthHeaders();
   }
+
+  // --- Report Methods ---
+  
+  async getClients(): Promise<any[]> {
+    const result = await this.get<any[]>('/clients').toPromise();
+    return result || [];
+  }
+
+  async getDateRangeReport(startDate: string, endDate: string): Promise<any[]> {
+    const result = await this.get<any[]>('/reports/daily', {
+      params: { startDate, endDate }
+    }).toPromise();
+    return result || [];
+  }
+
+  async getClientSalesReport(clientId: string): Promise<any[]> {
+    const result = await this.get<any[]>('/reports/sales', {
+      params: { clientId }
+    }).toPromise();
+    return result || [];
+  }
 }

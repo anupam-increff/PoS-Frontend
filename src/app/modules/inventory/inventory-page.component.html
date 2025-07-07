@@ -34,16 +34,9 @@
         </li>
       </ul>
   
-      <!-- Upload Inventory -->
-      <div *ngIf="tab === 'upload'">
-        <div class="access-denied" *ngIf="!canAccessFeature('inventory-upload')">
-          <div class="access-denied-content">
-            <i class="fas fa-lock access-denied-icon"></i>
-            <h4>Access Restricted</h4>
-            <p>Only admins can upload inventory data. Please contact your administrator for access.</p>
-          </div>
-        </div>
-        <form *ngIf="canAccessFeature('inventory-upload')" [formGroup]="uploadForm" (ngSubmit)="uploadInventory()">
+          <!-- Upload Inventory -->
+    <div *ngIf="tab === 'upload'">
+      <form [formGroup]="uploadForm" (ngSubmit)="uploadInventory()">
           <div class="upload-section">
             <div class="schema-info">
               <h5 class="schema-title">

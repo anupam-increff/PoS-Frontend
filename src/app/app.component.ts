@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService, User } from './services/auth.service';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -19,17 +20,27 @@ export class AppComponent implements OnInit, OnDestroy {
   
   isAuthenticated = false;
   currentUser: User | null = null;
-  isAdmin = false;
+  currentRoute = '';
   
   private authSubscription: Subscription | null = null;
+  private routerSubscription: Subscription | null = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.authSubscription = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.isAuthenticated = !!user;
-      this.isAdmin = user?.role === 'admin';
+    });
+
+    // Track current route for navbar highlighting
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.currentRoute = event.url;
     });
   }
 
@@ -37,10 +48,9 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
-  }
-
-  canAccessFeature(feature: string): boolean {
-    return this.authService.canAccessFeature(feature);
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
   logout() {
@@ -49,5 +59,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   get sessionStorage() {
     return window.sessionStorage;
+  }
+
+  isActiveRoute(route: string): boolean {
+    return this.currentRoute === route;
   }
 }

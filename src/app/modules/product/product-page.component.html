@@ -35,15 +35,6 @@
 
     <!-- Upload Product -->
     <div *ngIf="tab === 'upload'">
-      <div class="access-denied" *ngIf="!canAccessFeature('product-upload')">
-        <div class="access-denied-content">
-          <i class="fas fa-lock access-denied-icon"></i>
-          <h4>Access Restricted</h4>
-          <p>Only admins can upload product masters. Please contact your administrator for access.</p>
-        </div>
-      </div>
-      
-      <div *ngIf="canAccessFeature('product-upload')">
         <div class="upload-section">
           <div class="schema-info">
             <h5 class="schema-title">
@@ -98,7 +89,6 @@
           </div>
           <button class="btn btn-primary" type="submit" [disabled]="productForm.invalid">Upload</button>
         </form>
-      </div>
     </div>
 
     <!-- Products by Client -->
