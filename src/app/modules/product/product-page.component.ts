@@ -27,6 +27,16 @@ export class ProductPageComponent implements OnInit {
   editIndex: number | null = null;
   editProduct: any = null;
   searchClientName: string = '';
+  // Pagination
+  currentPage = 0;
+  totalPages = 0;
+  totalItems = 0;
+  pageSize = 10;
+  Math = Math;
+  // Single Product Add Form
+  singleProductForm: FormGroup;
+  showSchema = false;
+  showAddProductModal = false;
 
   constructor(
     private api: ApiService,
@@ -36,6 +46,13 @@ export class ProductPageComponent implements OnInit {
   ) {
     this.productForm = this.fb.group({
       file: [null, Validators.required]
+    });
+    this.singleProductForm = this.fb.group({
+      clientName: ['', Validators.required],
+      barcode: ['', Validators.required],
+      name: ['', Validators.required],
+      mrp: ['', [Validators.required, Validators.min(0)]],
+      imageUrl: ['', Validators.required]
     });
   }
 
@@ -55,12 +72,16 @@ export class ProductPageComponent implements OnInit {
     }
   }
 
-  loadProducts() {
+  loadProducts(page: number = 0) {
     this.loading = true;
     this.errorMsg = '';
-    this.api.get<any[]>('/product').subscribe({
-      next: data => {
-        this.products = data;
+    this.currentPage = page;
+    this.api.get<any>('/product', { params: { page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+      next: (response) => {
+        this.products = response.content || [];
+        this.totalItems = response.totalItems || 0;
+        this.totalPages = response.totalPages || 0;
+        this.pageSize = response.pageSize || this.pageSize;
         this.loading = false;
       },
       error: () => {
@@ -82,12 +103,12 @@ export class ProductPageComponent implements OnInit {
     const formData = new FormData();
     formData.append('file', this.productForm.value.file);
     this.api.post('/product/upload-tsv', formData).subscribe({
-      next: () => {
-        this.toastr.success('Product master uploaded!');
+      next: (res: any) => {
+        this.toastr.success(res?.message || 'Product master uploaded!');
         this.setTab('list');
         this.productForm.reset();
       },
-      error: () => this.toastr.error('Upload failed')
+      error: (err) => this.toastr.error(err?.error?.message || 'Upload failed')
     });
   }
 
@@ -113,18 +134,21 @@ export class ProductPageComponent implements OnInit {
     });
   }
 
-  searchByBarcode() {
+  searchByBarcode(page: number = 0) {
     const barcode = this.searchBarcode.trim();
     if (!barcode) {
       this.toastr.warning('Enter a barcode to search');
       return;
     }
-
     this.loading = true;
     this.errorMsg = '';
-    this.api.get<any>(`/product/barcode/${encodeURIComponent(barcode)}`).subscribe({
-      next: product => {
-        this.products = [product];
+    this.currentPage = page;
+    this.api.get<any>('/product/search', { params: { barcode, page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+      next: (response) => {
+        this.products = response.content || [];
+        this.totalItems = response.totalItems || 0;
+        this.totalPages = response.totalPages || 0;
+        this.pageSize = response.pageSize || this.pageSize;
         this.loading = false;
       },
       error: () => {
@@ -152,14 +176,20 @@ export class ProductPageComponent implements OnInit {
 
   saveEdit() {
     if (!this.editProduct) return;
-    
     // Validate imageUrl is required
     if (!this.editProduct.imageUrl || this.editProduct.imageUrl.trim() === '') {
       this.toastr.error('Image URL is required');
       return;
     }
-    
-    this.api.put(`/product/${this.editProduct.id}`, this.editProduct).subscribe({
+    // Ensure clientName is present in the payload
+    const payload = {
+      clientName: this.editProduct.clientName,
+      barcode: this.editProduct.barcode,
+      name: this.editProduct.name,
+      mrp: this.editProduct.mrp,
+      imageUrl: this.editProduct.imageUrl
+    };
+    this.api.put(`/product/${this.editProduct.id}`, payload).subscribe({
       next: () => {
         this.toastr.success('Product updated');
         this.products[this.editIndex!] = { ...this.editProduct };
@@ -190,17 +220,21 @@ export class ProductPageComponent implements OnInit {
     this.imageToZoom = '';
   }
 
-  searchByClientName() {
-    const query = this.searchClientName.trim();
-    if (!query) {
+  searchByClientName(page: number = 0) {
+    const clientName = this.searchClientName.trim();
+    if (!clientName) {
       this.toastr.warning('Enter a client name to search');
       return;
     }
     this.loading = true;
     this.errorMsg = '';
-    this.api.get<any[]>(`/product?clientName=${encodeURIComponent(query)}`).subscribe({
-      next: data => {
-        this.products = data;
+    this.currentPage = page;
+    this.api.get<any>('/product', { params: { clientName, page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+      next: (response) => {
+        this.products = response.content || [];
+        this.totalItems = response.totalItems || 0;
+        this.totalPages = response.totalPages || 0;
+        this.pageSize = response.pageSize || this.pageSize;
         this.loading = false;
       },
       error: () => {
@@ -227,5 +261,51 @@ export class ProductPageComponent implements OnInit {
     link.click();
     window.URL.revokeObjectURL(url);
     this.toastr.success('Sample TSV file downloaded successfully!');
+  }
+
+  onPageChange(page: number): void {
+    this.loadProducts(page);
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const startPage = Math.max(0, this.currentPage - 2);
+    const endPage = Math.min(this.totalPages - 1, this.currentPage + 2);
+    for (let i = startPage; i <= endPage; i++) {
+      if (i >= 0) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  }
+
+  addSingleProduct() {
+    if (this.singleProductForm.invalid) return;
+    const payload = this.singleProductForm.value;
+    this.api.post('/product', payload).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || 'Product added successfully!');
+        this.closeAddProductModal();
+        this.setTab('list');
+        this.singleProductForm.reset();
+      },
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Failed to add product');
+        this.closeAddProductModal();
+      }
+    });
+  }
+
+  toggleSchema() {
+    this.showSchema = !this.showSchema;
+  }
+
+  openAddProductModal() {
+    this.showAddProductModal = true;
+  }
+
+  closeAddProductModal() {
+    this.showAddProductModal = false;
+    this.singleProductForm.reset();
   }
 }

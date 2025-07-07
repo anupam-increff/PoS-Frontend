@@ -84,6 +84,20 @@ export class ApiService {
     return result || [];
   }
 
+  // --- Client Methods ---
+  
+  getClientsPaginated(page: number = 0, pageSize: number = 10): Observable<any> {
+    return this.get('/client', {
+      params: { page: page.toString(), pageSize: pageSize.toString() }
+    });
+  }
+
+  searchClientsPaginated(query: string, page: number = 0, pageSize: number = 10): Observable<any> {
+    return this.get('/client/search', {
+      params: { query, page: page.toString(), pageSize: pageSize.toString() }
+    });
+  }
+
   async getDateRangeReport(startDate: string, endDate: string): Promise<any[]> {
     const result = await this.get<any[]>('/reports/day-sales', {
       params: { start: startDate, end: endDate }

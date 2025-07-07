@@ -21,12 +21,6 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" [class.active]="tab === 'add'" (click)="setTab('add')">
-            <i class="fas fa-plus me-1"></i>
-            Add Inventory
-          </a>
-        </li>
-        <li class="nav-item">
           <a class="nav-link" [class.active]="tab === 'snapshot'" (click)="setTab('snapshot')">
             <i class="fas fa-camera me-1"></i>
             Inventory Snapshot
@@ -36,85 +30,90 @@
   
           <!-- Upload Inventory -->
     <div *ngIf="tab === 'upload'">
-      <div class="upload-container">
-        <div class="upload-header">
-          <h5 class="upload-title">
-            <i class="fas fa-cloud-upload-alt me-2"></i>
-            Bulk Inventory Upload
-          </h5>
-          <p class="upload-description">
-            Upload multiple inventory items at once using a TSV (Tab-Separated Values) file.
-          </p>
+      <div class="container-fluid px-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="mb-1 fw-bold">
+              <i class="fas fa-cloud-upload-alt me-2"></i>
+              Bulk Inventory Upload
+            </h5>
+            <div class="text-muted small">Upload multiple inventory items at once using a TSV (Tab-Separated Values) file.</div>
+          </div>
+          <button class="btn btn-outline-primary" (click)="openAddInventoryModal()">
+            <i class="fas fa-plus me-1"></i>
+            Add Single Inventory
+          </button>
         </div>
 
-        <div class="upload-steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h6>Download Template</h6>
-              <p>Get the sample TSV file to understand the required format</p>
-              <button class="btn btn-outline-primary btn-sm" (click)="downloadSampleTSV()">
+        <div class="mb-3">
+          <button class="btn btn-outline-secondary w-100 text-start" type="button" (click)="toggleSchema()">
+            <i class="fas fa-info-circle me-1"></i>
+            {{ showSchema ? 'Hide' : 'View' }} TSV Schema & Sample
+            <i class="fas float-end" [ngClass]="showSchema ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          </button>
+        </div>
+        <div class="collapse" [class.show]="showSchema">
+          <div class="tsv-schema-box mb-4">
+            <h6 class="mb-2 fw-semibold">TSV Schema</h6>
+            <div class="tsv-schema-list">
+              <div class="tsv-schema-row"><span class="tsv-schema-label">barcode</span><span class="tsv-schema-desc">Product barcode (must exist in products)</span></div>
+              <div class="tsv-schema-row"><span class="tsv-schema-label">quantity</span><span class="tsv-schema-desc">Stock quantity (numeric)</span></div>
+            </div>
+            <div class="tsv-schema-sample">
+              <i class="fas fa-file-alt me-2"></i>
+              <span>Download a sample TSV file to see the required format.</span>
+              <button class="btn btn-outline-primary btn-sm ms-auto" (click)="downloadSampleTSV()">
                 <i class="fas fa-download me-1"></i>
                 Download Sample TSV
               </button>
             </div>
           </div>
+        </div>
 
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h6>Prepare Your File</h6>
-              <p>Fill in your inventory data following the template format</p>
-              <div class="schema-info">
-                <div class="schema-columns">
-                  <div class="schema-column">
-                    <strong>barcode</strong> - Product barcode (must exist in products)
-                  </div>
-                  <div class="schema-column">
-                    <strong>quantity</strong> - Stock quantity (numeric)
-                  </div>
+        <div class="card shadow-sm border-0 p-4 mb-4 bg-white">
+          <form [formGroup]="uploadForm" (ngSubmit)="uploadInventory()" class="row g-3 align-items-end">
+            <div class="col-md-8">
+              <label for="inventoryFile" class="form-label fw-semibold">Select TSV File</label>
+              <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv" id="inventoryFile">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-primary w-100" type="submit" [disabled]="uploadForm.invalid">
+                <i class="fas fa-upload me-2"></i>
+                Upload Inventory
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Add Single Inventory Modal -->
+      <div class="modal fade show" tabindex="-1" *ngIf="showAddInventoryModal" [ngStyle]="{ display: 'block', background: 'rgba(240,247,255,0.95)' }">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form [formGroup]="addForm" (ngSubmit)="addInventory()">
+              <div class="modal-header">
+                <h5 class="modal-title">Add Single Inventory</h5>
+                <button type="button" class="btn-close" (click)="closeAddInventoryModal()"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">Barcode</label>
+                  <input type="text" class="form-control" formControlName="barcode" placeholder="Enter product barcode" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Quantity</label>
+                  <input type="number" class="form-control" formControlName="quantity" placeholder="Enter quantity" min="1" />
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h6>Upload File</h6>
-              <p>Select your TSV file and upload to import inventory</p>
-              <form [formGroup]="uploadForm" (ngSubmit)="uploadInventory()" class="upload-form">
-                <div class="file-upload-area">
-                  <input type="file" class="file-input" (change)="onFileChange($event)" accept=".tsv" id="inventoryFile">
-                  <label for="inventoryFile" class="file-label">
-                    <i class="fas fa-file-upload me-2"></i>
-                    <span *ngIf="!uploadForm.value.file">Choose TSV file or drag here</span>
-                    <span *ngIf="uploadForm.value.file">{{ uploadForm.value.file.name }}</span>
-                  </label>
-                </div>
-                <button class="btn btn-primary" type="submit" [disabled]="uploadForm.invalid">
-                  <i class="fas fa-upload me-2"></i>
-                  Upload Inventory
-                </button>
-              </form>
-            </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeAddInventoryModal()">Cancel</button>
+                <button class="btn btn-primary" type="submit" [disabled]="addForm.invalid">Add Inventory</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
-  
-      <!-- Add Inventory -->
-      <form *ngIf="tab === 'add'" [formGroup]="addForm" (ngSubmit)="addInventory()">
-        <div class="mb-3">
-          <label class="form-label">Barcode</label>
-          <input type="text" class="form-control" formControlName="barcode" placeholder="Enter product barcode" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Quantity</label>
-          <input type="number" class="form-control" formControlName="quantity" placeholder="Enter quantity" min="1" />
-        </div>
-        <button class="btn btn-primary" type="submit" [disabled]="addForm.invalid">Add Inventory</button>
-      </form>
   
       <!-- Snapshot Table -->
       <div *ngIf="tab === 'snapshot'">
@@ -161,6 +160,25 @@
               </tr>
             </tbody>
           </table>
+          <!-- Pagination and Range Display -->
+          <div class="d-flex justify-content-between align-items-center mt-2 mb-3" *ngIf="totalItems > 0">
+            <div class="text-muted ms-2">
+              Showing {{ currentPage * pageSize + 1 }} to {{ Math.min((currentPage + 1) * pageSize, totalItems) }} of {{ totalItems }} inventory items
+            </div>
+            <nav *ngIf="totalPages > 1">
+              <ul class="pagination pagination-bar mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                  <button class="page-link" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 0">&laquo;</button>
+                </li>
+                <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+                  <button class="page-link" (click)="onPageChange(page)">{{ page + 1 }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                  <button class="page-link" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages - 1">&raquo;</button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
   

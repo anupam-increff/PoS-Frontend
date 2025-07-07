@@ -26,6 +26,14 @@ export class InventoryPageComponent implements OnInit {
   editIndex: number | null = null;
   editItem: any = null;
   searchBarcode: string = '';
+  showAddInventoryModal = false;
+  showSchema = false;
+  // Pagination
+  currentPage = 0;
+  totalPages = 0;
+  totalItems = 0;
+  pageSize = 10;
+  Math = Math;
 
   constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService, private authService: AuthService) {
     this.uploadForm = this.fb.group({
@@ -64,45 +72,53 @@ export class InventoryPageComponent implements OnInit {
     if (this.uploadForm.invalid) return;
     const formData = new FormData();
     formData.append('file', this.uploadForm.value.file);
-
-    this.api.post('/inventory/upload', formData).subscribe(() => {
-      this.successMsg = 'Inventory uploaded.';
-      this.uploadForm.reset();
-      this.loadInventory();
-      setTimeout(() => this.successMsg = '', 3000);
-    }, () => {
-      this.errorMsg = 'Upload failed.';
-      setTimeout(() => this.errorMsg = '', 3000);
+    this.api.post('/inventory/upload', formData).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || 'Inventory uploaded.');
+        this.uploadForm.reset();
+        this.loadInventory();
+      },
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Upload failed.');
+      }
     });
   }
 
   addInventory() {
     if (this.addForm.invalid) return;
-
     const payload = {
       barcode: this.addForm.value.barcode,
       quantity: this.addForm.value.quantity
     };
-
-    this.api.post('/inventory', payload).subscribe(() => {
-      this.successMsg = 'Inventory added.';
-      this.addForm.reset();
-      this.loadInventory();
-      setTimeout(() => this.successMsg = '', 3000);
-    }, () => {
-      this.errorMsg = 'Failed to add inventory.';
-      setTimeout(() => this.errorMsg = '', 3000);
+    this.api.post('/inventory', payload).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res?.message || 'Inventory added.');
+        this.closeAddInventoryModal();
+        this.addForm.reset();
+        this.loadInventory();
+      },
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Failed to add inventory.');
+        this.closeAddInventoryModal();
+      }
     });
   }
 
-  loadInventory() {
+  loadInventory(page: number = 0) {
     this.loading = true;
-    this.api.get<any[]>('/inventory').subscribe(data => {
-      this.inventory = data;
-      this.loading = false;
-    }, () => {
-      this.errorMsg = 'Failed to load inventory.';
-      this.loading = false;
+    this.currentPage = page;
+    this.api.get<any>('/inventory', { params: { page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+      next: (response) => {
+        this.inventory = response.content || [];
+        this.totalItems = response.totalItems || 0;
+        this.totalPages = response.totalPages || 0;
+        this.pageSize = response.pageSize || this.pageSize;
+        this.loading = false;
+      },
+      error: () => {
+        this.errorMsg = 'Failed to load inventory.';
+        this.loading = false;
+      }
     });
   }
   
@@ -133,23 +149,26 @@ export class InventoryPageComponent implements OnInit {
     return item.barcode;
   }
 
-  searchByBarcode() {
+  searchByBarcode(page: number = 0) {
     const barcode = this.searchBarcode.trim();
     if (!barcode) {
       this.toastr.warning('Enter a barcode to search');
       return;
     }
     this.loading = true;
-    this.errorMsg = '';
-    this.api.get<any>(`/inventory/barcode/${encodeURIComponent(barcode)}`).subscribe({
-      next: item => {
-        this.inventory = [item];
+    this.currentPage = page;
+    this.api.get<any>('/inventory/search', { params: { barcode, page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+      next: (response) => {
+        this.inventory = response.content || [];
+        this.totalItems = response.totalItems || 0;
+        this.totalPages = response.totalPages || 0;
+        this.pageSize = response.pageSize || this.pageSize;
         this.loading = false;
       },
       error: () => {
         this.inventory = [];
-        this.loading = false;
         this.errorMsg = 'No inventory found for this barcode.';
+        this.loading = false;
       }
     });
   }
@@ -190,5 +209,38 @@ export class InventoryPageComponent implements OnInit {
 
   canAccessFeature(feature: string): boolean {
     return this.authService.canAccessFeature(feature);
+  }
+
+  openAddInventoryModal() {
+    this.showAddInventoryModal = true;
+  }
+
+  closeAddInventoryModal() {
+    this.showAddInventoryModal = false;
+    this.addForm.reset();
+  }
+
+  toggleSchema() {
+    this.showSchema = !this.showSchema;
+  }
+
+  onPageChange(page: number): void {
+    if (this.searchBarcode) {
+      this.searchByBarcode(page);
+    } else {
+      this.loadInventory(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const startPage = Math.max(0, this.currentPage - 2);
+    const endPage = Math.min(this.totalPages - 1, this.currentPage + 2);
+    for (let i = startPage; i <= endPage; i++) {
+      if (i >= 0) {
+        pages.push(i);
+      }
+    }
+    return pages;
   }
 }

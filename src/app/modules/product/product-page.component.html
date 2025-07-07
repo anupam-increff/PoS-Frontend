@@ -35,77 +35,100 @@
 
     <!-- Upload Product -->
     <div *ngIf="tab === 'upload'">
-      <div class="upload-container">
-        <div class="upload-header">
-          <h5 class="upload-title">
-            <i class="fas fa-cloud-upload-alt me-2"></i>
-            Bulk Product Upload
-          </h5>
-          <p class="upload-description">
-            Upload multiple products at once using a TSV (Tab-Separated Values) file.
-          </p>
+      <div class="container-fluid px-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="mb-1 fw-bold">
+              <i class="fas fa-cloud-upload-alt me-2"></i>
+              Bulk Product Upload
+            </h5>
+            <div class="text-muted small">Upload multiple products at once using a TSV (Tab-Separated Values) file.</div>
+          </div>
+          <button class="btn btn-outline-primary" (click)="openAddProductModal()">
+            <i class="fas fa-plus me-1"></i>
+            Add Single Product
+          </button>
         </div>
-
-        <div class="upload-steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h6>Download Template</h6>
-              <p>Get the sample TSV file to understand the required format</p>
-              <button class="btn btn-outline-primary btn-sm" (click)="downloadSampleTSV()">
+        <div class="mb-3">
+          <button class="btn btn-outline-secondary w-100 text-start" type="button" (click)="toggleSchema()">
+            <i class="fas fa-info-circle me-1"></i>
+            {{ showSchema ? 'Hide' : 'View' }} TSV Schema & Sample
+            <i class="fas float-end" [ngClass]="showSchema ? 'fa-chevron-up' : 'fa-chevron-down'" ></i>
+          </button>
+        </div>
+        <div class="collapse" [class.show]="showSchema">
+          <div class="tsv-schema-box mb-4">
+            <h6 class="mb-2 fw-semibold">TSV Schema</h6>
+            <div class="tsv-schema-list">
+              <div class="tsv-schema-row"><span class="tsv-schema-label">clientName</span><span class="tsv-schema-desc">Client/company name</span></div>
+              <div class="tsv-schema-row"><span class="tsv-schema-label">barcode</span><span class="tsv-schema-desc">Unique product barcode</span></div>
+              <div class="tsv-schema-row"><span class="tsv-schema-label">name</span><span class="tsv-schema-desc">Product name/description</span></div>
+              <div class="tsv-schema-row"><span class="tsv-schema-label">mrp</span><span class="tsv-schema-desc">Maximum Retail Price</span></div>
+              <div class="tsv-schema-row"><span class="tsv-schema-label">imageUrl</span><span class="tsv-schema-desc">Product image URL</span></div>
+            </div>
+            <div class="tsv-schema-sample">
+              <i class="fas fa-file-alt me-2"></i>
+              <span>Download a sample TSV file to see the required format.</span>
+              <button class="btn btn-outline-primary btn-sm ms-auto" (click)="downloadSampleTSV()">
                 <i class="fas fa-download me-1"></i>
                 Download Sample TSV
               </button>
             </div>
           </div>
-
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h6>Prepare Your File</h6>
-              <p>Fill in your product data following the template format</p>
-              <div class="schema-info">
-                <div class="schema-columns">
-                  <div class="schema-column">
-                    <strong>clientName</strong> - Client/company name
+        </div>
+        <div class="card shadow-sm border-0 p-4 mb-4 bg-white">
+          <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="row g-3 align-items-end">
+            <div class="col-md-8">
+              <label for="productFile" class="form-label fw-semibold">Select TSV File</label>
+              <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv" id="productFile">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-primary w-100" type="submit" [disabled]="productForm.invalid">
+                <i class="fas fa-upload me-2"></i>
+                Upload Products
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- Add Single Product Modal -->
+      <div class="modal fade show" tabindex="-1" *ngIf="showAddProductModal" [ngStyle]="{ display: 'block', background: 'rgba(240,247,255,0.95)' }">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content p-2" style="border-radius: 14px;">
+            <form [formGroup]="singleProductForm" (ngSubmit)="addSingleProduct()">
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">Add Single Product</h5>
+                <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
+              </div>
+              <div class="modal-body pt-0">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label">Client Name</label>
+                    <input type="text" class="form-control" formControlName="clientName" placeholder="Client Name">
                   </div>
-                  <div class="schema-column">
-                    <strong>barcode</strong> - Unique product barcode
+                  <div class="col-12 col-md-6">
+                    <label class="form-label">Barcode</label>
+                    <input type="text" class="form-control" formControlName="barcode" placeholder="Barcode">
                   </div>
-                  <div class="schema-column">
-                    <strong>name</strong> - Product name/description
+                  <div class="col-12 col-md-6">
+                    <label class="form-label">Product Name</label>
+                    <input type="text" class="form-control" formControlName="name" placeholder="Product Name">
                   </div>
-                  <div class="schema-column">
-                    <strong>mrp</strong> - Maximum Retail Price
+                  <div class="col-12 col-md-6">
+                    <label class="form-label">MRP</label>
+                    <input type="number" class="form-control" formControlName="mrp" placeholder="MRP" min="0" step="0.01">
                   </div>
-                  <div class="schema-column">
-                    <strong>imageUrl</strong> - Product image URL
+                  <div class="col-12">
+                    <label class="form-label">Image URL</label>
+                    <input type="text" class="form-control" formControlName="imageUrl" placeholder="Image URL">
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h6>Upload File</h6>
-              <p>Select your TSV file and upload to import products</p>
-              <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="upload-form">
-                <div class="file-upload-area">
-                  <input type="file" class="file-input" (change)="onFileChange($event)" accept=".tsv" id="productFile">
-                  <label for="productFile" class="file-label">
-                    <i class="fas fa-file-upload me-2"></i>
-                    <span *ngIf="!productForm.value.file">Choose TSV file or drag here</span>
-                    <span *ngIf="productForm.value.file">{{ productForm.value.file.name }}</span>
-                  </label>
-                </div>
-                <button class="btn btn-primary" type="submit" [disabled]="productForm.invalid">
-                  <i class="fas fa-upload me-2"></i>
-                  Upload Products
-                </button>
-              </form>
-            </div>
+              <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary" (click)="closeAddProductModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary w-100" [disabled]="singleProductForm.invalid">Add Product</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -141,10 +164,15 @@
                   <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
                 </ng-container>
                 <ng-template #viewImage>
-                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb">
+                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb" (click)="openImageModal(product.imageUrl)">
                 </ng-template>
               </td>
-              <td class="non-editable">{{ product.clientName }}</td>
+              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
+                <ng-container *ngIf="editIndex === i; else viewClientName">
+                  <input [(ngModel)]="editProduct.clientName" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
+                </ng-container>
+                <ng-template #viewClientName>{{ product.clientName }}</ng-template>
+              </td>
               <td class="non-editable"><code>{{ product.barcode }}</code></td>
               <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
                 <ng-container *ngIf="editIndex === i; else viewName">
@@ -211,10 +239,15 @@
                   <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
                 </ng-container>
                 <ng-template #viewImageList>
-                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb">
+                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb" (click)="openImageModal(product.imageUrl)">
                 </ng-template>
               </td>
-              <td class="non-editable">{{ product.clientName }}</td>
+              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
+                <ng-container *ngIf="editIndex === i; else viewClientNameList">
+                  <input [(ngModel)]="editProduct.clientName" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
+                </ng-container>
+                <ng-template #viewClientNameList>{{ product.clientName }}</ng-template>
+              </td>
               <td class="non-editable"><code>{{ product.barcode }}</code></td>
               <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
                 <ng-container *ngIf="editIndex === i; else viewNameList">
@@ -245,17 +278,56 @@
         </table>
       </div>
       <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products found.</div>
+      <!-- Pagination Bar -->
+      <div *ngIf="!loading && totalPages > 1" class="d-flex justify-content-between align-items-center mt-4">
+        <div class="text-muted">
+          Showing 
+          {{ totalItems === 0 ? 0 : (currentPage * pageSize) + 1 }}
+          to
+          {{ totalItems === 0 ? 0 : Math.min((currentPage + 1) * pageSize, totalItems) }}
+          of {{ totalItems }} products
+        </div>
+        <div class="pagination-bar">
+          <nav aria-label="Product pagination">
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <a class="page-link" (click)="onPageChange(0)" style="cursor: pointer;">
+                  <i class="fas fa-angle-double-left"></i>
+                </a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <a class="page-link" (click)="onPageChange(currentPage - 1)" style="cursor: pointer;">
+                  <i class="fas fa-angle-left"></i>
+                </a>
+              </li>
+              <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+                <a class="page-link" (click)="onPageChange(page)" style="cursor: pointer;">{{ page + 1 }}</a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                <a class="page-link" (click)="onPageChange(currentPage + 1)" style="cursor: pointer;">
+                  <i class="fas fa-angle-right"></i>
+                </a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                <a class="page-link" (click)="onPageChange(totalPages - 1)" style="cursor: pointer;">
+                  <i class="fas fa-angle-double-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Image Zoom Modal -->
-<div class="modal fade show" tabindex="-1" [ngStyle]="{ display: showImageModal ? 'block' : 'none', background: 'rgba(0,0,0,0.7)' }" *ngIf="showImageModal">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content bg-transparent border-0">
-      <div class="modal-body text-center">
-        <img [src]="imageToZoom" class="img-fluid rounded shadow-lg" style="max-height:80vh;">
-        <button class="btn-close position-absolute top-0 end-0 m-3" (click)="closeImageModal()"></button>
+<!-- Responsive Image Zoom Modal -->
+<div class="modal fade show" tabindex="-1" *ngIf="showImageModal" [ngStyle]="{ display: 'block', background: 'rgba(0,0,0,0.85)' }">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-transparent border-0 shadow-none">
+      <div class="modal-body d-flex flex-column align-items-center justify-content-center p-0">
+        <img [src]="imageToZoom" class="img-fluid rounded shadow-lg" style="max-width:90vw; max-height:80vh; object-fit:contain; background:#fff;" alt="Product Image" />
+        <button class="btn btn-light position-absolute top-0 end-0 m-3" (click)="closeImageModal()" style="z-index:2; border-radius:50%;"><i class="fas fa-times"></i></button>
       </div>
     </div>
   </div>

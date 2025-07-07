@@ -1,33 +1,306 @@
 :host {
   display: block;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 50%, #e8f2ff 100%);
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 3rem;
+  color: var(--text-dark);
 }
 
-.input-group input {
-  border-right: none;
+// Main Card Container
+.feature-grid {
+  display: flex;
+  justify-content: center;
+
+  .feature-card {
+    width: 100%;
+    max-width: 1000px;
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+  }
 }
 
-.input-group button {
-  min-width: 90px;
+// Form Controls
+.form-label {
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
-.btn + .btn {
-  margin-left: 0.5rem;
+.form-control {
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.1);
+  }
+
+  &:disabled,
+  &[readonly] {
+    background-color: var(--light-bg);
+    border-color: var(--border-color);
+  }
 }
 
+// Buttons
+.btn-primary-custom,
+.btn.btn-primary {
+  background: var(--accent-color);
+  color: rgb(181, 155, 155);
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    color: rgb(133, 132, 132);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.btn-outline-primary {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+
+  &:hover {
+    background-color: var(--accent-color);
+    color: #d8d7d7;
+  }
+}
+
+// Table Styles
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+table {
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+
+  th {
+    background: #f8f9fa;
+    border-bottom: 2px solid var(--border-color);
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    text-align: left;
+    font-size: 0.9rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+  }
+
+  tbody tr {
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+
+    &.focused-row {
+      background-color: #e3f2fd;
+      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+    }
+  }
+}
+
+// Focus Mode
+.focus-mode {
+  tbody tr:not(.focused-row) {
+    opacity: 0.6;
+    filter: blur(1px);
+    transition: all 0.3s ease;
+  }
+}
+
+// Editable Cells
+.editable-cell {
+  position: relative;
+  transition: all 0.2s ease;
+
+  &.editing {
+    background-color: #fff3cd;
+    border-radius: 4px;
+  }
+
+  input {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+.non-editable {
+  color: #6c757d;
+  font-style: italic;
+}
+
+// Edit Button Cell
+.edit-btn-cell {
+  width: 120px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.edit-row-btn,
+.save-row-btn,
+.close-row-btn {
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  margin: 0 0.1rem;
+}
+
+.edit-row-btn {
+  color: #007bff;
+
+  &:hover {
+    background-color: #e3f2fd;
+    color: #0056b3;
+  }
+}
+
+.save-row-btn {
+  color: #28a745;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #d4edda;
+    color: #155724;
+  }
+}
+
+.close-row-btn {
+  color: #dc3545;
+
+  &:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+}
+
+// Enhanced Pagination Styles
+.pagination-bar {
+  background: #f8f9fa;
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.07);
+  padding: 0.5rem 1.5rem;
+  margin-top: 1.5rem;
+  display: inline-block;
+}
+
+.pagination {
+  margin-bottom: 0;
+  .page-link {
+    border: none;
+    border-radius: 50%;
+    margin: 0 0.15rem;
+    color: #007bff;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    background: transparent;
+
+    &:hover {
+      background: #e3f2fd;
+      color: #0056b3;
+    }
+    &:focus {
+      box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.15);
+    }
+  }
+  .page-item.active .page-link {
+    background: #007bff;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.12);
+  }
+  .page-item.disabled .page-link {
+    color: #bdbdbd;
+    background: transparent;
+    pointer-events: none;
+  }
+}
+
+// Modal Styles
 .modal {
   display: block;
   z-index: 1050;
 }
+
+// Utility
+.text-muted {
+  color: #6b7280 !important;
+}
+
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+// Responsive
 @media (max-width: 768px) {
   .input-group,
   .form-control,
   .btn {
     font-size: 14px;
   }
-}
 
-.card {
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  .feature-card {
+    padding: 1rem;
+  }
+
+  .table-wrapper {
+    font-size: 0.9rem;
+  }
+
+  .pagination {
+    .page-link {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+  }
 }
