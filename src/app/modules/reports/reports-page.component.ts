@@ -4,11 +4,10 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { ApiService } from '../../services/api.service';
 
 interface DailyReportData {
-  id: number;
-  date: string;
-  orderCount: number;
-  totalItems: number;
-  revenue: number;
+  date: number[];
+  invoicedOrdersCount: number;
+  invoicedItemsCount: number;
+  totalRevenue: number;
 }
 
 interface SalesReportData {
@@ -53,7 +52,7 @@ export class ReportsPageComponent implements OnInit {
     });
     
     this.clientSalesForm = this.fb.group({
-      clientId: ['', Validators.required]
+      clientName: ['', Validators.required]
     });
   }
 
@@ -71,12 +70,9 @@ export class ReportsPageComponent implements OnInit {
     this.clientSalesError = '';
   }
 
+  // No longer need to load clients since we're using text input
   async loadClients() {
-    try {
-      this.clients = await this.apiService.getClients();
-    } catch (error) {
-      console.error('Error loading clients:', error);
-    }
+    // Removed - using text input instead of dropdown
   }
 
   async generateDateRangeReport() {
@@ -111,10 +107,10 @@ export class ReportsPageComponent implements OnInit {
     this.clientSalesError = '';
     
     try {
-      const { clientId } = this.clientSalesForm.value;
+      const { clientName } = this.clientSalesForm.value;
       
       // Call API to get client sales report
-      this.clientSalesData = await this.apiService.getClientSalesReport(clientId);
+      this.clientSalesData = await this.apiService.getClientSalesReport(clientName);
       
     } catch (error: any) {
       this.clientSalesError = error.message || 'Failed to generate client sales report';
@@ -124,8 +120,22 @@ export class ReportsPageComponent implements OnInit {
   }
 
   getSelectedClientName(): string {
-    const clientId = this.clientSalesForm.value.clientId;
-    const client = this.clients.find(c => c.id === clientId);
-    return client ? client.name : '';
+    return this.clientSalesForm.value.clientName || '';
+  }
+
+  formatDate(dateArray: number[]): string {
+    if (dateArray && dateArray.length >= 3) {
+      const [year, month, day] = dateArray;
+      return new Date(year, month - 1, day).toLocaleDateString();
+    }
+    return 'Invalid Date';
+  }
+
+  getAverageOrderValue(row: DailyReportData): string {
+    if (row.invoicedOrdersCount > 0) {
+      const average = row.totalRevenue / row.invoicedOrdersCount;
+      return average.toFixed(2);
+    }
+    return '0.00';
   }
 } 

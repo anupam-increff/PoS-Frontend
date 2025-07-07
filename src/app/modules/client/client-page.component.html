@@ -30,7 +30,7 @@
     </div>
 
     <div class="table-responsive">
-      <table class="table table-custom" *ngIf="!loading && clients.length > 0">
+      <table class="table table-custom" [class.focus-mode]="editIndex !== null" *ngIf="!loading && clients.length > 0">
         <thead>
           <tr>
             <th>Client ID</th>

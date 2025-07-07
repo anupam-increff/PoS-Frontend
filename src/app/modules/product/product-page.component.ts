@@ -152,6 +152,13 @@ export class ProductPageComponent implements OnInit {
 
   saveEdit() {
     if (!this.editProduct) return;
+    
+    // Validate imageUrl is required
+    if (!this.editProduct.imageUrl || this.editProduct.imageUrl.trim() === '') {
+      this.toastr.error('Image URL is required');
+      return;
+    }
+    
     this.api.put(`/product/${this.editProduct.id}`, this.editProduct).subscribe({
       next: () => {
         this.toastr.success('Product updated');

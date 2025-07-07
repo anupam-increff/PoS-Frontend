@@ -36,17 +36,36 @@
   
           <!-- Upload Inventory -->
     <div *ngIf="tab === 'upload'">
-      <form [formGroup]="uploadForm" (ngSubmit)="uploadInventory()">
-          <div class="upload-section">
-            <div class="schema-info">
-              <h5 class="schema-title">
-                <i class="fas fa-info-circle me-2"></i>
-                Inventory TSV Schema Information
-              </h5>
-              <div class="schema-details">
-                <p class="schema-description">
-                  Upload a Tab-Separated Values (TSV) file with the following columns:
-                </p>
+      <div class="upload-container">
+        <div class="upload-header">
+          <h5 class="upload-title">
+            <i class="fas fa-cloud-upload-alt me-2"></i>
+            Bulk Inventory Upload
+          </h5>
+          <p class="upload-description">
+            Upload multiple inventory items at once using a TSV (Tab-Separated Values) file.
+          </p>
+        </div>
+
+        <div class="upload-steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h6>Download Template</h6>
+              <p>Get the sample TSV file to understand the required format</p>
+              <button class="btn btn-outline-primary btn-sm" (click)="downloadSampleTSV()">
+                <i class="fas fa-download me-1"></i>
+                Download Sample TSV
+              </button>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h6>Prepare Your File</h6>
+              <p>Fill in your inventory data following the template format</p>
+              <div class="schema-info">
                 <div class="schema-columns">
                   <div class="schema-column">
                     <strong>barcode</strong> - Product barcode (must exist in products)
@@ -55,33 +74,34 @@
                     <strong>quantity</strong> - Stock quantity (numeric)
                   </div>
                 </div>
-                <div class="schema-note">
-                  <i class="fas fa-exclamation-triangle me-1"></i>
-                  <strong>Note:</strong> First row should contain column headers. Values should be tab-separated.
-                </div>
               </div>
             </div>
-            
-            <div class="sample-download">
-              <h6 class="sample-title">
-                <i class="fas fa-download me-2"></i>
-                Download Sample Inventory TSV
-              </h6>
-              <p class="sample-description">Get a sample TSV file with 2 example inventory entries to understand the format.</p>
-              <button type="button" class="btn btn-outline-primary" (click)="downloadSampleTSV()">
-                <i class="fas fa-file-download me-2"></i>
-                Download Sample TSV
-              </button>
+          </div>
+
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h6>Upload File</h6>
+              <p>Select your TSV file and upload to import inventory</p>
+              <form [formGroup]="uploadForm" (ngSubmit)="uploadInventory()" class="upload-form">
+                <div class="file-upload-area">
+                  <input type="file" class="file-input" (change)="onFileChange($event)" accept=".tsv" id="inventoryFile">
+                  <label for="inventoryFile" class="file-label">
+                    <i class="fas fa-file-upload me-2"></i>
+                    <span *ngIf="!uploadForm.value.file">Choose TSV file or drag here</span>
+                    <span *ngIf="uploadForm.value.file">{{ uploadForm.value.file.name }}</span>
+                  </label>
+                </div>
+                <button class="btn btn-primary" type="submit" [disabled]="uploadForm.invalid">
+                  <i class="fas fa-upload me-2"></i>
+                  Upload Inventory
+                </button>
+              </form>
             </div>
           </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Upload TSV File</label>
-            <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv" />
-          </div>
-          <button class="btn btn-primary" type="submit" [disabled]="uploadForm.invalid">Upload</button>
-        </form>
+        </div>
       </div>
+    </div>
   
       <!-- Add Inventory -->
       <form *ngIf="tab === 'add'" [formGroup]="addForm" (ngSubmit)="addInventory()">

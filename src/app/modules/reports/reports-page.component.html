@@ -85,19 +85,19 @@
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Orders</th>
-                <th>Total Items</th>
-                <th>Revenue</th>
+                <th>Invoiced Orders</th>
+                <th>Invoiced Items</th>
+                <th>Total Revenue</th>
                 <th>Average Order Value</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let row of dateRangeData">
-                <td>{{ row.date | date }}</td>
-                <td>{{ row.orderCount }}</td>
-                <td>{{ row.totalItems }}</td>
-                <td>₹{{ row.revenue | number:'1.2-2' }}</td>
-                <td>₹{{ (row.revenue / row.orderCount) | number:'1.2-2' }}</td>
+                <td>{{ formatDate(row.date) }}</td>
+                <td>{{ row.invoicedOrdersCount }}</td>
+                <td>{{ row.invoicedItemsCount }}</td>
+                <td>₹{{ row.totalRevenue | number:'1.2-2' }}</td>
+                <td>₹{{ getAverageOrderValue(row) }}</td>
               </tr>
             </tbody>
           </table>
@@ -117,18 +117,15 @@
           <div class="row">
             <div class="col-md-6">
               <label class="form-label">Client Name</label>
-              <select 
+              <input 
+                type="text" 
                 class="form-control" 
-                formControlName="clientId"
-                [class.is-invalid]="clientSalesForm.get('clientId')?.invalid && clientSalesForm.get('clientId')?.touched"
-              >
-                <option value="">Select a client</option>
-                <option *ngFor="let client of clients" [value]="client.id">
-                  {{ client.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback" *ngIf="clientSalesForm.get('clientId')?.invalid && clientSalesForm.get('clientId')?.touched">
-                Please select a client
+                formControlName="clientName"
+                placeholder="Enter client name"
+                [class.is-invalid]="clientSalesForm.get('clientName')?.invalid && clientSalesForm.get('clientName')?.touched"
+              />
+              <div class="invalid-feedback" *ngIf="clientSalesForm.get('clientName')?.invalid && clientSalesForm.get('clientName')?.touched">
+                Please enter a client name
               </div>
             </div>
             <div class="col-md-6 d-flex align-items-end">

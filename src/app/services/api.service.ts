@@ -85,15 +85,15 @@ export class ApiService {
   }
 
   async getDateRangeReport(startDate: string, endDate: string): Promise<any[]> {
-    const result = await this.get<any[]>('/reports/daily', {
-      params: { startDate, endDate }
+    const result = await this.get<any[]>('/reports/day-sales', {
+      params: { start: startDate, end: endDate }
     }).toPromise();
     return result || [];
   }
 
-  async getClientSalesReport(clientId: string): Promise<any[]> {
+  async getClientSalesReport(clientName: string): Promise<any[]> {
     const result = await this.get<any[]>('/reports/sales', {
-      params: { clientId }
+      params: { clientName }
     }).toPromise();
     return result || [];
   }
