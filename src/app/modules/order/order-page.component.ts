@@ -336,52 +336,85 @@ export class OrderPageComponent implements OnInit {
       }
     }
     
-    // If not found in current form, return barcode as fallback
+    // If not found in current form, try to fetch from API
+    // For now, return a formatted version of the barcode
     return barcode || 'Unknown Product';
   }
 
-  // Fix date formatting for order history
+  // Fix date formatting for order history - show only one formatted date
   formatOrderDate(dateInput: string | Date): string {
     if (!dateInput) return '';
     
     try {
-      let dateString: string;
+      let date: Date;
       
-      // Convert Date object to string if needed
+      // Convert to Date object
       if (dateInput instanceof Date) {
-        dateString = dateInput.toLocaleDateString('en-GB') + ', ' + dateInput.toLocaleTimeString('en-GB', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        date = dateInput;
       } else {
-        dateString = dateInput.toString();
+        date = new Date(dateInput);
       }
       
-      // Handle different date formats
-      if (dateString.includes(',')) {
-        // Format: "30/06/2025, 06:47 PM"
-        const parts = dateString.split(',');
-        const datePart = parts[0];
-        const timePart = parts[1];
-        
-        const [day, month, year] = datePart.split('/');
-        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        
-        return date.toLocaleDateString('en-GB') + timePart;
-      } else {
-        // Try parsing as ISO string
-        const date = new Date(dateString);
-        if (!isNaN(date.getTime())) {
-          return date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          });
-        }
+      if (isNaN(date.getTime())) {
+        return dateInput.toString();
       }
       
-      return dateString; // Return original if parsing fails
+      // Return formatted date and time
+      return date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     } catch (error) {
-      return dateInput.toString(); // Return original if parsing fails
+      return dateInput.toString();
+    }
+  }
+
+  // Get only the date part for order history
+  getOrderDate(dateInput: string | Date): string {
+    if (!dateInput) return '';
+    
+    try {
+      let date: Date;
+      
+      if (dateInput instanceof Date) {
+        date = dateInput;
+      } else {
+        date = new Date(dateInput);
+      }
+      
+      if (isNaN(date.getTime())) {
+        return dateInput.toString();
+      }
+      
+      return date.toLocaleDateString('en-GB');
+    } catch (error) {
+      return dateInput.toString();
+    }
+  }
+
+  // Get only the time part for order history
+  getOrderTime(dateInput: string | Date): string {
+    if (!dateInput) return '';
+    
+    try {
+      let date: Date;
+      
+      if (dateInput instanceof Date) {
+        date = dateInput;
+      } else {
+        date = new Date(dateInput);
+      }
+      
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+      
+      return date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return '';
     }
   }
 }

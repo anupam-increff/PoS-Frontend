@@ -84,7 +84,7 @@
         <div *ngIf="dateRangeData.length > 0" class="table-wrapper">
           <h6 class="mb-3">Sales Report: {{ dateRangeForm.value.startDate | date }} to {{ dateRangeForm.value.endDate | date }}</h6>
           <div class="table-responsive">
-            <table class="table table-modern">
+            <table class="table table-custom">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -127,82 +127,119 @@
       <div class="report-form">
         <h5 class="mb-3">
           <i class="fas fa-users me-2"></i>
-          Generate Sales Report by Client
+          Client Sales Report
         </h5>
         
-        <form [formGroup]="clientSalesForm" (ngSubmit)="generateClientSalesReport()" class="mb-4">
-          <div class="row">
-            <div class="col-md-6">
-              <label class="form-label">Client Name</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                formControlName="clientName"
-                placeholder="Enter client name"
-                [class.is-invalid]="clientSalesForm.get('clientName')?.invalid && clientSalesForm.get('clientName')?.touched"
-              />
-              <div class="invalid-feedback" *ngIf="clientSalesForm.get('clientName')?.invalid && clientSalesForm.get('clientName')?.touched">
-                Please enter a client name
-              </div>
+        <!-- Client Sales Filters -->
+        <div class="search-filters-card mb-4">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label">
+                <i class="fas fa-search me-1"></i>
+                Search Client
+              </label>
+              <input type="text" 
+                     class="form-control"
+                     placeholder="Search by client name"
+                     [(ngModel)]="salesClientName"
+                     (input)="applyClientSalesFilters()">
             </div>
-            <div class="col-md-6 d-flex align-items-end">
-              <button 
-                type="submit" 
-                class="btn btn-primary" 
-                [disabled]="clientSalesForm.invalid || loading"
-              >
-                <i class="fas fa-search me-2"></i>
-                Generate Report
+            <div class="col-md-3">
+              <label class="form-label">
+                <i class="fas fa-calendar me-1"></i>
+                Start Date
+              </label>
+              <input type="date" 
+                     class="form-control"
+                     [(ngModel)]="salesStartDate"
+                     (change)="applyClientSalesFilters()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">
+                <i class="fas fa-calendar me-1"></i>
+                End Date
+              </label>
+              <input type="date" 
+                     class="form-control"
+                     [(ngModel)]="salesEndDate"
+                     (change)="applyClientSalesFilters()">
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-secondary" (click)="clearClientSalesFilters()">
+                <i class="fas fa-times me-1"></i>
+                Clear Filters
               </button>
             </div>
           </div>
-        </form>
-
-        <div *ngIf="clientSalesError" class="alert alert-danger">
-          <i class="fas fa-exclamation-triangle me-2"></i>
-          {{ clientSalesError }}
         </div>
 
-        <div *ngIf="clientSalesData.length > 0" class="table-wrapper">
-          <h6 class="mb-3">Client Sales Report: {{ getSelectedClientName() }}</h6>
+        <!-- Loading State -->
+        <div *ngIf="clientSalesLoading" class="loading-state">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 mb-0">Loading sales data...</p>
+        </div>
+
+        <!-- Client Sales Table -->
+        <div *ngIf="!clientSalesLoading && clientSales.length > 0" class="table-wrapper">
+          <h6 class="mb-3">Client Sales Report</h6>
           <div class="table-responsive">
-            <table class="table table-modern">
+            <table class="table table-custom">
               <thead>
                 <tr>
                   <th>Client Name</th>
-                  <th>Product</th>
-                  <th>Barcode</th>
-                  <th class="text-center">Quantity</th>
+                  <th class="text-center">Quantity Sold</th>
                   <th class="text-end">Revenue</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of clientSalesData">
+                <tr *ngFor="let sale of clientSales">
                   <td>
                     <div class="d-flex align-items-center">
                       <i class="fas fa-user me-2 text-primary"></i>
-                      <span class="fw-semibold">{{ row.clientName }}</span>
+                      <span class="fw-semibold">{{ sale.client }}</span>
                     </div>
-                  </td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <i class="fas fa-box me-2 text-info"></i>
-                      <span>{{ row.productName }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <code class="small">{{ row.barcode }}</code>
                   </td>
                   <td class="text-center">
-                    <span class="badge bg-warning text-dark">{{ row.quantity }}</span>
+                    <span class="badge bg-info">{{ sale.quantity }}</span>
                   </td>
                   <td class="text-end">
-                    <span class="fw-bold text-success">₹{{ row.revenue | number:'1.2-2' }}</span>
+                    <span class="fw-bold text-success">₹{{ sale.revenue | number:'1.2-2' }}</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="clientSalesTotalItems > 0">
+            <div class="text-muted">
+              Showing {{ clientSalesCurrentPage * clientSalesPageSize + 1 }} to {{ clientSalesMath.min((clientSalesCurrentPage + 1) * clientSalesPageSize, clientSalesTotalItems) }} of {{ clientSalesTotalItems }} clients
+            </div>
+            <nav *ngIf="clientSalesTotalPages > 1">
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="clientSalesCurrentPage === 0">
+                  <button class="page-link" (click)="onClientSalesPageChange(clientSalesCurrentPage - 1)" [disabled]="clientSalesCurrentPage === 0">&laquo;</button>
+                </li>
+                <li class="page-item" *ngFor="let page of getClientSalesPageNumbers()" [class.active]="page === clientSalesCurrentPage">
+                  <button class="page-link" (click)="onClientSalesPageChange(page)">{{ page + 1 }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="clientSalesCurrentPage === clientSalesTotalPages - 1">
+                  <button class="page-link" (click)="onClientSalesPageChange(clientSalesCurrentPage + 1)" [disabled]="clientSalesCurrentPage === clientSalesTotalPages - 1">&raquo;</button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!clientSalesLoading && clientSales.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h5>No Sales Data</h5>
+          <p class="text-muted mb-4">No sales data found for the selected criteria.</p>
         </div>
       </div>
     </div>

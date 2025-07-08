@@ -43,6 +43,20 @@ export class ReportsPageComponent implements OnInit {
   dateRangeError = '';
   clientSalesError = '';
 
+  // Client Sales
+  clientSales: any[] = [];
+  clientSalesLoading = false;
+  clientSalesCurrentPage = 0;
+  clientSalesTotalPages = 0;
+  clientSalesTotalItems = 0;
+  clientSalesPageSize = 10;
+  clientSalesMath = Math;
+  
+  // Client Sales Filters
+  salesStartDate = '';
+  salesEndDate = '';
+  salesClientName = '';
+
   constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
@@ -64,6 +78,12 @@ export class ReportsPageComponent implements OnInit {
     this.dateRangeForm.patchValue({
       endDate: today
     });
+    
+    // Set default dates for client sales
+    this.salesEndDate = today;
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    this.salesStartDate = oneMonthAgo.toISOString().split('T')[0];
   }
 
   setTab(tab: string) {
@@ -118,6 +138,63 @@ export class ReportsPageComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  loadClientSales(page: number = 0) {
+    this.clientSalesLoading = true;
+    this.clientSalesCurrentPage = page;
+    
+    const payload = {
+      startDate: this.salesStartDate ? new Date(this.salesStartDate).toISOString() : new Date().toISOString(),
+      endDate: this.salesEndDate ? new Date(this.salesEndDate).toISOString() : new Date().toISOString(),
+      clientName: this.salesClientName || null,
+      page: page,
+      size: this.clientSalesPageSize
+    };
+    
+    this.apiService.post<any>('/report/sales/search', payload).subscribe({
+      next: (response) => {
+        this.clientSales = response.content || [];
+        this.clientSalesTotalItems = response.totalItems || 0;
+        this.clientSalesTotalPages = response.totalPages || 0;
+        this.clientSalesPageSize = response.pageSize || this.clientSalesPageSize;
+        this.clientSalesLoading = false;
+      },
+      error: () => {
+        this.toastr.error('Failed to load client sales data');
+        this.clientSalesLoading = false;
+      }
+    });
+  }
+
+  applyClientSalesFilters() {
+    this.clientSalesCurrentPage = 0;
+    this.loadClientSales();
+  }
+
+  clearClientSalesFilters() {
+    this.salesStartDate = '';
+    this.salesEndDate = '';
+    this.salesClientName = '';
+    this.clientSalesCurrentPage = 0;
+    this.applyClientSalesFilters();
+  }
+
+  onClientSalesPageChange(page: number): void {
+    this.clientSalesCurrentPage = page;
+    this.loadClientSales(page);
+  }
+
+  getClientSalesPageNumbers(): number[] {
+    const pages: number[] = [];
+    const startPage = Math.max(0, this.clientSalesCurrentPage - 2);
+    const endPage = Math.min(this.clientSalesTotalPages - 1, this.clientSalesCurrentPage + 2);
+    for (let i = startPage; i <= endPage; i++) {
+      if (i >= 0) {
+        pages.push(i);
+      }
+    }
+    return pages;
   }
 
   getSelectedClientName(): string {
