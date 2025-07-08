@@ -1,3 +1,4 @@
+<!-- Hero Section -->
 <div class="hero-section">
   <div class="container">
     <h1 class="hero-title">
@@ -12,6 +13,7 @@
 
 <div class="feature-grid">
   <div class="feature-card">
+    <!-- Tab Header -->
     <ul class="nav nav-tabs">
       <li class="nav-item">
         <a class="nav-link" [class.active]="tab === 'dateRange'" (click)="setTab('dateRange')">
@@ -81,26 +83,41 @@
 
         <div *ngIf="dateRangeData.length > 0" class="table-wrapper">
           <h6 class="mb-3">Sales Report: {{ dateRangeForm.value.startDate | date }} to {{ dateRangeForm.value.endDate | date }}</h6>
-          <table class="table table-custom">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Invoiced Orders</th>
-                <th>Invoiced Items</th>
-                <th>Total Revenue</th>
-                <th>Average Order Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of dateRangeData">
-                <td>{{ formatDate(row.date) }}</td>
-                <td>{{ row.invoicedOrdersCount }}</td>
-                <td>{{ row.invoicedItemsCount }}</td>
-                <td>₹{{ row.totalRevenue | number:'1.2-2' }}</td>
-                <td>₹{{ getAverageOrderValue(row) }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table class="table table-modern">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th class="text-center">Invoiced Orders</th>
+                  <th class="text-center">Invoiced Items</th>
+                  <th class="text-end">Total Revenue</th>
+                  <th class="text-end">Average Order Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of dateRangeData">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-calendar-day me-2 text-primary"></i>
+                      <span class="fw-semibold">{{ formatDate(row.date) }}</span>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-info">{{ row.invoicedOrdersCount }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-secondary">{{ row.invoicedItemsCount }}</span>
+                  </td>
+                  <td class="text-end">
+                    <span class="fw-bold text-success">₹{{ row.totalRevenue | number:'1.2-2' }}</span>
+                  </td>
+                  <td class="text-end">
+                    <span class="fw-semibold text-primary">₹{{ getAverageOrderValue(row) }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -148,26 +165,44 @@
 
         <div *ngIf="clientSalesData.length > 0" class="table-wrapper">
           <h6 class="mb-3">Client Sales Report: {{ getSelectedClientName() }}</h6>
-          <table class="table table-custom">
-            <thead>
-              <tr>
-                <th>Client Name</th>
-                <th>Product</th>
-                <th>Barcode</th>
-                <th>Quantity</th>
-                <th>Revenue</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of clientSalesData">
-                <td>{{ row.clientName }}</td>
-                <td>{{ row.productName }}</td>
-                <td><code>{{ row.barcode }}</code></td>
-                <td>{{ row.quantity }}</td>
-                <td>₹{{ row.revenue | number:'1.2-2' }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table class="table table-modern">
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Product</th>
+                  <th>Barcode</th>
+                  <th class="text-center">Quantity</th>
+                  <th class="text-end">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of clientSalesData">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user me-2 text-primary"></i>
+                      <span class="fw-semibold">{{ row.clientName }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-box me-2 text-info"></i>
+                      <span>{{ row.productName }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <code class="small">{{ row.barcode }}</code>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-warning text-dark">{{ row.quantity }}</span>
+                  </td>
+                  <td class="text-end">
+                    <span class="fw-bold text-success">₹{{ row.revenue | number:'1.2-2' }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

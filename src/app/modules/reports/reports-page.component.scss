@@ -1,14 +1,17 @@
+// Reports Container
 .reports-container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
+
 .reports-title {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 2rem;
   text-align: center;
 }
+
 .report-section {
   background: #fff;
   border-radius: 12px;
@@ -16,15 +19,18 @@
   margin-bottom: 2.5rem;
   padding: 2rem 1.5rem;
 }
+
 .filters {
   display: flex;
   gap: 1rem;
   align-items: center;
   margin-bottom: 1.5rem;
 }
+
 .filters label {
   font-weight: 500;
 }
+
 .btn-primary-custom {
   background: #007bff;
   color: #fff;
@@ -35,6 +41,205 @@
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .btn-primary-custom:hover {
   background: #0056b3;
+}
+
+// Modern Table Styling
+.table-wrapper {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin-top: 1rem;
+  
+  .table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  
+  .table-modern {
+    margin-bottom: 0;
+    
+    thead {
+      th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        
+        &:first-child {
+          border-top-left-radius: 12px;
+        }
+        
+        &:last-child {
+          border-top-right-radius: 12px;
+        }
+      }
+    }
+    
+    tbody {
+      tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #f1f3f4;
+        
+        &:hover {
+          background: rgba(102, 126, 234, 0.05);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        td {
+          padding: 1rem;
+          border: none;
+          vertical-align: middle;
+          
+          .d-flex {
+            align-items: center;
+          }
+          
+          .badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+          }
+          
+          code {
+            background: #f8f9fa;
+            color: #e83e8c;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Form Controls
+.form-control {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+// Buttons
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s ease;
+  
+  &.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    
+    &:hover {
+      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+  }
+}
+
+// Badge Colors
+.bg-info {
+  background-color: #17a2b8 !important;
+}
+
+.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+.bg-warning {
+  background-color: #ffc107 !important;
+  color: #212529 !important;
+}
+
+.bg-success {
+  background-color: #28a745 !important;
+}
+
+.bg-primary {
+  background-color: #007bff !important;
+}
+
+// Text Colors
+.text-primary {
+  color: #667eea !important;
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-info {
+  color: #17a2b8 !important;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .report-section {
+    padding: 1rem;
+  }
+  
+  .table-wrapper {
+    .table {
+      font-size: 0.9rem;
+      
+      thead th {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+      }
+      
+      tbody td {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .table-wrapper {
+    .table {
+      font-size: 0.8rem;
+      
+      thead th {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+      }
+      
+      tbody td {
+        padding: 0.5rem 0.25rem;
+      }
+    }
+  }
 } 

@@ -120,20 +120,22 @@
               <div class="modal-body pt-0">
                 <div *ngIf="confirmSummary.length > 0">
                   <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-3">
+                    <table class="table table-sm align-middle mb-3" style="font-size: 0.9rem;">
                       <thead class="table-light">
                         <tr>
-                          <th>Product Name</th>
-                          <th>Barcode</th>
-                          <th class="text-center">Quantity</th>
-                          <th class="text-end">Selling Price</th>
-                          <th class="text-end">Total</th>
+                          <th style="width: 30%;">Product Name</th>
+                          <th style="width: 25%;">Barcode</th>
+                          <th style="width: 15%;" class="text-center">Qty</th>
+                          <th style="width: 15%;" class="text-end">Price</th>
+                          <th style="width: 15%;" class="text-end">Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr *ngFor="let item of confirmSummary">
-                          <td>{{ item.barcode }}</td>
-                          <td><code>{{ item.barcode }}</code></td>
+                          <td class="text-truncate" title="{{ getProductName(item.barcode) }}">
+                            {{ getProductName(item.barcode) }}
+                          </td>
+                          <td><code class="small">{{ item.barcode }}</code></td>
                           <td class="text-center">{{ item.quantity }}</td>
                           <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
                           <td class="text-end fw-semibold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
@@ -251,21 +253,28 @@
 
         <!-- Orders Table -->
         <div class="table-wrapper" *ngIf="!loadingOrders && orders.length > 0">
-          <table class="table table-hover">
-            <thead>
+          <table class="table table-hover table-striped">
+            <thead class="table-dark">
               <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Invoice</th>
-                <th>Actions</th>
+                <th style="width: 15%;">Order ID</th>
+                <th style="width: 25%;">Date</th>
+                <th style="width: 20%;">Total</th>
+                <th style="width: 25%;">Invoice</th>
+                <th style="width: 15%;">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let order of orders">
-                <td><strong>#{{ order.id }}</strong></td>
-                <td>{{ fmtDate(order.placedAt) }}</td>
-                <td>₹{{ order.total | number:'1.2-2' }}</td>
+                <td><strong class="text-primary">#{{ order.id }}</strong></td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="fw-semibold">{{ formatOrderDate(order.placedAt) }}</span>
+                    <small class="text-muted">{{ formatOrderDate(order.placedAt) }}</small>
+                  </div>
+                </td>
+                <td>
+                  <span class="fw-bold text-success">₹{{ order.total | number:'1.2-2' }}</span>
+                </td>
                 <td>
                   <button class="btn btn-sm" 
                           [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
@@ -276,14 +285,10 @@
                   </button>
                 </td>
                 <td>
-                  <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary" (click)="openViewItems(order.id)" title="View Items">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn btn-outline-success" (click)="duplicateOrder(order)" title="Duplicate">
-                      <i class="fas fa-copy"></i>
-                    </button>
-                  </div>
+                  <button class="btn btn-outline-primary btn-sm" (click)="openViewItems(order.id)" title="View Order Details">
+                    <i class="fas fa-eye"></i>
+                    View
+                  </button>
                 </td>
               </tr>
             </tbody>

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { ToastrService } from 'ngx-toastr';
 
 interface DailyReportData {
   date: number[];
@@ -44,7 +45,8 @@ export class ReportsPageComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private toastr: ToastrService
   ) {
     this.dateRangeForm = this.fb.group({
       startDate: ['', Validators.required],
@@ -57,7 +59,11 @@ export class ReportsPageComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadClients();
+    // Set default end date as today
+    const today = new Date().toISOString().split('T')[0];
+    this.dateRangeForm.patchValue({
+      endDate: today
+    });
   }
 
   setTab(tab: string) {
@@ -68,11 +74,6 @@ export class ReportsPageComponent implements OnInit {
   clearErrors() {
     this.dateRangeError = '';
     this.clientSalesError = '';
-  }
-
-  // No longer need to load clients since we're using text input
-  async loadClients() {
-    // Removed - using text input instead of dropdown
   }
 
   async generateDateRangeReport() {

@@ -237,9 +237,23 @@ export class OrderPageComponent implements OnInit {
 
   handleInvoice(order: Order) {
     if (order.invoicePath) {
-      window.location.href = `/api/invoice/${order.id}`;
-      this.toastr.success('Invoice downloaded');
+      // Download existing invoice - use direct API call
+      this.api.get(`/invoice/${order.id}`, { responseType: 'blob' }).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `invoice-${order.id}.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.toastr.success('Invoice downloaded');
+        },
+        error: () => {
+          this.toastr.error('Failed to download invoice');
+        }
+      });
     } else {
+      // Generate new invoice
       this.api.get(`/invoice/generate/${order.id}`).subscribe({
         next: () => {
           this.toastr.success('Invoice generated successfully');
@@ -298,5 +312,76 @@ export class OrderPageComponent implements OnInit {
 
   getViewedOrderTotal(): number {
     return this.viewedItems.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0);
+  }
+
+  getProductInfoByBarcode(barcode: string): { name: string } | null {
+    // Get product info from the current form items
+    const values = this.items.getRawValue();
+    for (const item of values) {
+      if (item.barcode === barcode) {
+        // Try to get product info from API or return barcode as fallback
+        return { name: item.barcode }; // For now, return barcode as name
+      }
+    }
+    return null;
+  }
+
+  // Add method to get product name from API
+  getProductName(barcode: string): string {
+    // Try to get product info from the current form items first
+    const values = this.items.getRawValue();
+    for (const item of values) {
+      if (item.barcode === barcode) {
+        return item.name || barcode; // Use actual product name if available
+      }
+    }
+    
+    // If not found in current form, return barcode as fallback
+    return barcode || 'Unknown Product';
+  }
+
+  // Fix date formatting for order history
+  formatOrderDate(dateInput: string | Date): string {
+    if (!dateInput) return '';
+    
+    try {
+      let dateString: string;
+      
+      // Convert Date object to string if needed
+      if (dateInput instanceof Date) {
+        dateString = dateInput.toLocaleDateString('en-GB') + ', ' + dateInput.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } else {
+        dateString = dateInput.toString();
+      }
+      
+      // Handle different date formats
+      if (dateString.includes(',')) {
+        // Format: "30/06/2025, 06:47 PM"
+        const parts = dateString.split(',');
+        const datePart = parts[0];
+        const timePart = parts[1];
+        
+        const [day, month, year] = datePart.split('/');
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        
+        return date.toLocaleDateString('en-GB') + timePart;
+      } else {
+        // Try parsing as ISO string
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+        }
+      }
+      
+      return dateString; // Return original if parsing fails
+    } catch (error) {
+      return dateInput.toString(); // Return original if parsing fails
+    }
   }
 }
