@@ -134,7 +134,6 @@
           <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 700px; max-width: 1100px; margin: 0 auto;">
             <thead>
               <tr>
-                <th>Product ID</th>
                 <th>Barcode</th>
                 <th>Name</th>
                 <th>Quantity</th>
@@ -143,7 +142,6 @@
             </thead>
             <tbody>
               <tr *ngFor="let item of inventory; let i = index; trackBy: trackByInventoryId" [ngClass]="{'focused-row': editIndex === i}">
-                <td class="non-editable"><code>{{ item.productId }}</code></td>
                 <td class="non-editable"><code>{{ item.barcode }}</code></td>
                 <td class="non-editable">{{ item.name }}</td>
                 <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">

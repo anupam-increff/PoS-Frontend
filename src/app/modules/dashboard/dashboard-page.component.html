@@ -27,62 +27,35 @@
       </div>
     </div>
   
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon clients">
-            <i class="fas fa-users"></i>
+    <!-- About PoS Section -->
+    <div class="about-section">
+      <div class="about-content">
+        <h3 class="about-title">
+          <i class="fas fa-info-circle me-2"></i>
+          About Point of Sale System
+        </h3>
+        <p class="about-description">
+          Our comprehensive Point of Sale (PoS) system provides everything you need to manage your business efficiently. 
+          From inventory management to sales tracking, client management to detailed reporting - all in one integrated platform.
+        </p>
+        <div class="about-features">
+          <div class="feature-item">
+            <i class="fas fa-box text-primary"></i>
+            <span>Inventory Management</span>
           </div>
-          <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i> +12%
+          <div class="feature-item">
+            <i class="fas fa-shopping-cart text-success"></i>
+            <span>Order Processing</span>
           </div>
-        </div>
-        <div class="stat-value">1,247</div>
-        <div class="stat-label">Total Clients</div>
-        <div class="stat-description">Active customer base</div>
-      </div>
-  
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon products">
-            <i class="fas fa-box"></i>
+          <div class="feature-item">
+            <i class="fas fa-users text-info"></i>
+            <span>Client Management</span>
           </div>
-          <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i> +8%
-          </div>
-        </div>
-        <div class="stat-value">856</div>
-        <div class="stat-label">Products in Stock</div>
-        <div class="stat-description">Available inventory</div>
-      </div>
-  
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon orders">
-            <i class="fas fa-shopping-cart"></i>
-          </div>
-          <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i> +24%
+          <div class="feature-item">
+            <i class="fas fa-chart-line text-warning"></i>
+            <span>Analytics & Reports</span>
           </div>
         </div>
-        <div class="stat-value">423</div>
-        <div class="stat-label">Orders This Month</div>
-        <div class="stat-description">Monthly sales volume</div>
-      </div>
-  
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon revenue">
-            <i class="fas fa-rupee-sign"></i>
-          </div>
-          <div class="stat-change negative">
-            <i class="fas fa-arrow-down"></i> -3%
-          </div>
-        </div>
-        <div class="stat-value">₹45,678</div>
-        <div class="stat-label">Monthly Revenue</div>
-        <div class="stat-description">Total earnings</div>
       </div>
     </div>
   
@@ -123,13 +96,13 @@
             <div class="action-desc">Create sale order</div>
           </div>
         </a>
-        <a [routerLink]="['/invoice']" class="action-btn">
+        <a [routerLink]="['/inventory']" class="action-btn">
           <div class="action-icon">
-            <i class="fas fa-file-invoice-dollar"></i>
+            <i class="fas fa-boxes"></i>
           </div>
           <div class="action-content">
-            <div class="action-title">Generate Invoice</div>
-            <div class="action-desc">Create bill</div>
+            <div class="action-title">Manage Inventory</div>
+            <div class="action-desc">Stock management</div>
           </div>
         </a>
       </div>
@@ -187,6 +160,20 @@
           </a>
         </div>
   
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <h3 class="feature-title">Inventory Management</h3>
+          <p class="feature-description">
+            Track stock levels, manage inventory, and monitor product availability.
+          </p>
+          <a [routerLink]="['/inventory']" class="btn-primary-custom">
+            <i class="fas fa-arrow-right"></i>
+            Manage Inventory
+          </a>
+        </div>
+
         <div class="feature-card">
           <div class="feature-icon">
             <i class="fas fa-chart-line"></i>

@@ -10,13 +10,15 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideToastr({positionClass: 'toast-top-center', 
-      timeOut: 3000,
+    provideToastr({
+      positionClass: 'toast-top-center', 
+      timeOut: 0, // No auto-dismiss
       closeButton: true,
-      progressBar: true,
-      easing: 'ease-in',
-      easeTime: 300,
-      tapToDismiss: true,}),
+      progressBar: false,
+      tapToDismiss: false, // Only close on button click
+      preventDuplicates: true,
+      newestOnTop: true
+    }),
     importProvidersFrom(HttpClientModule, BrowserAnimationsModule) 
   ]
 };

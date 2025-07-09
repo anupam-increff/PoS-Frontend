@@ -10,13 +10,13 @@ import { InventoryPageComponent } from './modules/inventory/inventory-page.compo
 import { ReportsPageComponent } from './modules/reports/reports-page.component';
 
 export const routes: Routes = [
+  { path: 'auth', component: AuthPageComponent },
   { path: 'dashboard', component: DashboardPageComponent },
   { path: 'client', component: ClientPageComponent },
   { path: 'product', component: ProductPageComponent },
   { path: 'order', component: OrderPageComponent },
   { path: 'invoice', component: InvoicePageComponent },
   { path: 'inventory', component: InventoryPageComponent },
-  { path: 'auth', component: AuthPageComponent },
   { path: 'test', component: TestPageComponent },
   { path: 'reports', component: ReportsPageComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

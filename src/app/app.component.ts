@@ -21,6 +21,7 @@ export class AppComponent implements OnInit, OnDestroy {
   isAuthenticated = false;
   currentUser: User | null = null;
   currentRoute = '';
+  showLogoutModal = false;
   
   private authSubscription: Subscription | null = null;
   private routerSubscription: Subscription | null = null;
@@ -32,8 +33,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.authSubscription = this.authService.currentUser$.subscribe(user => {
+      console.log('Auth state changed:', user);
       this.currentUser = user;
       this.isAuthenticated = !!user;
+      console.log('Is authenticated:', this.isAuthenticated);
     });
 
     // Track current route for navbar highlighting
@@ -42,6 +45,9 @@ export class AppComponent implements OnInit, OnDestroy {
     ).subscribe((event: any) => {
       this.currentRoute = event.url;
     });
+
+    // Check for existing session on page load
+    this.checkExistingSession();
   }
 
   ngOnDestroy() {
@@ -53,8 +59,28 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  logout() {
+  private checkExistingSession(): void {
+    // Check if user is already logged in from another tab
+    if (this.authService.isAuthenticated()) {
+      const user = this.authService.getCurrentUser();
+      if (user) {
+        this.currentUser = user;
+        this.isAuthenticated = true;
+      }
+    }
+  }
+
+  showLogoutConfirm(): void {
+    this.showLogoutModal = true;
+  }
+
+  hideLogoutConfirm(): void {
+    this.showLogoutModal = false;
+  }
+
+  confirmLogout(): void {
     this.authService.logout();
+    this.hideLogoutConfirm();
   }
 
   get sessionStorage() {

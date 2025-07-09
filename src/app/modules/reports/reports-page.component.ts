@@ -76,14 +76,19 @@ export class ReportsPageComponent implements OnInit {
     // Set default end date as today
     const today = new Date().toISOString().split('T')[0];
     this.dateRangeForm.patchValue({
+      startDate: today,
       endDate: today
     });
     
-    // Set default dates for client sales
+    // Set default dates for client sales - start of month to today
     this.salesEndDate = today;
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    this.salesStartDate = oneMonthAgo.toISOString().split('T')[0];
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    this.salesStartDate = startOfMonth.toISOString().split('T')[0];
+    
+    // Load initial data
+    this.generateDateRangeReport();
+    this.loadClientSales();
   }
 
   setTab(tab: string) {

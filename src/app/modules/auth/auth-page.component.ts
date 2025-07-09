@@ -52,16 +52,20 @@ export class AuthPageComponent implements OnInit {
       password: this.loginForm.value.password
     };
 
+    console.log('Attempting login with:', credentials);
+
     this.authService.login(credentials).subscribe({
       next: (response) => {
+        console.log('Login successful:', response);
         this.loading = false;
         this.toastr.success('Login successful!');
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
+        console.error('Login error:', error);
         this.loading = false;
         this.errorMessage = error.error?.message || 'Login failed. Please check your credentials.';
-        this.toastr.error(this.errorMessage);
+        this.toastr.error(this.errorMessage, 'Login Failed');
       }
     });
   }

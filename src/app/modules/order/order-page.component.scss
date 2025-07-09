@@ -250,40 +250,41 @@
 
 .table-custom {
   margin-bottom: 0;
+  font-family: 'Inter', 'Poppins', Arial, sans-serif;
   
   thead {
-    background: linear-gradient(135deg, var(--accent-color) 0%, #2563eb 100%);
+    background: #f8f9fa;
     
     th {
-      color: rgb(123, 123, 123);
+      color: #495057;
       font-weight: 600;
-      border: none;
-      padding: 1rem;
+      border-bottom: 2px solid #dee2e6;
+      padding: 0.75rem;
       font-size: 0.9rem;
     }
   }
   
   tbody {
     tr {
-      transition: all 0.2s ease;
+      border-bottom: 1px solid #f1f3f4;
       
       &:hover {
-        background: rgba(59, 130, 246, 0.05);
+        background: #f8f9fa;
       }
       
       td {
-        padding: 1rem;
+        padding: 0.75rem;
         vertical-align: middle;
-        border-color: var(--border-color);
+        font-size: 0.9rem;
       }
     }
   }
   
   tfoot {
-    background: var(--light-blue);
+    background: #f8f9fa;
     
     td {
-      padding: 1rem;
+      padding: 0.75rem;
       font-weight: 600;
     }
   }

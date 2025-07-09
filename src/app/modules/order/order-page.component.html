@@ -107,43 +107,41 @@
         </form>
 
         <!-- Confirm Modal -->
-        <div class="modal fade show" tabindex="-1" *ngIf="showConfirmModal" [ngStyle]="{ display: 'block', background: 'rgba(240,247,255,0.95)' }">
+        <div class="modal fade show" tabindex="-1" *ngIf="showConfirmModal" [ngStyle]="{ display: 'block', background: 'rgba(0,0,0,0.5)' }">
           <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content p-2" style="border-radius: 14px;">
-              <div class="modal-header border-0 pb-0">
+            <div class="modal-content">
+              <div class="modal-header">
                 <h5 class="modal-title">
                   <i class="fas fa-receipt me-2"></i>
                   Order Confirmation
                 </h5>
                 <button type="button" class="btn-close" (click)="showConfirmModal = false"></button>
               </div>
-              <div class="modal-body pt-0">
+              <div class="modal-body">
                 <div *ngIf="confirmSummary.length > 0">
                   <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-3" style="font-size: 0.9rem;">
+                    <table class="table table-sm table-bordered">
                       <thead class="table-light">
                         <tr>
-                          <th style="width: 30%;">Product Name</th>
                           <th style="width: 25%;">Barcode</th>
                           <th style="width: 15%;" class="text-center">Qty</th>
-                          <th style="width: 15%;" class="text-end">Price</th>
-                          <th style="width: 15%;" class="text-end">Total</th>
+                          <th style="width: 25%;" class="text-end">Price</th>
+                          <th style="width: 25%;" class="text-end">Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr *ngFor="let item of confirmSummary">
-                          <td class="text-truncate" title="{{ getProductName(item.barcode) }}">
-                            {{ getProductName(item.barcode) }}
+                          <td>
+                            <small class="text-muted">{{ item.barcode }}</small>
                           </td>
-                          <td><code class="small">{{ item.barcode }}</code></td>
                           <td class="text-center">{{ item.quantity }}</td>
                           <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
-                          <td class="text-end fw-semibold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
+                          <td class="text-end fw-bold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
                         </tr>
                       </tbody>
                       <tfoot class="table-info">
                         <tr>
-                          <td colspan="4" class="text-end fw-bold">Sub Total:</td>
+                          <td colspan="3" class="text-end fw-bold">Total:</td>
                           <td class="text-end fw-bold">₹{{ confirmTotal | number:'1.2-2' }}</td>
                         </tr>
                       </tfoot>
@@ -151,11 +149,11 @@
                   </div>
                 </div>
               </div>
-              <div class="modal-footer border-0 pt-0">
+              <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="showConfirmModal = false">Cancel</button>
-                <button type="button" class="btn btn-success w-100" (click)="confirmOrderSubmit()" [disabled]="loading">
+                <button type="button" class="btn btn-success" (click)="confirmOrderSubmit()" [disabled]="loading">
                   <span *ngIf="!loading">
-                    <i class="fas fa-check me-2"></i>Confirm & Place Order
+                    <i class="fas fa-check me-2"></i>Confirm Order
                   </span>
                   <span *ngIf="loading">
                     <i class="fas fa-spinner fa-spin me-2"></i>Placing...

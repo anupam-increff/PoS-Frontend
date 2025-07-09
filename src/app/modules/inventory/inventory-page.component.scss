@@ -16,42 +16,7 @@ body {
   background-color: #f8f9fa;
 }
 
-// Hero Section
-.hero-section {
-  background: $hero-gradient;
-  padding: 3rem 1rem 2rem;
-  text-align: center;
-  border-bottom: 1px solid #dee2e6;
 
-  .hero-title {
-    font-family: 'Poppins', sans-serif;
-    font-size: 2.2rem;
-    font-weight: 600;
-    color: #212529;
-    margin-bottom: 0.5rem;
-
-    // Mobile responsive
-    @media (max-width: 768px) {
-      font-size: 1.8rem;
-    }
-
-    @media (max-width: 576px) {
-      font-size: 1.5rem;
-    }
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-    color: #6c757d;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.6;
-
-    @media (max-width: 576px) {
-      font-size: 0.9rem;
-    }
-  }
-}
 
 // Feature Grid
 .feature-grid {
@@ -82,39 +47,6 @@ body {
   }
 }
 
-// Navigation Tabs
-.nav-tabs {
-  border-bottom: 2px solid #e9ecef;
-  margin-bottom: 2rem;
-
-  .nav-link {
-    border: none;
-    color: #6c757d;
-    font-weight: 500;
-    padding: 0.75rem 1.5rem;
-    margin-right: 0.5rem;
-    border-radius: $border-radius $border-radius 0 0;
-    transition: all 0.3s ease;
-    cursor: pointer;
-
-    @media (max-width: 576px) {
-      padding: 0.5rem 0.75rem;
-      margin-right: 0.25rem;
-      font-size: 0.9rem;
-    }
-
-    &:hover {
-      color: $primary-color;
-      background-color: #f8f9fa;
-    }
-
-    &.active {
-      color: $primary-color;
-      background-color: #e7f1ff;
-      font-weight: 600;
-    }
-  }
-}
 
 // Form Elements
 .form-label {

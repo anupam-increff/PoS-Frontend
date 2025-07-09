@@ -90,7 +90,7 @@ td {
   }
 
   .numeric {
-    text-align: right;
+    text-align: center;
   }
 
   .text {
@@ -99,9 +99,9 @@ td {
 }
 
 p {
-  text-align: right;
+  text-align: center;
   margin-top: 1em;
-  font-style: italic;
+//   font-style: italic;
 }
 
 /* Focus Table and Inline Editing Styles */
@@ -146,19 +146,53 @@ table {
   transition: box-shadow 0.2s;
 }
 
-/* Consistent table widths across all modules */
+/* Consistent table styling across all modules */
 .table-custom {
   width: 100%;
-  min-width: 900px;
-  max-width: 1400px;
-  margin: 0 auto;
+  margin: 0;
+  font-family: 'Inter', 'Poppins', Arial, sans-serif;
+  
+  thead {
+    background: #f8f9fa;
+    
+    th {
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      color: #495057;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+    }
+  }
+  
+  tbody {
+    tr {
+      border-bottom: 1px solid #f1f3f4;
+      
+      &:hover {
+        background: #f8f9fa;
+      }
+      
+      td {
+        padding: 0.75rem;
+        vertical-align: middle;
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
 }
 
 /* Table wrapper for responsive design */
 .table-wrapper {
   overflow-x: auto;
-  border-radius: 1rem;
-  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.04);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+  margin-bottom: 1rem;
 }
 
 /* Navbar active link highlighting */
@@ -544,7 +578,7 @@ table input[type="text"]:focus, table input[type="number"]:focus {
 }
 
 .hero-title {
-  font-family: 'Poppins', sans-serif;
+//   font-family: 'Poppins', sans-serif;
   font-size: 2.2rem;
   font-weight: 600;
   color: #222;
