@@ -8,17 +8,18 @@ import { TestPageComponent } from './modules/test/test-page.component';
 import { DashboardPageComponent } from './modules/dashboard/dashboard-page.component';
 import { InventoryPageComponent } from './modules/inventory/inventory-page.component';
 import { ReportsPageComponent } from './modules/reports/reports-page.component';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'auth', component: AuthPageComponent },
   { path: 'dashboard', component: DashboardPageComponent },
-  { path: 'client', component: ClientPageComponent },
-  { path: 'product', component: ProductPageComponent },
-  { path: 'order', component: OrderPageComponent },
-  { path: 'invoice', component: InvoicePageComponent },
-  { path: 'inventory', component: InventoryPageComponent },
-  { path: 'test', component: TestPageComponent },
-  { path: 'reports', component: ReportsPageComponent },
+  { path: 'client', component: ClientPageComponent, canActivate: [AuthGuard] },
+  { path: 'product', component: ProductPageComponent, canActivate: [AuthGuard] },
+  { path: 'order', component: OrderPageComponent, canActivate: [AuthGuard] },
+  { path: 'invoice', component: InvoicePageComponent, canActivate: [AuthGuard] },
+  { path: 'inventory', component: InventoryPageComponent, canActivate: [AuthGuard] },
+  { path: 'test', component: TestPageComponent, canActivate: [AuthGuard] },
+  { path: 'reports', component: ReportsPageComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }
 ];

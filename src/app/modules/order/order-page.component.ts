@@ -69,6 +69,12 @@ export class OrderPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.addItem();
+    
+    // Set default dates: start as 1 Jan 1970, end as today
+    const today = new Date();
+    this.startDate = '1970-01-01';
+    this.endDate = today.toISOString().split('T')[0];
+    
     this.loadOrders();
   }
 

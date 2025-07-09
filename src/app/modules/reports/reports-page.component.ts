@@ -157,7 +157,7 @@ export class ReportsPageComponent implements OnInit {
       size: this.clientSalesPageSize
     };
     
-    this.apiService.post<any>('/report/sales/search', payload).subscribe({
+    this.apiService.post<any>('/report/sales/', payload).subscribe({
       next: (response) => {
         this.clientSales = response.content || [];
         this.clientSalesTotalItems = response.totalItems || 0;
