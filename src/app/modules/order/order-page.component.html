@@ -107,15 +107,15 @@
         </form>
 
         <!-- Confirm Modal -->
-        <div class="modal fade show" tabindex="-1" *ngIf="showConfirmModal" [ngStyle]="{ display: 'block', background: 'rgba(0,0,0,0.5)' }">
+        <div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-title" id="confirmOrderModalLabel">
                   <i class="fas fa-receipt me-2"></i>
                   Order Confirmation
                 </h5>
-                <button type="button" class="btn-close" (click)="showConfirmModal = false"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="closeConfirmModal()" aria-label="Close"></button>
               </div>
               <div class="modal-body">
                 <div *ngIf="confirmSummary.length > 0">
@@ -150,7 +150,7 @@
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="showConfirmModal = false">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeConfirmModal()">Cancel</button>
                 <button type="button" class="btn btn-success" (click)="confirmOrderSubmit()" [disabled]="loading">
                   <span *ngIf="!loading">
                     <i class="fas fa-check me-2"></i>Confirm Order
@@ -251,7 +251,7 @@
 
         <!-- Orders Table -->
         <div class="table-wrapper" *ngIf="!loadingOrders && orders.length > 0">
-          <table class="table table-hover table-striped">
+          <table class="table table-hover table-striped" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
             <thead class="table-dark">
               <tr>
                 <th style="width: 15%;">Order ID</th>
@@ -351,7 +351,7 @@
       </div>
       <div class="modal-body pt-0">
         <div class="table-responsive">
-          <table class="table table-sm align-middle">
+          <table class="table table-sm align-middle" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
             <thead class="table-light">
               <tr>
                 <th>#</th>
@@ -364,7 +364,7 @@
             <tbody>
               <tr *ngFor="let item of viewedItems; let idx = index">
                 <td>{{ idx + 1 }}</td>
-                <td><code>{{ item.barcode }}</code></td>
+                <td>{{ item.barcode }}</td>
                 <td>{{ item.quantity }}</td>
                 <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
                 <td class="text-end fw-semibold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>

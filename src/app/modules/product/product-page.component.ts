@@ -5,6 +5,9 @@ import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-product-page',
@@ -37,12 +40,14 @@ export class ProductPageComponent implements OnInit {
   singleProductForm: FormGroup;
   showSchema = false;
   showAddProductModal = false;
+  private addProductModal: any;
 
   constructor(
     private api: ApiService,
     private authService: AuthService,
     private fb: FormBuilder,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private route: ActivatedRoute
   ) {
     this.productForm = this.fb.group({
       file: [null, Validators.required]
@@ -52,12 +57,19 @@ export class ProductPageComponent implements OnInit {
       barcode: ['', Validators.required],
       name: ['', Validators.required],
       mrp: ['', [Validators.required, Validators.min(0)]],
-      imageUrl: ['', Validators.required]
+      imageUrl: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]]
     });
   }
 
   ngOnInit() {
-    this.loadProducts();
+    // Check for tab parameter from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.setTab(params['tab'] as 'upload' | 'client' | 'list');
+      } else {
+        this.loadProducts();
+      }
+    });
   }
 
   setTab(tab: 'upload' | 'client' | 'list') {
@@ -301,11 +313,56 @@ export class ProductPageComponent implements OnInit {
   }
 
   openAddProductModal() {
-    this.showAddProductModal = true;
+    // Wait for Bootstrap to be available
+    setTimeout(() => {
+      if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap not loaded, trying alternative method');
+        // Fallback: try to show modal manually
+        const modalElement = document.getElementById('addProductModal');
+        if (modalElement) {
+          modalElement.classList.add('show');
+          modalElement.style.display = 'block';
+          modalElement.setAttribute('aria-hidden', 'false');
+          // Add backdrop
+          const backdrop = document.createElement('div');
+          backdrop.className = 'modal-backdrop fade show';
+          document.body.appendChild(backdrop);
+        }
+        return;
+      }
+      
+      if (!this.addProductModal) {
+        const modalElement = document.getElementById('addProductModal');
+        if (modalElement) {
+          this.addProductModal = new bootstrap.Modal(modalElement);
+        }
+      }
+      
+      if (this.addProductModal) {
+        this.addProductModal.show();
+      } else {
+        console.error('Could not initialize add product modal');
+      }
+    }, 100);
   }
 
   closeAddProductModal() {
-    this.showAddProductModal = false;
+    if (this.addProductModal) {
+      this.addProductModal.hide();
+    } else {
+      // Handle fallback modal
+      const modalElement = document.getElementById('addProductModal');
+      if (modalElement) {
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+        modalElement.setAttribute('aria-hidden', 'true');
+        // Remove backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.remove();
+        }
+      }
+    }
     this.singleProductForm.reset();
   }
 }

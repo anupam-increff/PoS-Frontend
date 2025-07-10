@@ -131,7 +131,7 @@
         </div>
   
         <div class="table-wrapper" tabindex="0" *ngIf="inventory.length > 0 && !loading">
-          <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 700px; max-width: 1100px; margin: 0 auto;">
+          <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
             <thead>
               <tr>
                 <th>Barcode</th>
@@ -142,7 +142,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let item of inventory; let i = index; trackBy: trackByInventoryId" [ngClass]="{'focused-row': editIndex === i}">
-                <td class="non-editable"><code>{{ item.barcode }}</code></td>
+                <td class="non-editable">{{ item.barcode }}</td>
                 <td class="non-editable">{{ item.name }}</td>
                 <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
                   <ng-container *ngIf="editIndex === i; else viewQty">

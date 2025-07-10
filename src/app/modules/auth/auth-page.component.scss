@@ -1,108 +1,116 @@
-// Auth Page Styling
-.feature-grid {
+// Auth page specific styles only
+.auth-container {
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 60vh;
+  justify-content: center;
+  // background: linear-gradient(135deg, #7ba9f3 0%, #f3f3f4 100%);
   padding: 2rem 1rem;
-  font-family: 'Inter', 'Poppins', Arial, sans-serif;
 }
 
-.feature-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  padding: 3rem;
+.auth-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2rem;
   width: 100%;
-  max-width: 450px;
-  border: 1px solid #f1f3f4;
-  font-family: 'Inter', 'Poppins', Arial, sans-serif;
-  
-  .form-label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-    font-family: 'Inter', 'Poppins', Arial, sans-serif;
+  max-width: 400px;
+}
+
+.auth-header {
+  margin-bottom: 2rem;
+}
+
+.auth-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.auth-form {
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
   }
-  
-  .form-control {
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.875rem 1rem;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    font-family: 'Inter', 'Poppins', Arial, sans-serif;
-    
-    &:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-    
-    &::placeholder {
-      color: #adb5bd;
-    }
-  }
-  
-  .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    border-radius: 8px;
-    padding: 0.875rem 1.5rem;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    font-family: 'Inter', 'Poppins', Arial, sans-serif;
-    
-    &:hover {
-      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
-    
-    &:disabled {
-      background: #6c757d;
-      transform: none;
-      box-shadow: none;
-    }
-  }
-  
-  .alert {
-    border-radius: 8px;
-    border: none;
-    font-weight: 500;
-    font-family: 'Inter', 'Poppins', Arial, sans-serif;
-    
-    &.alert-danger {
-      background: #f8d7da;
-      color: #721c24;
-      border-left: 4px solid #dc3545;
-    }
-  }
-  
-  .invalid-feedback {
-    font-size: 0.875rem;
-    color: #dc3545;
-    margin-top: 0.25rem;
-    font-family: 'Inter', 'Poppins', Arial, sans-serif;
+
+  &.is-invalid {
+    border-color: #dc3545;
   }
 }
 
-// Responsive Design
-@media (max-width: 768px) {
-  .feature-grid {
-    padding: 1rem;
+.invalid-feedback {
+  font-size: 0.875rem;
+}
+
+.btn-auth {
+  width: 100%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
   }
-  
-  .feature-card {
-    padding: 2rem;
-    margin: 1rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #842029;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #f5c2c7;
+  font-size: 0.95rem;
+  margin-top: 1rem;
 }
 
 @media (max-width: 576px) {
-  .feature-card {
-    padding: 1.5rem;
-    margin: 0.5rem;
+  .auth-card {
+    padding: 2rem 1.5rem;
   }
-} 
+
+  .auth-title {
+    font-size: 1.75rem;
+  }
+}

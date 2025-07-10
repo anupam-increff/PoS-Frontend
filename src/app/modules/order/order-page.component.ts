@@ -10,6 +10,8 @@ import { ToastrService } from 'ngx-toastr';
 import { DatePipe, CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
+declare var bootstrap: any;
+
 interface OrderItem {
   barcode: string;
   quantity: number;
@@ -45,6 +47,7 @@ export class OrderPageComponent implements OnInit {
   showViewModal = false;
   confirmSummary: OrderItem[] = [];
   confirmTotal = 0;
+  private confirmModal: any;
 
   searchQuery = '';
   startDate = '';
@@ -129,8 +132,24 @@ export class OrderPageComponent implements OnInit {
     const summary = this.items.getRawValue() as OrderItem[];
     const grouped: { [barcode: string]: OrderItem } = {};
 
+    // Validate that all items have required fields
     for (const item of summary) {
-      if (!item.barcode) continue;
+      if (!item.barcode || !item.barcode.trim()) {
+        this.toastr.error('All items must have a barcode');
+        return;
+      }
+      if (!item.quantity || item.quantity <= 0) {
+        this.toastr.error('All items must have a valid quantity');
+        return;
+      }
+      if (!item.sellingPrice || item.sellingPrice <= 0) {
+        this.toastr.error('All items must have a valid selling price');
+        return;
+      }
+    }
+
+    // Group items by barcode
+    for (const item of summary) {
       if (!grouped[item.barcode]) {
         grouped[item.barcode] = {
           barcode: item.barcode,
@@ -141,12 +160,49 @@ export class OrderPageComponent implements OnInit {
       grouped[item.barcode].quantity += item.quantity;
     }
 
+    // Check if we have any valid items
+    if (Object.keys(grouped).length === 0) {
+      this.toastr.error('No valid items to order');
+      return;
+    }
+
     this.confirmSummary = Object.values(grouped);
     this.confirmTotal = this.confirmSummary.reduce(
       (sum, it) => sum + it.quantity * it.sellingPrice,
       0
     );
-    this.showConfirmModal = true;
+    
+    // Show modal using Bootstrap
+    setTimeout(() => {
+      if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap not loaded, trying alternative method');
+        // Fallback: try to show modal manually
+        const modalElement = document.getElementById('confirmOrderModal');
+        if (modalElement) {
+          modalElement.classList.add('show');
+          modalElement.style.display = 'block';
+          modalElement.setAttribute('aria-hidden', 'false');
+          // Add backdrop
+          const backdrop = document.createElement('div');
+          backdrop.className = 'modal-backdrop fade show';
+          document.body.appendChild(backdrop);
+        }
+        return;
+      }
+      
+      if (!this.confirmModal) {
+        const modalElement = document.getElementById('confirmOrderModal');
+        if (modalElement) {
+          this.confirmModal = new bootstrap.Modal(modalElement);
+        }
+      }
+      
+      if (this.confirmModal) {
+        this.confirmModal.show();
+      } else {
+        console.error('Could not initialize confirm modal');
+      }
+    }, 100);
   }
 
   confirmOrderSubmit() {
@@ -157,7 +213,7 @@ export class OrderPageComponent implements OnInit {
       next: (id) => {
         this.toastr.success(`Order #${id} placed`);
         this.loading = false;
-        this.showConfirmModal = false;
+        this.closeConfirmModal();
         this.resetForm();
         this.setTab('list');
       },
@@ -166,6 +222,25 @@ export class OrderPageComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  closeConfirmModal() {
+    if (this.confirmModal) {
+      this.confirmModal.hide();
+    } else {
+      // Handle fallback modal
+      const modalElement = document.getElementById('confirmOrderModal');
+      if (modalElement) {
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+        modalElement.setAttribute('aria-hidden', 'true');
+        // Remove backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.remove();
+        }
+      }
+    }
   }
 
   resetForm() {

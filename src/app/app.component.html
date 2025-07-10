@@ -58,30 +58,20 @@
           </a>
         </li>
       </ul>
-      
-      <!-- User Info and Auth -->
-      <ul class="navbar-nav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item d-flex align-items-center" *ngIf="isAuthenticated">
+          <span class="badge bg-primary me-2">{{ currentUser?.role }}</span>
+        </li>
+        <li class="nav-item" *ngIf="isAuthenticated">
+          <span class="nav-link">{{ currentUser?.name || currentUser?.email }}</span>
+        </li>
+        <li class="nav-item" *ngIf="isAuthenticated">
+          <button class="btn btn-outline-primary btn-sm ms-2" (click)="showLogoutConfirm()">Logout</button>
+        </li>
         <li class="nav-item" *ngIf="!isAuthenticated">
           <a class="nav-link" [routerLink]="['/auth']" routerLinkActive="active">
             <i class="fas fa-sign-in-alt me-2"></i>Login
           </a>
-        </li>
-        <li class="nav-item dropdown" *ngIf="isAuthenticated">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-user-circle me-2"></i>
-            {{ currentUser?.name || currentUser?.email }}
-            <span class="badge bg-primary ms-1">{{ currentUser?.role }}</span>
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#" (click)="showLogoutConfirm()">
-              <i class="fas fa-sign-out-alt me-2"></i>Logout
-            </a></li>
-          </ul>
-        </li>
-        <li class="nav-item" *ngIf="isAuthenticated">
-          <button class="btn btn-outline-danger btn-sm ms-2" (click)="showLogoutConfirm()">
-            <i class="fas fa-sign-out-alt me-1"></i>Logout
-          </button>
         </li>
       </ul>
     </div>
@@ -94,31 +84,30 @@
 </div>
 
 <!-- Logout Confirmation Modal -->
-<div class="modal fade show" tabindex="-1" *ngIf="showLogoutModal" [ngStyle]="{ display: 'block', background: 'rgba(0,0,0,0.5)' }">
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">
+        <h5 class="modal-title" id="logoutModalLabel">
           <i class="fas fa-sign-out-alt me-2"></i>
           Confirm Logout
         </h5>
-        <button type="button" class="btn-close" (click)="hideLogoutConfirm()"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="closeLogoutModal()" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p>Are you sure you want to logout?</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="hideLogoutConfirm()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="confirmLogout()">Yes, Logout</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeLogoutModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="logout()">Yes, Logout</button>
       </div>
     </div>
   </div>
 </div>
 
-<footer class="app-footer">
-  <div class="footer-content">
-    &copy; {{ 2025 }} PoS System. All rights reserved.
-  </div>
+<!-- Footer: single, centered line -->
+<footer class="footer text-center py-2">
+  &copy; {{ 2025 }} PoS System. All rights reserved.
 </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>

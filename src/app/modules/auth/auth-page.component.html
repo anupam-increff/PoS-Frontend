@@ -1,24 +1,20 @@
-<div class="hero-section">
-  <div class="container">
-    <h1 class="hero-title">
-      <i class="fas fa-sign-in-alt text-primary me-3"></i>
-      Login
-    </h1>
-    <p class="hero-subtitle">
-      Sign in to access the PoS System
-    </p>
-  </div>
-</div>
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header text-center">
+      <h1 class="auth-title">
+        <i class="fas fa-sign-in-alt text-primary me-2"></i>
+        Login
+      </h1>
+      <p class="auth-subtitle">Sign in to access the PoS System</p>
+    </div>
 
-<div class="feature-grid">
-  <div class="feature-card">
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="mb-3">
-      <div class="mb-3">
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="auth-form">
+      <div class="form-group">
         <label class="form-label">Email</label>
         <input 
           type="email" 
           class="form-control" 
-          formControlName="email" 
+          formControlName="email"
           placeholder="Enter email"
           [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
         />
@@ -27,13 +23,13 @@
           <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email</span>
         </div>
       </div>
-      
-      <div class="mb-3">
+
+      <div class="form-group">
         <label class="form-label">Password</label>
         <input 
           type="password" 
           class="form-control" 
-          formControlName="password" 
+          formControlName="password"
           placeholder="Enter password"
           [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
         />
@@ -41,26 +37,20 @@
           Password is required
         </div>
       </div>
-      
-      <button 
-        type="submit" 
-        class="btn btn-primary w-100" 
-        [disabled]="loginForm.invalid || loading"
-      >
+
+      <button type="submit" class="btn-auth" [disabled]="loginForm.invalid || loading">
         <span *ngIf="!loading">
-          <i class="fas fa-sign-in-alt me-2"></i>
-          Login
+          <i class="fas fa-sign-in-alt me-2"></i>Login
         </span>
         <span *ngIf="loading">
-          <i class="fas fa-spinner fa-spin me-2"></i>
-          Logging in...
+          <i class="fas fa-spinner fa-spin me-2"></i>Logging in...
         </span>
       </button>
     </form>
-    
-    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+
+    <div *ngIf="errorMessage" class="error-message">
       <i class="fas fa-exclamation-triangle me-2"></i>
       {{ errorMessage }}
     </div>
   </div>
-</div> 
+</div>

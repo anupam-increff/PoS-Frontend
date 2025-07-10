@@ -84,7 +84,12 @@ export class ApiService {
       }
     }
     
-    const headers = this.getRequestHeaders();
+    // Handle FormData (file uploads) differently
+    let headers = this.getRequestHeaders();
+    if (body instanceof FormData) {
+      // Don't set Content-Type for FormData - let browser set it with boundary
+      headers = new HttpHeaders();
+    }
     
     return this.http.post<T>(url, body, { 
       headers,

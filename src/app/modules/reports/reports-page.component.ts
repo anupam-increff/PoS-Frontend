@@ -73,18 +73,20 @@ export class ReportsPageComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Set default end date as today
+    // Set default dates - start of month to today
     const today = new Date().toISOString().split('T')[0];
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    const startOfMonthStr = startOfMonth.toISOString().split('T')[0];
+    
     this.dateRangeForm.patchValue({
-      startDate: today,
+      startDate: startOfMonthStr,
       endDate: today
     });
     
     // Set default dates for client sales - start of month to today
     this.salesEndDate = today;
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    this.salesStartDate = startOfMonth.toISOString().split('T')[0];
+    this.salesStartDate = startOfMonthStr;
     
     // Load initial data
     this.generateDateRangeReport();

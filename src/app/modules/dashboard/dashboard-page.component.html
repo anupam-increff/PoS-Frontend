@@ -27,38 +27,6 @@
       </div>
     </div>
   
-    <!-- About PoS Section -->
-    <div class="about-section">
-      <div class="about-content">
-        <h3 class="about-title">
-          <i class="fas fa-info-circle me-2"></i>
-          About Point of Sale System
-        </h3>
-        <p class="about-description">
-          Our comprehensive Point of Sale (PoS) system provides everything you need to manage your business efficiently. 
-          From inventory management to sales tracking, client management to detailed reporting - all in one integrated platform.
-        </p>
-        <div class="about-features">
-          <div class="feature-item">
-            <i class="fas fa-box text-primary"></i>
-            <span>Inventory Management</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-shopping-cart text-success"></i>
-            <span>Order Processing</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-users text-info"></i>
-            <span>Client Management</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-chart-line text-warning"></i>
-            <span>Analytics & Reports</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  
     <!-- Quick Actions -->
     <div class="quick-actions-section">
       <div class="section-header">
@@ -78,7 +46,7 @@
             <div class="action-desc">Register new customer</div>
           </div>
         </a>
-        <a [routerLink]="['/product']" class="action-btn">
+        <a [routerLink]="['/product']" [queryParams]="{tab: 'upload'}" class="action-btn">
           <div class="action-icon">
             <i class="fas fa-box-open"></i>
           </div>
