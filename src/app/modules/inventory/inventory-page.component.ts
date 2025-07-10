@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-inventory-page',
@@ -74,14 +75,72 @@ export class InventoryPageComponent implements OnInit {
     formData.append('file', this.uploadForm.value.file);
     this.api.post('/inventory/upload', formData).subscribe({
       next: (res: any) => {
-        this.toastr.success(res?.message || 'Inventory uploaded.');
-        this.uploadForm.reset();
-        this.loadInventory();
+        if (res.success) {
+          this.toastr.success(res?.message || 'Inventory uploaded.');
+          this.uploadForm.reset();
+          this.loadInventory();
+        } else {
+          // Handle validation errors
+          let errorMessage = `Upload failed: ${res.message}\n\n`;
+          errorMessage += `Total Rows: ${res.totalRows}\n`;
+          errorMessage += `Success: ${res.successRows}\n`;
+          errorMessage += `Errors: ${res.errorRows}\n\n`;
+          errorMessage += 'Validation Errors:\n';
+          res.errors.forEach((error: string) => {
+            errorMessage += `• ${error}\n`;
+          });
+          
+          this.toastr.error(errorMessage, 'Upload Failed', {
+            timeOut: 10000,
+            extendedTimeOut: 5000,
+            closeButton: true
+          });
+          
+          // Download the error TSV file if available
+          if (res.downloadUrl) {
+            this.downloadErrorTSV(res.downloadUrl);
+          }
+        }
       },
       error: (err) => {
-        this.toastr.error(err?.error?.message || 'Upload failed.');
+        let errorMessage = err?.error?.message || 'Upload failed.';
+        
+        // Handle detailed error response
+        if (err?.error?.errors) {
+          errorMessage += '\n\nValidation Errors:\n';
+          err.error.errors.forEach((error: string) => {
+            errorMessage += `• ${error}\n`;
+          });
+        }
+        
+        this.toastr.error(errorMessage, 'Upload Failed', {
+          timeOut: 10000,
+          extendedTimeOut: 5000,
+          closeButton: true
+        });
+        
+        // Download error file if available
+        if (err?.error?.downloadUrl) {
+          this.downloadErrorTSV(err.error.downloadUrl);
+        }
       }
     });
+  }
+
+  downloadErrorTSV(downloadUrl: string) {
+    // Create full URL if it's a relative path
+    const fullUrl = downloadUrl.startsWith('http') ? downloadUrl : `${environment.apiBaseUrl}${downloadUrl}`;
+    
+    // Create a temporary link to download the file
+    const link = document.createElement('a');
+    link.href = fullUrl;
+    link.download = 'error_report.tsv';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    this.toastr.info('Error report downloaded. Please fix the issues and re-upload.', 'Error Report Downloaded');
   }
 
   addInventory() {
