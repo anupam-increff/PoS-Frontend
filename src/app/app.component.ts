@@ -60,57 +60,45 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   showLogoutConfirm(): void {
-    // Wait for Bootstrap to be available
-    setTimeout(() => {
-      if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap not loaded, trying alternative method');
-        // Fallback: try to show modal manually
-        const modalElement = document.getElementById('logoutModal');
-        if (modalElement) {
-          modalElement.classList.add('show');
-          modalElement.style.display = 'block';
-          modalElement.setAttribute('aria-hidden', 'false');
-          // Add backdrop
-          const backdrop = document.createElement('div');
-          backdrop.className = 'modal-backdrop fade show';
-          document.body.appendChild(backdrop);
-        }
-        return;
-      }
-      
-      if (!this.logoutModal) {
-        const modalElement = document.getElementById('logoutModal');
-        if (modalElement) {
+    // Try to initialize Bootstrap modal if not already done
+    if (!this.logoutModal) {
+      const modalElement = document.getElementById('logoutModal');
+      if (modalElement) {
+        // Try Bootstrap first
+        if (typeof bootstrap !== 'undefined') {
           this.logoutModal = new bootstrap.Modal(modalElement);
         }
       }
+    }
+    
+    // If Bootstrap modal is available, use it
+    if (this.logoutModal) {
+      this.logoutModal.show();
+      return;
+    }
+    
+    // Fallback: show modal manually
+    const modalElement = document.getElementById('logoutModal');
+    if (modalElement) {
+      modalElement.classList.add('show');
+      modalElement.style.display = 'block';
+      modalElement.setAttribute('aria-hidden', 'false');
       
-      if (this.logoutModal) {
-        this.logoutModal.show();
-      } else {
-        console.error('Could not initialize logout modal');
-      }
-    }, 100);
+      // Add backdrop
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop fade show';
+      document.body.appendChild(backdrop);
+      
+      // Add click handler to backdrop to close modal
+      backdrop.addEventListener('click', () => {
+        this.closeLogoutModal();
+      });
+    }
   }
 
   logout(): void {
     this.authService.logout();
-    if (this.logoutModal) {
-      this.logoutModal.hide();
-    } else {
-      // Handle fallback modal
-      const modalElement = document.getElementById('logoutModal');
-      if (modalElement) {
-        modalElement.classList.remove('show');
-        modalElement.style.display = 'none';
-        modalElement.setAttribute('aria-hidden', 'true');
-        // Remove backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-          backdrop.remove();
-        }
-      }
-    }
+    this.closeLogoutModal();
   }
 
   closeLogoutModal(): void {

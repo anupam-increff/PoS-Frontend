@@ -11,7 +11,7 @@ import { ReportsPageComponent } from './modules/reports/reports-page.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: 'auth', component: AuthPageComponent },
+  { path: 'login', component: AuthPageComponent },
   { path: 'dashboard', component: DashboardPageComponent },
   { path: 'client', component: ClientPageComponent, canActivate: [AuthGuard] },
   { path: 'product', component: ProductPageComponent, canActivate: [AuthGuard] },

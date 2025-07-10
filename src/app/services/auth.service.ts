@@ -39,6 +39,17 @@ export class AuthService {
     private router: Router
   ) {
     this.initializeAuth();
+    this.setupStorageListener();
+  }
+
+  private setupStorageListener(): void {
+    // Listen for storage changes across tabs
+    window.addEventListener('storage', (event) => {
+      if (event.key === this.USER_KEY || event.key === this.SESSION_KEY) {
+        console.log('Storage changed in another tab:', event.key);
+        this.initializeAuth();
+      }
+    });
   }
 
   private initializeAuth(): void {
@@ -50,6 +61,9 @@ export class AuthService {
       this.currentUserSubject.next(user);
       // Check if session is still valid
       this.checkSessionValidity();
+    } else {
+      // Clear any stale data
+      this.currentUserSubject.next(null);
     }
   }
 
@@ -68,9 +82,11 @@ export class AuthService {
       },
       error: (error) => {
         console.log('Session check error:', error);
-        // If session check fails, clear session and redirect to login
-        this.clearSession();
-        this.router.navigate(['/auth']);
+        // Only clear session on 401/403 errors, not network errors
+        if (error.status === 401 || error.status === 403) {
+          this.clearSession();
+          this.router.navigate(['/auth']);
+        }
       }
     });
   }

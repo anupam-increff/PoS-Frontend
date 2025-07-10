@@ -32,27 +32,27 @@
     </button>
     <div class="collapse navbar-collapse" [class.show]="!navbarCollapsed" id="navbarNav">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link" [routerLink]="['/client']" routerLinkActive="active">
             <i class="fas fa-users me-2"></i>Client
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link" [routerLink]="['/product']" routerLinkActive="active">
             <i class="fas fa-box me-2"></i>Product
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link" [routerLink]="['/inventory']" routerLinkActive="active">
             <i class="fas fa-warehouse me-2"></i>Inventory
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated">
           <a class="nav-link" [routerLink]="['/order']" routerLinkActive="active">
             <i class="fas fa-shopping-cart me-2"></i>Order
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAuthenticated && (authService.isSupervisor() || authService.isAdmin())">
           <a class="nav-link" [routerLink]="['/reports']" routerLinkActive="active">
             <i class="fas fa-chart-bar me-2"></i>Reports
           </a>
@@ -60,7 +60,7 @@
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item d-flex align-items-center" *ngIf="isAuthenticated">
-          <span class="badge bg-primary me-2">{{ currentUser?.role }}</span>
+          <span class="badge bg-primary me-2">{{ currentUser?.role === 'operator' ? 'Operator' : 'Admin' }}</span>
         </li>
         <li class="nav-item" *ngIf="isAuthenticated">
           <span class="nav-link">{{ currentUser?.name || currentUser?.email }}</span>
@@ -69,7 +69,7 @@
           <button class="btn btn-outline-primary btn-sm ms-2" (click)="showLogoutConfirm()">Logout</button>
         </li>
         <li class="nav-item" *ngIf="!isAuthenticated">
-          <a class="nav-link" [routerLink]="['/auth']" routerLinkActive="active">
+          <a class="nav-link" [routerLink]="['/login']" routerLinkActive="active">
             <i class="fas fa-sign-in-alt me-2"></i>Login
           </a>
         </li>

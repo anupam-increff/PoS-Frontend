@@ -1,166 +1,147 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Component</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-</head>
-<body>
-  
-  <div class="dashboard-container">
-    <!-- Welcome Header -->
-    <div class="welcome-header">
-      <div class="welcome-content">
-        <h1 class="welcome-title">
-          <i class="fas fa-chart-line me-3"></i>
-          Welcome to PoS Dashboard
-        </h1>
-        <p class="welcome-subtitle">Monitor your business performance and manage operations efficiently</p>
-        <div class="current-time">{{ currentTime | date:'EEEE, MMMM d, yyyy' }}</div>
-      </div>
-      <div class="welcome-illustration">
-        <i class="fas fa-rocket"></i>
-      </div>
+<div class="dashboard-container">
+  <!-- Welcome Header -->
+  <div class="welcome-header">
+    <div class="welcome-content">
+      <h1 class="welcome-title">
+        <i class="fas fa-chart-line me-3"></i>
+        Welcome to PoS Dashboard
+      </h1>
+      <p class="welcome-subtitle">Monitor your business performance and manage operations efficiently</p>
+      <div class="current-time">{{ currentTime | date:'EEEE, MMMM d, yyyy' }}</div>
     </div>
-  
-    <!-- Quick Actions -->
-    <div class="quick-actions-section">
-      <div class="section-header">
-        <h3 class="section-title">
-          <i class="fas fa-bolt me-2"></i>
-          Quick Actions
-        </h3>
-        <p class="section-subtitle">Access frequently used features instantly</p>
-      </div>
-      <div class="action-buttons">
-        <a [routerLink]="['/client']" class="action-btn">
-          <div class="action-icon">
-            <i class="fas fa-user-plus"></i>
-          </div>
-          <div class="action-content">
-            <div class="action-title">Add Client</div>
-            <div class="action-desc">Register new customer</div>
-          </div>
-        </a>
-        <a [routerLink]="['/product']" [queryParams]="{tab: 'upload'}" class="action-btn">
-          <div class="action-icon">
-            <i class="fas fa-box-open"></i>
-          </div>
-          <div class="action-content">
-            <div class="action-title">Add Product</div>
-            <div class="action-desc">Add new inventory</div>
-          </div>
-        </a>
-        <a [routerLink]="['/order']" class="action-btn">
-          <div class="action-icon">
-            <i class="fas fa-shopping-bag"></i>
-          </div>
-          <div class="action-content">
-            <div class="action-title">New Order</div>
-            <div class="action-desc">Create sale order</div>
-          </div>
-        </a>
-        <a [routerLink]="['/inventory']" class="action-btn">
-          <div class="action-icon">
-            <i class="fas fa-boxes"></i>
-          </div>
-          <div class="action-content">
-            <div class="action-title">Manage Inventory</div>
-            <div class="action-desc">Stock management</div>
-          </div>
-        </a>
-      </div>
+    <div class="welcome-illustration">
+      <i class="fas fa-rocket"></i>
     </div>
-  
-    <!-- Feature Grid -->
-    <div class="feature-section">
-      <div class="section-header">
-        <h3 class="section-title">
-          <i class="fas fa-cogs me-2"></i>
-          Management Modules
-        </h3>
-        <p class="section-subtitle">Comprehensive tools for business management</p>
-      </div>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="fas fa-users"></i>
-          </div>
-          <h3 class="feature-title">Client Management</h3>
-          <p class="feature-description">
-            Manage your customer database with advanced search, filtering, and customer insights.
-          </p>
-          <a [routerLink]="['/client']" class="btn-primary-custom">
-            <i class="fas fa-arrow-right"></i>
-            Manage Clients
-          </a>
-        </div>
-  
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="fas fa-box"></i>
-          </div>
-          <h3 class="feature-title">Product Catalog</h3>
-          <p class="feature-description">
-            Organize inventory with real-time stock tracking and smart categorization.
-          </p>
-          <a [routerLink]="['/product']" class="btn-primary-custom">
-            <i class="fas fa-arrow-right"></i>
-            Manage Products
-          </a>
-        </div>
-  
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="fas fa-shopping-cart"></i>
-          </div>
-          <h3 class="feature-title">Order Processing</h3>
-          <p class="feature-description">
-            Streamline your sales process with easy order creation and delivery tracking.
-          </p>
-          <a [routerLink]="['/order']" class="btn-primary-custom">
-            <i class="fas fa-arrow-right"></i>
-            Process Orders
-          </a>
-        </div>
-  
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="fas fa-boxes"></i>
-          </div>
-          <h3 class="feature-title">Inventory Management</h3>
-          <p class="feature-description">
-            Track stock levels, manage inventory, and monitor product availability.
-          </p>
-          <a [routerLink]="['/inventory']" class="btn-primary-custom">
-            <i class="fas fa-arrow-right"></i>
-            Manage Inventory
-          </a>
-        </div>
+  </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <h3 class="feature-title">Analytics & Reports</h3>
-          <p class="feature-description">
-            Analyze your business with detailed performance metrics and reports.
-          </p>
-          <a [routerLink]="['/reports']" class="btn-primary-custom">
-            <i class="fas fa-arrow-right"></i>
-            View Analytics
-          </a>
+  <!-- Quick Actions -->
+  <div class="quick-actions-section">
+    <div class="section-header">
+      <h3 class="section-title">
+        <i class="fas fa-bolt me-2"></i>
+        Quick Actions
+      </h3>
+      <p class="section-subtitle">Access frequently used features instantly</p>
+    </div>
+    <div class="action-buttons">
+      <a [routerLink]="['/client']" class="action-btn">
+        <div class="action-icon">
+          <i class="fas fa-user-plus"></i>
         </div>
+        <div class="action-content">
+          <div class="action-title">Add Client</div>
+          <div class="action-desc">Register new customer</div>
+        </div>
+      </a>
+      <a [routerLink]="['/product']" class="action-btn">
+        <div class="action-icon">
+          <i class="fas fa-box-open"></i>
+        </div>
+        <div class="action-content">
+          <div class="action-title">Add Product</div>
+          <div class="action-desc">Add new inventory</div>
+        </div>
+      </a>
+      <a [routerLink]="['/order']" class="action-btn">
+        <div class="action-icon">
+          <i class="fas fa-shopping-bag"></i>
+        </div>
+        <div class="action-content">
+          <div class="action-title">New Order</div>
+          <div class="action-desc">Create sale order</div>
+        </div>
+      </a>
+      <a [routerLink]="['/inventory']" class="action-btn">
+        <div class="action-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <div class="action-content">
+          <div class="action-title">Manage Inventory</div>
+          <div class="action-desc">Stock management</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Feature Grid -->
+  <div class="feature-section">
+    <div class="section-header">
+      <h3 class="section-title">
+        <i class="fas fa-cogs me-2"></i>
+        Management Modules
+      </h3>
+      <p class="section-subtitle">Comprehensive tools for business management</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3 class="feature-title">Client Management</h3>
+        <p class="feature-description">
+          Manage your customer database with advanced search, filtering, and customer insights.
+        </p>
+        <a [routerLink]="['/client']" class="btn-primary-custom">
+          <i class="fas fa-arrow-right"></i>
+          Manage Clients
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-box"></i>
+        </div>
+        <h3 class="feature-title">Product Catalog</h3>
+        <p class="feature-description">
+          Organize inventory with real-time stock tracking and smart categorization.
+        </p>
+        <a [routerLink]="['/product']" class="btn-primary-custom">
+          <i class="fas fa-arrow-right"></i>
+          Manage Products
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3 class="feature-title">Order Processing</h3>
+        <p class="feature-description">
+          Streamline your sales process with easy order creation and delivery tracking.
+        </p>
+        <a [routerLink]="['/order']" class="btn-primary-custom">
+          <i class="fas fa-arrow-right"></i>
+          Process Orders
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <h3 class="feature-title">Inventory Management</h3>
+        <p class="feature-description">
+          Track stock levels, manage inventory, and monitor product availability.
+        </p>
+        <a [routerLink]="['/inventory']" class="btn-primary-custom">
+          <i class="fas fa-arrow-right"></i>
+          Manage Inventory
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h3 class="feature-title">Analytics & Reports</h3>
+        <p class="feature-description">
+          Analyze your business with detailed performance metrics and reports.
+        </p>
+        <a [routerLink]="['/reports']" class="btn-primary-custom">
+          <i class="fas fa-arrow-right"></i>
+          View Analytics
+        </a>
       </div>
     </div>
   </div>
-  
-  
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>

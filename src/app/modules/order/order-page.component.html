@@ -30,72 +30,121 @@
 
       <!-- CREATE TAB -->
       <div *ngIf="tab==='create'" class="tab-content-area">
-        <div class="content-header">
-          <h4 class="content-title">
-            <i class="fas fa-barcode me-2"></i>
-            New Order Details
-          </h4>
-          <p class="content-subtitle">Add Order Items by entering barcodes</p>
-        </div>
-        <form [formGroup]="orderForm" (ngSubmit)="submitOrder()">
-          <div formArrayName="items">
-            <div *ngFor="let item of items.controls; let i=index" [formGroupName]="i" class="item-card mb-3">
-              <div class="item-header">
-                <span class="item-number">Item #{{ i + 1 }}</span>
-                <div class="item-actions">
-                  <button type="button" class="btn btn-success btn-sm btn-icon" (click)="addItem()" title="Add Item">
-                    <i class="fas fa-plus"></i>
-                  </button>
-                  <button type="button" class="btn btn-danger btn-sm btn-icon ms-2" (click)="removeItem(i)" [disabled]="items.length === 1" title="Remove Item">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="row g-3">
-                <div class="col-md-5">
-                  <label class="form-label">
-                    <i class="fas fa-barcode me-1"></i>
-                    Barcode
-                  </label>
-                  <div class="input-group">
-                    <input formControlName="barcode" 
-                          class="form-control form-control-custom"
-                          placeholder="Scan or type barcode"
-                          (blur)="updateMRPForItem(i)">
-                    <button type="button" 
-                            class="btn btn-outline-primary" 
-                            (click)="updateMRPForItem(i)"
-                            title="Update MRP">
-                      <i class="fas fa-sync-alt"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">
-                    <i class="fas fa-sort-numeric-up me-1"></i>
-                    Quantity
-                  </label>
-                  <input type="number" 
-                        formControlName="quantity" 
-                        class="form-control form-control-custom"
-                        min="1">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">
-                    <i class="fas fa-tag me-1"></i>
-                    MRP (₹)
-                  </label>
-                  <input formControlName="sellingPrice" 
-                        class="form-control form-control-custom"
-                        readonly>
-                </div>
-              </div>
+        <form [formGroup]="orderForm" (ngSubmit)="submitOrder()" novalidate>
+          <div class="content-header">
+            <h4 class="content-title">
+              <i class="fas fa-barcode me-2"></i>
+              New Order Details
+            </h4>
+            <p class="content-subtitle">Add Order Items by entering barcodes</p>
+          </div>
+          
+          <!-- Order Items Table -->
+          <div class="order-items-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0 fw-bold">Order Items</h6>
+              <button type="button" class="btn btn-success btn-sm" (click)="addItem()">
+                <i class="fas fa-plus me-1"></i>Add Item
+              </button>
+            </div>
+            
+            <div class="table-wrapper">
+              <table class="table table-sm table-bordered table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 5%;" class="text-center">#</th>
+                    <th style="width: 20%;">Barcode</th>
+                    <th style="width: 15%;">Quantity</th>
+                    <th style="width: 20%;">MRP (₹)</th>
+                    <th style="width: 20%;">Selling Price (₹)</th>
+                    <th style="width: 15%;">Total (₹)</th>
+                    <th style="width: 5%;" class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="items">
+                  <tr *ngFor="let item of items.controls; let i=index" [formGroupName]="i">
+                    <td class="text-center fw-bold">{{ i + 1 }}</td>
+                    <td>
+                      <div class="input-group input-group-sm position-relative">
+                        <input formControlName="barcode" 
+                              class="form-control"
+                              placeholder="Scan barcode"
+                              (input)="onBarcodeInput(i)"
+                              (blur)="updateMRPForItem(i)">
+                        <button type="button" 
+                                class="btn btn-outline-primary btn-sm" 
+                                (click)="updateMRPForItem(i)"
+                                title="Update MRP">
+                          <i class="fas fa-sync-alt"></i>
+                        </button>
+                        
+                        <!-- Barcode Suggestions Dropdown -->
+                        <div class="suggestions-dropdown" *ngIf="showBarcodeSuggestions && barcodeSuggestions.length > 0 && currentBarcodeIndex === i">
+                          <div class="suggestion-item" *ngFor="let suggestion of barcodeSuggestions" 
+                               (click)="selectBarcodeSuggestion(suggestion)">
+                            {{ suggestion.barcode }} - {{ suggestion.name }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="input-group input-group-sm">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="decreaseQuantity(i)" title="Decrease">
+                          <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" 
+                              formControlName="quantity" 
+                              class="form-control form-control-sm text-center"
+                              min="1"
+                              (input)="updateItemTotal(i)">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="increaseQuantity(i)" title="Increase">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <input formControlName="mrp" 
+                            class="form-control form-control-sm"
+                            readonly>
+                    </td>
+                    <td>
+                      <input type="number" 
+                            formControlName="sellingPrice" 
+                            class="form-control form-control-sm"
+                            min="0" 
+                            step="0.01"
+                            (input)="validateSellingPrice(i)"
+                            (blur)="updateItemTotal(i)">
+                    </td>
+                    <td class="text-end fw-bold text-success">
+                      ₹{{ getItemTotal(i) | number:'1.2-2' }}
+                    </td>
+                    <td class="text-center">
+                      <button type="button" 
+                              class="btn btn-danger btn-sm" 
+                              (click)="removeItem(i)" 
+                              [disabled]="items.length === 1"
+                              title="Remove Item">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot class="table-info">
+                  <tr>
+                    <td colspan="5" class="text-end fw-bold">Order Total:</td>
+                    <td class="text-end fw-bold text-success">₹{{ getOrderTotal() | number:'1.2-2' }}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
 
-          <div class="form-actions">
-            <button type="submit" 
+          <div class="form-actions mt-4">
+            <button type="button" 
                     class="btn btn-success btn-lg"
+                    (click)="submitOrder()"
                     [disabled]="orderForm.invalid || loading">
               <i class="fas fa-check me-2"></i>
               <span *ngIf="!loading">Place Order</span>
@@ -105,64 +154,6 @@
             </button>
           </div>
         </form>
-
-        <!-- Confirm Modal -->
-        <div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="confirmOrderModalLabel">
-                  <i class="fas fa-receipt me-2"></i>
-                  Order Confirmation
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="closeConfirmModal()" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <div *ngIf="confirmSummary.length > 0">
-                  <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
-                      <thead class="table-light">
-                        <tr>
-                          <th style="width: 25%;">Barcode</th>
-                          <th style="width: 15%;" class="text-center">Qty</th>
-                          <th style="width: 25%;" class="text-end">Price</th>
-                          <th style="width: 25%;" class="text-end">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let item of confirmSummary">
-                          <td>
-                            <small class="text-muted">{{ item.barcode }}</small>
-                          </td>
-                          <td class="text-center">{{ item.quantity }}</td>
-                          <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
-                          <td class="text-end fw-bold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
-                        </tr>
-                      </tbody>
-                      <tfoot class="table-info">
-                        <tr>
-                          <td colspan="3" class="text-end fw-bold">Total:</td>
-                          <td class="text-end fw-bold">₹{{ confirmTotal | number:'1.2-2' }}</td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeConfirmModal()">Cancel</button>
-                <button type="button" class="btn btn-success" (click)="confirmOrderSubmit()" [disabled]="loading">
-                  <span *ngIf="!loading">
-                    <i class="fas fa-check me-2"></i>Confirm Order
-                  </span>
-                  <span *ngIf="loading">
-                    <i class="fas fa-spinner fa-spin me-2"></i>Placing...
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- LIST TAB -->
@@ -193,7 +184,7 @@
               </label>
               <input type="text" 
                      class="form-control form-control-custom"
-                     placeholder="Search by Order ID or barcode"
+                     placeholder="Search by Order ID"
                      [(ngModel)]="searchQuery"
                      (input)="onSearchChange()">
             </div>
@@ -217,7 +208,7 @@
                      [(ngModel)]="endDate"
                      (change)="applyFilters()">
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2" *ngIf="authService.isSupervisor() || authService.isAdmin()">
               <label class="form-label">
                 <i class="fas fa-file-invoice me-1"></i>
                 Invoice Status
@@ -252,13 +243,13 @@
         <!-- Orders Table -->
         <div class="table-wrapper" *ngIf="!loadingOrders && orders.length > 0">
           <table class="table table-hover table-striped" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
-            <thead class="table-dark">
+            <thead>
               <tr>
                 <th style="width: 15%;">Order ID</th>
                 <th style="width: 25%;">Date</th>
                 <th style="width: 20%;">Total</th>
-                <th style="width: 25%;">Invoice</th>
-                <th style="width: 15%;">Actions</th>
+                <th style="width: 25%;" *ngIf="authService.isSupervisor() || authService.isAdmin()">Invoice</th>
+                <th style="width: 15%;" *ngIf="authService.isSupervisor() || authService.isAdmin()">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -273,7 +264,7 @@
                 <td>
                   <span class="fw-bold text-success">₹{{ order.total | number:'1.2-2' }}</span>
                 </td>
-                <td>
+                <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
                   <button class="btn btn-sm" 
                           [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
                           (click)="handleInvoice(order)"
@@ -282,7 +273,7 @@
                     {{ order.invoicePath ? 'Download' : 'Generate' }}
                   </button>
                 </td>
-                <td>
+                <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
                   <button class="btn btn-outline-primary btn-sm" (click)="openViewItems(order.id)" title="View Order Details">
                     <i class="fas fa-eye"></i>
                     View
@@ -338,6 +329,66 @@
   </div>
 </div>
 
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmOrderModalLabel">
+          <i class="fas fa-receipt me-2"></i>
+          Order Confirmation
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="closeConfirmModal()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="confirmSummary.length > 0">
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 25%;">Barcode</th>
+                  <th style="width: 15%;" class="text-center">Qty</th>
+                  <th style="width: 20%;" class="text-end">MRP</th>
+                  <th style="width: 20%;" class="text-end">Selling Price</th>
+                  <th style="width: 20%;" class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of confirmSummary">
+                  <td>
+                    <small class="text-muted">{{ item.barcode }}</small>
+                  </td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-end">₹{{ item.mrp | number:'1.2-2' }}</td>
+                  <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
+                  <td class="text-end fw-bold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
+                </tr>
+              </tbody>
+              <tfoot class="table-info">
+                <tr>
+                  <td colspan="4" class="text-end fw-bold">Total:</td>
+                  <td class="text-end fw-bold">₹{{ confirmTotal | number:'1.2-2' }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeConfirmModal()">Cancel</button>
+        <button type="button" class="btn btn-success" (click)="confirmOrderSubmit()" [disabled]="loading">
+          <span *ngIf="!loading">
+            <i class="fas fa-check me-2"></i>Confirm Order
+          </span>
+          <span *ngIf="loading">
+            <i class="fas fa-spinner fa-spin me-2"></i>Placing...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- View Items Modal -->
 <div class="modal fade show" tabindex="-1" *ngIf="showViewModal" [ngStyle]="{ display: 'block', background: 'rgba(240,247,255,0.95)' }">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -357,7 +408,8 @@
                 <th>#</th>
                 <th>Barcode</th>
                 <th>Quantity</th>
-                <th class="text-end">Price</th>
+                <th class="text-end">MRP</th>
+                <th class="text-end">Selling Price</th>
                 <th class="text-end">Total</th>
               </tr>
             </thead>
@@ -366,13 +418,14 @@
                 <td>{{ idx + 1 }}</td>
                 <td>{{ item.barcode }}</td>
                 <td>{{ item.quantity }}</td>
+                <td class="text-end">₹{{ item.mrp | number:'1.2-2' }}</td>
                 <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
                 <td class="text-end fw-semibold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
               </tr>
             </tbody>
             <tfoot class="table-info">
               <tr>
-                <td colspan="4" class="text-end fw-bold">Total:</td>
+                <td colspan="5" class="text-end fw-bold">Total:</td>
                 <td class="text-end fw-bold">₹{{ getViewedOrderTotal() | number:'1.2-2' }}</td>
               </tr>
             </tfoot>
@@ -383,10 +436,6 @@
         <button type="button" class="btn btn-secondary" (click)="closeViewModal()">
           <i class="fas fa-times me-2"></i>
           Close
-        </button>
-        <button type="button" class="btn btn-primary-custom" (click)="duplicateViewedOrder()">
-          <i class="fas fa-copy me-2"></i>
-          Duplicate Order
         </button>
       </div>
     </div>

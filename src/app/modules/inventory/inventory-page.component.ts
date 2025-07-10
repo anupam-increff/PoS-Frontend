@@ -7,6 +7,8 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../environments/environment';
 
+declare var bootstrap: any;
+
 @Component({
   selector: 'app-inventory-page',
   standalone: true,
@@ -27,8 +29,12 @@ export class InventoryPageComponent implements OnInit {
   editIndex: number | null = null;
   editItem: any = null;
   searchBarcode: string = '';
+  searchTimeout: any = null;
+  searchSuggestions: any[] = [];
+  showSuggestions: boolean = false;
   showAddInventoryModal = false;
-  showSchema = false;
+  activeTab: 'single' | 'bulk' = 'single';
+  private addInventoryModal: any = null;
   // Pagination
   currentPage = 0;
   totalPages = 0;
@@ -36,7 +42,7 @@ export class InventoryPageComponent implements OnInit {
   pageSize = 10;
   Math = Math;
 
-  constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService, public authService: AuthService) {
     this.uploadForm = this.fb.group({
       file: [null, Validators.required]
     });
@@ -54,6 +60,39 @@ export class InventoryPageComponent implements OnInit {
 
   ngOnInit() {
     this.loadInventory();
+  }
+
+  private initializeAddInventoryModal() {
+    // Try to initialize immediately
+    this.tryInitializeModal();
+    
+    // If not successful, try again after a delay
+    setTimeout(() => {
+      this.tryInitializeModal();
+    }, 100);
+    
+    // Try again after a longer delay
+    setTimeout(() => {
+      this.tryInitializeModal();
+    }, 500);
+    
+    // Final attempt
+    setTimeout(() => {
+      this.tryInitializeModal();
+    }, 1000);
+  }
+
+  private tryInitializeModal() {
+    if (typeof bootstrap !== 'undefined') {
+      const modalElement = document.getElementById('addInventoryModal');
+      if (modalElement && !this.addInventoryModal) {
+        try {
+          this.addInventoryModal = new bootstrap.Modal(modalElement);
+        } catch (error) {
+          console.log('Bootstrap modal initialization failed, will use fallback');
+        }
+      }
+    }
   }
 
   setTab(tab: 'upload' | 'add' | 'snapshot') {
@@ -77,8 +116,9 @@ export class InventoryPageComponent implements OnInit {
       next: (res: any) => {
         if (res.success) {
           this.toastr.success(res?.message || 'Inventory uploaded.');
+          this.closeAddInventoryModal();
           this.uploadForm.reset();
-          this.loadInventory();
+          this.loadInventory(); // Reload inventory instead of redirecting
         } else {
           // Handle validation errors
           let errorMessage = `Upload failed: ${res.message}\n\n`;
@@ -91,8 +131,8 @@ export class InventoryPageComponent implements OnInit {
           });
           
           this.toastr.error(errorMessage, 'Upload Failed', {
-            timeOut: 10000,
-            extendedTimeOut: 5000,
+            timeOut: 0,
+            extendedTimeOut: 0,
             closeButton: true
           });
           
@@ -114,8 +154,8 @@ export class InventoryPageComponent implements OnInit {
         }
         
         this.toastr.error(errorMessage, 'Upload Failed', {
-          timeOut: 10000,
-          extendedTimeOut: 5000,
+          timeOut: 0,
+          extendedTimeOut: 0,
           closeButton: true
         });
         
@@ -209,14 +249,20 @@ export class InventoryPageComponent implements OnInit {
   }
 
   searchByBarcode(page: number = 0) {
-    const barcode = this.searchBarcode.trim();
-    if (!barcode) {
-      this.toastr.warning('Enter a barcode to search');
+    if (!this.searchBarcode.trim()) {
+      this.loadInventory(page);
       return;
     }
+    
     this.loading = true;
     this.currentPage = page;
-    this.api.get<any>('/inventory/search', { params: { barcode, page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+    this.api.get<any>('/inventory/search', { 
+      params: { 
+        barcode: this.searchBarcode,
+        page: page.toString(), 
+        pageSize: this.pageSize.toString() 
+      } 
+    }).subscribe({
       next: (response) => {
         this.inventory = response.content || [];
         this.totalItems = response.totalItems || 0;
@@ -225,11 +271,55 @@ export class InventoryPageComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.inventory = [];
-        this.errorMsg = 'No inventory found for this barcode.';
+        this.errorMsg = 'Failed to search inventory.';
         this.loading = false;
       }
     });
+  }
+
+  onSearchChange() {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    this.searchTimeout = setTimeout(() => {
+      this.getSearchSuggestions();
+    }, 300);
+  }
+
+  getSearchSuggestions() {
+    if (!this.searchBarcode.trim()) {
+      this.searchSuggestions = [];
+      this.showSuggestions = false;
+      return;
+    }
+    this.api.get<any>('/inventory/search', {
+      params: {
+        barcode: this.searchBarcode,
+        page: '0',
+        pageSize: '10'
+      }
+    }).subscribe({
+      next: (response) => {
+        this.searchSuggestions = response.content || [];
+        this.showSuggestions = this.searchSuggestions.length > 0;
+      },
+      error: () => {
+        this.searchSuggestions = [];
+        this.showSuggestions = false;
+      }
+    });
+  }
+
+  selectSuggestion(suggestion: any) {
+    this.searchBarcode = suggestion.barcode;
+    this.searchSuggestions = [];
+    this.showSuggestions = false;
+    this.searchByBarcode();
+  }
+
+  clearBarcodeSearch() {
+    this.searchBarcode = '';
+    this.loadInventory();
   }
 
   saveEdit() {
@@ -249,13 +339,8 @@ export class InventoryPageComponent implements OnInit {
   }
 
   downloadSampleTSV() {
-    const sampleData = [
-      ['barcode', 'quantity'],
-      ['1234567890123', '50'],
-      ['9876543210987', '25']
-    ];
-    
-    const tsvContent = sampleData.map(row => row.join('\t')).join('\n');
+    const headerRow = ['barcode', 'quantity'];
+    const tsvContent = headerRow.join('\t');
     const blob = new Blob([tsvContent], { type: 'text/tab-separated-values' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -263,24 +348,31 @@ export class InventoryPageComponent implements OnInit {
     link.download = 'sample_inventory.tsv';
     link.click();
     window.URL.revokeObjectURL(url);
-    this.toastr.success('Sample inventory TSV file downloaded successfully!');
+    this.toastr.success('Inventory TSV header downloaded!');
   }
 
   canAccessFeature(feature: string): boolean {
     return this.authService.canAccessFeature(feature);
   }
 
+  // ===== Modal helpers =====
   openAddInventoryModal() {
+    this.activeTab = 'single';
     this.showAddInventoryModal = true;
   }
 
   closeAddInventoryModal() {
     this.showAddInventoryModal = false;
     this.addForm.reset();
+    this.uploadForm.reset();
   }
 
-  toggleSchema() {
-    this.showSchema = !this.showSchema;
+  handleInventoryModalSubmit() {
+    if (this.activeTab === 'single') {
+      this.addInventory();
+    } else {
+      this.uploadInventory();
+    }
   }
 
   onPageChange(page: number): void {

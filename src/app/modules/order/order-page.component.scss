@@ -12,23 +12,23 @@
   border-radius: 8px;
   padding: 1.5rem;
   border: 1px solid #e9ecef;
+  }
+  
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.item-number {
-  font-weight: 600;
+    
+    .item-number {
+      font-weight: 600;
   color: #495057;
-}
-
-.item-actions {
-  display: flex;
-  gap: 0.5rem;
+    }
+    
+    .item-actions {
+      display: flex;
+      gap: 0.5rem;
 }
 
 .btn-icon {
@@ -43,7 +43,7 @@
 .form-actions {
   margin-top: 2rem;
   text-align: center;
-}
+      }
 
 .content-header {
   margin-bottom: 2rem;
@@ -71,7 +71,7 @@
   text-align: center;
   padding: 3rem 1rem;
   color: #6c757d;
-}
+  }
 
 .empty-state {
   text-align: center;

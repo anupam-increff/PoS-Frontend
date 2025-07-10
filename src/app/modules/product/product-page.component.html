@@ -10,330 +10,256 @@
   </div>
 </div>
 
-<div class="feature-grid">
-  <div class="feature-card">
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'upload'" (click)="setTab('upload')">
-          <i class="fas fa-upload me-1"></i>
-          Upload Product
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'client'" (click)="setTab('client')">
-          <i class="fas fa-users me-1"></i>
-          Products by Client
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'list'" (click)="setTab('list')">
-          <i class="fas fa-list me-1"></i>
-          All Products
-        </a>
-      </li>
-    </ul>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0">Product Management</h5>
+  <button class="btn btn-primary" (click)="openAddProductModal()">
+    <i class="fas fa-plus me-1"></i>
+    Add Product
+  </button>
+</div>
 
-    <!-- Upload Product -->
-    <div *ngIf="tab === 'upload'">
-      <div class="container-fluid px-0">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h5 class="mb-1 fw-bold">
-              <i class="fas fa-cloud-upload-alt me-2"></i>
-              Bulk Product Upload
-            </h5>
-            <div class="text-muted small">Upload multiple products at once using a TSV (Tab-Separated Values) file.</div>
-          </div>
-          <button class="btn btn-outline-primary" (click)="openAddProductModal()">
-            <i class="fas fa-plus me-1"></i>
-            Add Single Product
+<div class="d-flex justify-content-end align-items-center mb-3">
+  <div class="d-flex align-items-center position-relative">
+    <input type="text" class="form-control me-2" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
+      name="searchBarcode" (input)="onSearchChange()" style="max-width: 250px;">
+    
+    <!-- Suggestions Dropdown -->
+    <div class="suggestions-dropdown" *ngIf="showSuggestions && searchSuggestions.length > 0">
+      <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions" 
+           (click)="selectSuggestion(suggestion)">
+        {{ suggestion.barcode }} - {{ suggestion.name }}
+      </div>
+    </div>
+    
+    <button class="btn btn-outline-primary me-2" (click)="searchByBarcode()">Search</button>
+    <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">Clear</button>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="loading" class="text-center p-4">
+  <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+</div>
+
+<div *ngIf="errorMsg" class="alert alert-danger m-3">{{ errorMsg }}</div>
+
+<div class="table-wrapper" tabindex="0" *ngIf="!loading">
+  <table class="table-custom" [class.focus-mode]="editIndex !== null">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Client Name</th>
+        <th>Barcode</th>
+        <th>Name</th>
+        <th>MRP</th>
+        <th *ngIf="authService.isSupervisor() || authService.isAdmin()">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let product of products; let i = index; trackBy: trackByProductId" [ngClass]="{'focused-row': editIndex === i}">
+        <td [ngClass]="editIndex === i ? 'non-editable' : ''">
+          <ng-container *ngIf="editIndex === i; else viewImageList">
+            <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
+          </ng-container>
+          <ng-template #viewImageList>
+            <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb" (click)="openImageModal(product.imageUrl)">
+          </ng-template>
+        </td>
+        <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
+          <ng-container *ngIf="editIndex === i; else viewClientNameList">
+            <input [(ngModel)]="editProduct.clientName" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
+          </ng-container>
+          <ng-template #viewClientNameList>{{ product.clientName }}</ng-template>
+        </td>
+        <td>{{ product.barcode }}</td>
+        <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
+          <ng-container *ngIf="editIndex === i; else viewNameList">
+            <input [(ngModel)]="editProduct.name" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" />
+          </ng-container>
+          <ng-template #viewNameList>{{ product.name }}</ng-template>
+        </td>
+        <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
+          <ng-container *ngIf="editIndex === i; else viewMrpList">
+            <input
+              type="number"
+              [(ngModel)]="editProduct.mrp"
+              class="form-control form-control-custom mrp-input"
+              min="0"
+              step="0.01"
+              required
+            />
+          </ng-container>
+          <ng-template #viewMrpList>{{ product.mrp }}</ng-template>
+        </td>
+        <td *ngIf="authService.isSupervisor() || authService.isAdmin()" class="edit-btn-cell">
+          <button *ngIf="editIndex !== i" class="edit-row-btn" (click)="startEdit(i, product)" title="Edit">
+            Edit
           </button>
-        </div>
-        <div class="mb-3">
-          <button class="btn btn-outline-secondary w-100 text-start" type="button" (click)="toggleSchema()">
-            <i class="fas fa-info-circle me-1"></i>
-            {{ showSchema ? 'Hide' : 'View' }} TSV Schema & Sample
-            <i class="fas float-end" [ngClass]="showSchema ? 'fa-chevron-up' : 'fa-chevron-down'" ></i>
+          <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save">
+            <span style="font-size:1.2em;">&#10003; Save</span>
           </button>
+          <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel">
+            <i class="fas fa-times"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-5">
+  <i class="fas fa-box fa-3x text-muted mb-3"></i>
+  <p class="text-muted">No products found.</p>
+</div>
+
+<!-- Pagination Bar -->
+<div *ngIf="!loading && totalPages > 1" class="d-flex justify-content-between align-items-center mt-4">
+  <div class="text-muted">
+    Showing 
+    {{ totalItems === 0 ? 0 : (currentPage * pageSize) + 1 }}
+    to
+    {{ totalItems === 0 ? 0 : Math.min((currentPage + 1) * pageSize, totalItems) }}
+    of {{ totalItems }} products
+  </div>
+  <div class="pagination-bar">
+    <nav aria-label="Product pagination">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" (click)="onPageChange(0)" style="cursor: pointer;">
+            <i class="fas fa-angle-double-left"></i>
+          </a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" (click)="onPageChange(currentPage - 1)" style="cursor: pointer;">
+            <i class="fas fa-angle-left"></i>
+          </a>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <a class="page-link" (click)="onPageChange(page)" style="cursor: pointer;">{{ page + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+          <a class="page-link" (click)="onPageChange(currentPage + 1)" style="cursor: pointer;">
+            <i class="fas fa-angle-right"></i>
+          </a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+          <a class="page-link" (click)="onPageChange(totalPages - 1)" style="cursor: pointer;">
+            <i class="fas fa-angle-double-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<!-- Add Product Modal with Tabs -->
+<div class="modal-overlay" *ngIf="showAddProductModal" (click)="closeAddProductModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">Add Product</h5>
+      <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
+    </div>
+    <div class="modal-body">
+      <!-- Tab Navigation -->
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <a class="nav-link active" id="single-tab" (click)="setActiveTab('single')" style="cursor: pointer;">
+            <i class="fas fa-plus me-1"></i>Single Product
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="bulk-tab" (click)="setActiveTab('bulk')" style="cursor: pointer;">
+            <i class="fas fa-upload me-1"></i>Bulk Upload
+          </a>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Single Product Tab -->
+        <div class="tab-pane" [class.active]="activeTab === 'single'">
+          <form [formGroup]="singleProductForm">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Client Name</label>
+                <input type="text" class="form-control" formControlName="clientName" placeholder="Enter client name (alphabets only)">
+                <div class="text-danger small" *ngIf="singleProductForm.get('clientName')?.invalid && singleProductForm.get('clientName')?.touched">
+                  <span *ngIf="singleProductForm.get('clientName')?.errors?.['required']">Client name is required.</span>
+                  <span *ngIf="singleProductForm.get('clientName')?.errors?.['pattern']">Only alphabets are allowed.</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Barcode</label>
+                <input type="text" class="form-control" formControlName="barcode" placeholder="Enter barcode (alphanumeric)">
+                <div class="text-danger small" *ngIf="singleProductForm.get('barcode')?.invalid && singleProductForm.get('barcode')?.touched">
+                  <span *ngIf="singleProductForm.get('barcode')?.errors?.['required']">Barcode is required.</span>
+                  <span *ngIf="singleProductForm.get('barcode')?.errors?.['pattern']">Only alphanumeric characters are allowed.</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Product Name</label>
+                <input type="text" class="form-control" formControlName="name" placeholder="Enter product name (alphanumeric)">
+                <div class="text-danger small" *ngIf="singleProductForm.get('name')?.invalid && singleProductForm.get('name')?.touched">
+                  <span *ngIf="singleProductForm.get('name')?.errors?.['required']">Product name is required.</span>
+                  <span *ngIf="singleProductForm.get('name')?.errors?.['pattern']">Only alphanumeric characters are allowed.</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">MRP</label>
+                <input type="number" class="form-control" formControlName="mrp" placeholder="Enter MRP" min="0" step="0.01">
+                <div class="text-danger small" *ngIf="singleProductForm.get('mrp')?.invalid && singleProductForm.get('mrp')?.touched">
+                  <span *ngIf="singleProductForm.get('mrp')?.errors?.['required']">MRP is required.</span>
+                  <span *ngIf="singleProductForm.get('mrp')?.errors?.['min']">MRP must be greater than 0.</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Image URL</label>
+                <input type="url" class="form-control" formControlName="imageUrl" placeholder="Enter image URL (https://...)">
+                <div class="text-danger small" *ngIf="singleProductForm.get('imageUrl')?.invalid && singleProductForm.get('imageUrl')?.touched">
+                  <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['required']">Image URL is required.</span>
+                  <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['pattern']">Please enter a valid URL starting with http:// or https://</span>
+                </div>
+              </div>
+            </div>
+          </form>
         </div>
-        <div class="collapse" [class.show]="showSchema">
-          <div class="tsv-schema-box mb-4">
-            <h6 class="mb-2 fw-semibold">TSV Schema</h6>
-            <div class="tsv-schema-list">
-              <div class="tsv-schema-row"><span class="tsv-schema-label">clientName</span><span class="tsv-schema-desc">Client/company name</span></div>
-              <div class="tsv-schema-row"><span class="tsv-schema-label">barcode</span><span class="tsv-schema-desc">Unique product barcode</span></div>
-              <div class="tsv-schema-row"><span class="tsv-schema-label">name</span><span class="tsv-schema-desc">Product name/description</span></div>
-              <div class="tsv-schema-row"><span class="tsv-schema-label">mrp</span><span class="tsv-schema-desc">Maximum Retail Price</span></div>
-              <div class="tsv-schema-row"><span class="tsv-schema-label">imageUrl</span><span class="tsv-schema-desc">Product image URL</span></div>
-            </div>
-            <div class="tsv-schema-sample">
-              <i class="fas fa-file-alt me-2"></i>
-              <span>Download a sample TSV file to see the required format.</span>
-              <button class="btn btn-outline-primary btn-sm ms-auto" (click)="downloadSampleTSV()">
-                <i class="fas fa-download me-1"></i>
-                Download Sample TSV
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="card shadow-sm border-0 p-4 mb-4 bg-white">
-          <form [formGroup]="productForm" (ngSubmit)="uploadMaster()" class="row g-3 align-items-end">
-            <div class="col-md-8">
-              <label for="productFile" class="form-label fw-semibold">Select TSV File</label>
-              <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv" id="productFile">
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-              <button class="btn btn-primary w-100" type="submit" [disabled]="productForm.invalid">
-                <i class="fas fa-upload me-2"></i>
-                Upload Products
-              </button>
+
+        <!-- Bulk Upload Tab -->
+        <div class="tab-pane" [class.active]="activeTab === 'bulk'">
+          <form [formGroup]="productForm">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Upload TSV File</label>
+                <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv,.txt">
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Upload a TSV file with columns: clientName, barcode, name, mrp, imageUrl
+                </div>
+                <div class="mt-2">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadSampleTSV()">
+                    <i class="fas fa-download me-1"></i>Download Sample
+                  </button>
+                  <button type="button" class="btn btn-outline-info btn-sm ms-2" (click)="toggleSchema()">
+                    <i class="fas fa-eye me-1"></i>View Schema
+                  </button>
+                </div>
+                <div *ngIf="showSchema" class="mt-3 p-3 bg-light rounded">
+                  <h6>TSV Schema:</h6>
+                  <pre class="mb-0"><code>clientName	barcode	name	mrp	imageUrl
+ABC Company	1234567890123	Premium Wireless Headphones	2999.00	https://example.com/headphones.jpg</code></pre>
+                </div>
+              </div>
             </div>
           </form>
         </div>
       </div>
-      
-      <!-- Add Single Product Modal -->
-      <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <form [formGroup]="singleProductForm" (ngSubmit)="addSingleProduct()">
-              <div class="modal-header">
-                <h5 class="modal-title" id="addProductModalLabel">Add Single Product</h5>
-                <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
-              </div>
-              <div class="modal-body">
-                <div class="row g-2">
-                  <div class="col-12 col-md-6">
-                    <label class="form-label">Client Name</label>
-                    <input type="text" class="form-control" formControlName="clientName" placeholder="Client Name">
-                    <div class="text-danger small" *ngIf="singleProductForm.get('clientName')?.invalid && singleProductForm.get('clientName')?.touched">
-                      Client name is required.
-                    </div>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <label class="form-label">Barcode</label>
-                    <input type="text" class="form-control" formControlName="barcode" placeholder="Barcode">
-                    <div class="text-danger small" *ngIf="singleProductForm.get('barcode')?.invalid && singleProductForm.get('barcode')?.touched">
-                      Barcode is required.
-                    </div>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <label class="form-label">Product Name</label>
-                    <input type="text" class="form-control" formControlName="name" placeholder="Product Name">
-                    <div class="text-danger small" *ngIf="singleProductForm.get('name')?.invalid && singleProductForm.get('name')?.touched">
-                      Product name is required.
-                    </div>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <label class="form-label">MRP</label>
-                    <input type="number" class="form-control" formControlName="mrp" placeholder="MRP" min="0" step="0.01">
-                    <div class="text-danger small" *ngIf="singleProductForm.get('mrp')?.invalid && singleProductForm.get('mrp')?.touched">
-                      MRP is required and must be non-negative.
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Image URL</label>
-                    <input type="text" class="form-control" formControlName="imageUrl" placeholder="Image URL">
-                    <div class="text-danger small" *ngIf="singleProductForm.get('imageUrl')?.invalid && singleProductForm.get('imageUrl')?.touched">
-                      <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['required']">Image URL is required.</span>
-                      <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['pattern']">Please enter a valid URL starting with http:// or https://</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="closeAddProductModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" [disabled]="singleProductForm.invalid">Add Product</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
     </div>
-
-    <!-- Products by Client -->
-    <div *ngIf="tab === 'client'">
-      <div class="d-flex mb-3">
-        <input type="text" class="form-control me-2" placeholder="Enter Client Name" [(ngModel)]="searchClientName"
-          name="searchClientName" (keyup.enter)="searchByClientName()" style="max-width: 300px;">
-        <button class="btn btn-outline-primary" (click)="searchByClientName()">Search</button>
-      </div>
-      <div *ngIf="loading" class="text-center p-4">
-        <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
-      </div>
-      <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
-      <div class="table-wrapper" tabindex="0" *ngIf="!loading && products.length > 0">
-        <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Client Name</th>
-              <th>Barcode</th>
-              <th>Name</th>
-              <th>MRP</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let product of products; let i = index; trackBy: trackByProductId" [ngClass]="{'focused-row': editIndex === i}">
-              <td [ngClass]="editIndex === i ? 'non-editable' : ''">
-                <ng-container *ngIf="editIndex === i; else viewImage">
-                  <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
-                </ng-container>
-                <ng-template #viewImage>
-                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb" (click)="openImageModal(product.imageUrl)">
-                </ng-template>
-              </td>
-              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
-                <ng-container *ngIf="editIndex === i; else viewClientName">
-                  <input [(ngModel)]="editProduct.clientName" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
-                </ng-container>
-                <ng-template #viewClientName>{{ product.clientName }}</ng-template>
-              </td>
-              <td class="non-editable">{{ product.barcode }}</td>
-              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
-                <ng-container *ngIf="editIndex === i; else viewName">
-                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" />
-                </ng-container>
-                <ng-template #viewName>{{ product.name }}</ng-template>
-              </td>
-              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
-                <ng-container *ngIf="editIndex === i; else viewMrp">
-                  <input
-                    type="number"
-                    [(ngModel)]="editProduct.mrp"
-                    class="form-control form-control-custom mrp-input"
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </ng-container>
-                <ng-template #viewMrp>{{ product.mrp }}</ng-template>
-              </td>
-              <td class="edit-btn-cell">
-                <button *ngIf="editIndex !== i" class="edit-row-btn" (click)="startEdit(i, product)" title="Edit"><i class="fas fa-pen"></i></button>
-                <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save"><span style="font-size:1.2em;">&#10003; Save</span></button>
-                <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel"><i class="fas fa-times"></i></button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div *ngIf="products.length === 0 && !loading" class="text-muted text-center">No products found.</div>
-    </div>
-
-    <!-- All Products -->
-    <div *ngIf="tab === 'list'">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">All Products</h5>
-        <div class="d-flex align-items-center">
-          <input type="text" class="form-control me-2" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
-            name="searchBarcode" (keyup.enter)="searchByBarcode()" style="max-width: 250px;">
-          <button class="btn btn-outline-primary me-2" (click)="searchByBarcode()">Search</button>
-          <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">Clear</button>
-        </div>
-      </div>
-      <div *ngIf="loading" class="text-center p-4">
-        <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
-      </div>
-      <div *ngIf="errorMsg" class="alert alert-danger m-3">{{ errorMsg }}</div>
-      <div class="table-wrapper" tabindex="0" *ngIf="!loading && !errorMsg">
-        <table [class.focus-mode]="editIndex !== null" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Client Name</th>
-              <th>Barcode</th>
-              <th>Name</th>
-              <th>MRP</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let product of products; let i = index; trackBy: trackByProductId" [ngClass]="{'focused-row': editIndex === i}">
-              <td [ngClass]="editIndex === i ? 'non-editable' : ''">
-                <ng-container *ngIf="editIndex === i; else viewImageList">
-                  <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
-                </ng-container>
-                <ng-template #viewImageList>
-                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb" (click)="openImageModal(product.imageUrl)">
-                </ng-template>
-              </td>
-              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
-                <ng-container *ngIf="editIndex === i; else viewClientNameList">
-                  <input [(ngModel)]="editProduct.clientName" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
-                </ng-container>
-                <ng-template #viewClientNameList>{{ product.clientName }}</ng-template>
-              </td>
-              <td class="non-editable">{{ product.barcode }}</td>
-              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
-                <ng-container *ngIf="editIndex === i; else viewNameList">
-                  <input [(ngModel)]="editProduct.name" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" />
-                </ng-container>
-                <ng-template #viewNameList>{{ product.name }}</ng-template>
-              </td>
-              <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
-                <ng-container *ngIf="editIndex === i; else viewMrpList">
-                  <input
-                    type="number"
-                    [(ngModel)]="editProduct.mrp"
-                    class="form-control form-control-custom mrp-input"
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </ng-container>
-                <ng-template #viewMrpList>{{ product.mrp }}</ng-template>
-              </td>
-              <td class="edit-btn-cell">
-                <button *ngIf="editIndex !== i" class="edit-row-btn" (click)="startEdit(i, product)" title="Edit"><i class="fas fa-pen"></i></button>
-                <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save"><span style="font-size:1.2em;">&#10003; Save</span></button>
-                <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel"><i class="fas fa-times"></i></button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div *ngIf="products.length === 0 && !loading && !errorMsg" class="text-center p-3 text-muted">No products found.</div>
-      <!-- Pagination Bar -->
-      <div *ngIf="!loading && totalPages > 1" class="d-flex justify-content-between align-items-center mt-4">
-        <div class="text-muted">
-          Showing 
-          {{ totalItems === 0 ? 0 : (currentPage * pageSize) + 1 }}
-          to
-          {{ totalItems === 0 ? 0 : Math.min((currentPage + 1) * pageSize, totalItems) }}
-          of {{ totalItems }} products
-        </div>
-        <div class="pagination-bar">
-          <nav aria-label="Product pagination">
-            <ul class="pagination pagination-sm mb-0">
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="onPageChange(0)" style="cursor: pointer;">
-                  <i class="fas fa-angle-double-left"></i>
-                </a>
-              </li>
-              <li class="page-item" [class.disabled]="currentPage === 0">
-                <a class="page-link" (click)="onPageChange(currentPage - 1)" style="cursor: pointer;">
-                  <i class="fas fa-angle-left"></i>
-                </a>
-              </li>
-              <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
-                <a class="page-link" (click)="onPageChange(page)" style="cursor: pointer;">{{ page + 1 }}</a>
-              </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="onPageChange(currentPage + 1)" style="cursor: pointer;">
-                  <i class="fas fa-angle-right"></i>
-                </a>
-              </li>
-              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                <a class="page-link" (click)="onPageChange(totalPages - 1)" style="cursor: pointer;">
-                  <i class="fas fa-angle-double-right"></i>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeAddProductModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="handleModalSubmit()" [disabled]="activeTab === 'single' ? singleProductForm.invalid : productForm.invalid">
+        <span *ngIf="activeTab === 'single'">Add Product</span>
+        <span *ngIf="activeTab === 'bulk'">Upload Products</span>
+      </button>
     </div>
   </div>
 </div>

@@ -223,4 +223,57 @@ export class ReportsPageComponent implements OnInit {
     }
     return '0.00';
   }
+
+  downloadDateRangeCSV() {
+    if (this.dateRangeData.length === 0) {
+      this.toastr.warning('No data to download');
+      return;
+    }
+
+    const headers = ['Date', 'Invoiced Orders', 'Invoiced Items', 'Total Revenue', 'Average Order Value'];
+    const csvData = this.dateRangeData.map(row => [
+      this.formatDate(row.date),
+      row.invoicedOrdersCount,
+      row.invoicedItemsCount,
+      row.totalRevenue,
+      this.getAverageOrderValue(row)
+    ]);
+
+    this.downloadCSV(headers, csvData, `sales_report_${this.dateRangeForm.value.startDate}_to_${this.dateRangeForm.value.endDate}.csv`);
+  }
+
+  downloadClientSalesCSV() {
+    if (this.clientSales.length === 0) {
+      this.toastr.warning('No data to download');
+      return;
+    }
+
+    const headers = ['Client Name', 'Quantity Sold', 'Revenue'];
+    const csvData = this.clientSales.map(sale => [
+      sale.client,
+      sale.quantity,
+      sale.revenue
+    ]);
+
+    this.downloadCSV(headers, csvData, `client_sales_report_${this.salesStartDate || 'all'}_to_${this.salesEndDate || 'all'}.csv`);
+  }
+
+  private downloadCSV(headers: string[], data: any[], filename: string) {
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => row.map((cell: any) => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    this.toastr.success('CSV report downloaded successfully');
+  }
 } 

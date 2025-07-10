@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -25,8 +26,11 @@ export class ClientPageComponent implements OnInit {
 
   tab: 'list' = 'list';
   loading = false;
-  searchName = '';
+  searchName: string = '';
+  searchTimeout: any = null;
   searchResult: any = null;
+  searchSuggestions: any[] = [];
+  showSuggestions: boolean = false;
 
   editIndex: number | null = null;
   editClient: any = null;
@@ -44,10 +48,11 @@ export class ClientPageComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
+    public authService: AuthService,
     private toastr: ToastrService
   ) {
     this.clientForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(50)]]
+      name: ['', [Validators.required, Validators.maxLength(50), Validators.pattern(/^[a-zA-Z\s]+$/)]]
     });
   }
 
@@ -148,29 +153,26 @@ export class ClientPageComponent implements OnInit {
     });
   }
 
-  searchClient(page: number = 0): void {
-    const name = this.searchName.trim();
-    if (!name) {
-      this.toastr.warning('Please enter a client name to search.');
+  searchClient() {
+    if (!this.searchName.trim()) {
+      this.loadClients();
       return;
     }
-
+    
     this.loading = true;
-    this.isSearchMode = true;
-    this.currentPage = page;
-
-    this.api.searchClientsPaginated(name, page, this.pageSize).subscribe({
-      next: (response: any) => {
+    this.api.get<any>('/client/search', { 
+      params: { 
+        query: this.searchName,
+        page: this.currentPage.toString(), 
+        pageSize: this.pageSize.toString() 
+      } 
+    }).subscribe({
+      next: (response) => {
         this.clients = response.content || [];
         this.totalItems = response.totalItems || 0;
         this.totalPages = response.totalPages || 0;
         this.pageSize = response.pageSize || this.pageSize;
         this.loading = false;
-        if (this.clients.length > 0) {
-          this.toastr.success(`Found ${this.totalItems} client(s)!`);
-        } else {
-          this.toastr.warning('No clients found.');
-        }
       },
       error: () => {
         this.toastr.error('Failed to search clients.');
@@ -179,10 +181,51 @@ export class ClientPageComponent implements OnInit {
     });
   }
 
+  onSearchChange() {
+    // Debounce the search to avoid too many API calls
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    this.searchTimeout = setTimeout(() => {
+      this.getSearchSuggestions();
+    }, 300);
+  }
+
+  getSearchSuggestions() {
+    if (!this.searchName.trim()) {
+      this.searchSuggestions = [];
+      this.showSuggestions = false;
+      return;
+    }
+    
+    this.api.get<any>('/client/search', { 
+      params: { 
+        query: this.searchName,
+        page: '0', 
+        pageSize: '10' 
+      } 
+    }).subscribe({
+      next: (response) => {
+        this.searchSuggestions = response.content || [];
+        this.showSuggestions = this.searchSuggestions.length > 0;
+      },
+      error: () => {
+        this.searchSuggestions = [];
+        this.showSuggestions = false;
+      }
+    });
+  }
+
+  selectSuggestion(suggestion: any) {
+    this.searchName = suggestion.name;
+    this.searchSuggestions = [];
+    this.showSuggestions = false;
+    this.searchClient();
+  }
+
   clearSearch(): void {
     this.searchName = '';
-    this.searchResult = null;
-    this.loadClients(0);
+    this.loadClients();
   }
 
   cancelEdit() {
@@ -193,7 +236,7 @@ export class ClientPageComponent implements OnInit {
   // Pagination methods
   onPageChange(page: number): void {
     if (this.isSearchMode) {
-      this.searchClient(page);
+      this.searchClient();
     } else {
       this.loadClients(page);
     }

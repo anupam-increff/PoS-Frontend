@@ -6,6 +6,7 @@ import {
   Validators
 } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { DatePipe, CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -15,6 +16,7 @@ declare var bootstrap: any;
 interface OrderItem {
   barcode: string;
   quantity: number;
+  mrp: number;
   sellingPrice: number;
 }
 
@@ -58,10 +60,16 @@ export class OrderPageComponent implements OnInit {
   totalPages = 1;
   totalItems = 0;
   Math = Math;
+  
+  // Autocomplete for barcode search
+  barcodeSuggestions: any[] = [];
+  showBarcodeSuggestions: boolean = false;
+  currentBarcodeIndex: number = -1;
 
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
+    public authService: AuthService,
     private toastr: ToastrService,
     private datePipe: DatePipe
   ) {
@@ -94,7 +102,8 @@ export class OrderPageComponent implements OnInit {
     const group = this.fb.group({
       barcode: ['', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
-      sellingPrice: [{ value: '', disabled: true }, Validators.required]
+      mrp: ['', Validators.required],
+      sellingPrice: ['', Validators.required]
     });
 
     this.items.push(group);
@@ -114,13 +123,113 @@ export class OrderPageComponent implements OnInit {
 
     this.api.get<any>(`/product/barcode/${encodeURIComponent(barcode)}`).subscribe({
       next: (product) => {
+        group.get('mrp')!.setValue(product.mrp);
         group.get('sellingPrice')!.setValue(product.mrp);
+        this.updateItemTotal(index);
       },
       error: () => {
+        group.get('mrp')!.reset();
         group.get('sellingPrice')!.reset();
         this.toastr.error(`Product with barcode ${barcode} not found.`);
       }
     });
+  }
+
+  onBarcodeInput(index: number) {
+    const group = this.items.at(index);
+    const barcode = group.get('barcode')!.value;
+    
+    if (!barcode || barcode.length < 2) {
+      this.barcodeSuggestions = [];
+      this.showBarcodeSuggestions = false;
+      return;
+    }
+
+    this.currentBarcodeIndex = index;
+    this.getBarcodeSuggestions(barcode);
+  }
+
+  getBarcodeSuggestions(barcode: string) {
+    this.api.get<any>('/product/search', { 
+      params: { 
+        barcode: barcode,
+        page: '0', 
+        pageSize: '5' 
+      } 
+    }).subscribe({
+      next: (response) => {
+        this.barcodeSuggestions = response.content || [];
+        this.showBarcodeSuggestions = this.barcodeSuggestions.length > 0;
+      },
+      error: () => {
+        this.barcodeSuggestions = [];
+        this.showBarcodeSuggestions = false;
+      }
+    });
+  }
+
+  selectBarcodeSuggestion(suggestion: any) {
+    if (this.currentBarcodeIndex >= 0) {
+      const group = this.items.at(this.currentBarcodeIndex);
+      group.get('barcode')!.setValue(suggestion.barcode);
+      this.barcodeSuggestions = [];
+      this.showBarcodeSuggestions = false;
+      this.updateMRPForItem(this.currentBarcodeIndex);
+    }
+  }
+
+  validateSellingPrice(index: number) {
+    const group = this.items.at(index);
+    const sellingPrice = group.get('sellingPrice')!.value;
+    const mrp = group.get('mrp')!.value;
+
+    if (sellingPrice > mrp) {
+      this.toastr.warning('Selling price cannot be greater than MRP');
+      group.get('sellingPrice')!.setValue(mrp);
+    }
+  }
+
+  updateItemTotal(index: number) {
+    const group = this.items.at(index);
+    const quantity = group.get('quantity')!.value;
+    const sellingPrice = group.get('sellingPrice')!.value;
+    
+    if (quantity && sellingPrice) {
+      // Trigger change detection for the total display
+      this.orderForm.updateValueAndValidity();
+    }
+  }
+
+  getItemTotal(index: number): number {
+    const group = this.items.at(index);
+    const quantity = group.get('quantity')!.value;
+    const sellingPrice = group.get('sellingPrice')!.value;
+    
+    return quantity && sellingPrice ? quantity * sellingPrice : 0;
+  }
+
+  getOrderTotal(): number {
+    let total = 0;
+    for (let i = 0; i < this.items.length; i++) {
+      total += this.getItemTotal(i);
+    }
+    return total;
+  }
+
+  increaseQuantity(index: number) {
+    const group = this.items.at(index);
+    const currentQuantity = group.get('quantity')!.value;
+    group.get('quantity')!.setValue(currentQuantity + 1);
+    this.updateItemTotal(index);
+  }
+
+  decreaseQuantity(index: number) {
+    const group = this.items.at(index);
+    const currentQuantity = group.get('quantity')!.value;
+    if (currentQuantity > 1) {
+      group.get('quantity')!.setValue(currentQuantity - 1);
+      this.updateItemTotal(index);
+    }
   }
 
   submitOrder() {
@@ -154,6 +263,7 @@ export class OrderPageComponent implements OnInit {
         grouped[item.barcode] = {
           barcode: item.barcode,
           quantity: 0,
+          mrp: item.mrp || 0,
           sellingPrice: item.sellingPrice || 0
         };
       }

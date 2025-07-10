@@ -28,6 +28,9 @@ export class ProductPageComponent implements OnInit {
   imageToZoom = '';
   searchClientId: string = '';
   searchBarcode: string = '';
+  searchTimeout: any = null;
+  searchSuggestions: any[] = [];
+  showSuggestions: boolean = false;
   editIndex: number | null = null;
   editProduct: any = null;
   searchClientName: string = '';
@@ -41,11 +44,12 @@ export class ProductPageComponent implements OnInit {
   singleProductForm: FormGroup;
   showSchema = false;
   showAddProductModal = false;
+  activeTab = 'single';
   private addProductModal: any;
 
   constructor(
     private api: ApiService,
-    private authService: AuthService,
+    public authService: AuthService,
     private fb: FormBuilder,
     private toastr: ToastrService,
     private route: ActivatedRoute
@@ -54,21 +58,22 @@ export class ProductPageComponent implements OnInit {
       file: [null, Validators.required]
     });
     this.singleProductForm = this.fb.group({
-      clientName: ['', Validators.required],
-      barcode: ['', Validators.required],
-      name: ['', Validators.required],
+      clientName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z\s]+$/)]],
+      barcode: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)]],
+      name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s]+$/)]],
       mrp: ['', [Validators.required, Validators.min(0)]],
       imageUrl: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]]
     });
   }
 
   ngOnInit() {
+    // Always load products on init
+    this.loadProducts();
+    
     // Check for tab parameter from query params
     this.route.queryParams.subscribe(params => {
       if (params['tab']) {
         this.setTab(params['tab'] as 'upload' | 'client' | 'list');
-      } else {
-        this.loadProducts();
       }
     });
   }
@@ -119,8 +124,9 @@ export class ProductPageComponent implements OnInit {
       next: (res: any) => {
         if (res.success) {
           this.toastr.success(res?.message || 'Product master uploaded!');
-          this.setTab('list');
+          this.closeAddProductModal();
           this.productForm.reset();
+          this.loadProducts(); // Reload products instead of redirecting
         } else {
           // Handle validation errors
           let errorMessage = `Upload failed: ${res.message}\n\n`;
@@ -133,8 +139,8 @@ export class ProductPageComponent implements OnInit {
           });
           
           this.toastr.error(errorMessage, 'Upload Failed', {
-            timeOut: 10000,
-            extendedTimeOut: 5000,
+            timeOut: 0,
+            extendedTimeOut: 0,
             closeButton: true
           });
           
@@ -156,8 +162,8 @@ export class ProductPageComponent implements OnInit {
         }
         
         this.toastr.error(errorMessage, 'Upload Failed', {
-          timeOut: 10000,
-          extendedTimeOut: 5000,
+          timeOut: 0,
+          extendedTimeOut: 0,
           closeButton: true
         });
         
@@ -207,16 +213,59 @@ export class ProductPageComponent implements OnInit {
     });
   }
 
-  searchByBarcode(page: number = 0) {
-    const barcode = this.searchBarcode.trim();
-    if (!barcode) {
-      this.toastr.warning('Enter a barcode to search');
+  onSearchChange() {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    this.searchTimeout = setTimeout(() => {
+      this.getSearchSuggestions();
+    }, 300);
+  }
+
+  getSearchSuggestions() {
+    if (!this.searchBarcode.trim()) {
+      this.searchSuggestions = [];
+      this.showSuggestions = false;
+      return;
+    }
+    this.api.get<any>('/product/search', {
+      params: {
+        barcode: this.searchBarcode,
+        page: '0',
+        pageSize: '10'
+      }
+    }).subscribe({
+      next: (response) => {
+        this.searchSuggestions = response.content || [];
+        this.showSuggestions = this.searchSuggestions.length > 0;
+      },
+      error: () => {
+        this.searchSuggestions = [];
+        this.showSuggestions = false;
+      }
+    });
+  }
+
+  selectSuggestion(suggestion: any) {
+    this.searchBarcode = suggestion.barcode;
+    this.searchSuggestions = [];
+    this.showSuggestions = false;
+    this.searchByBarcode();
+  }
+
+  searchByBarcode() {
+    if (!this.searchBarcode.trim()) {
+      this.loadProducts();
       return;
     }
     this.loading = true;
-    this.errorMsg = '';
-    this.currentPage = page;
-    this.api.get<any>('/product/search', { params: { barcode, page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+    this.api.get<any>('/products/search', {
+      params: {
+        barcode: this.searchBarcode,
+        page: this.currentPage.toString(),
+        pageSize: this.pageSize.toString()
+      }
+    }).subscribe({
       next: (response) => {
         this.products = response.content || [];
         this.totalItems = response.totalItems || 0;
@@ -225,9 +274,8 @@ export class ProductPageComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.products = [];
+        this.errorMsg = 'Failed to search products.';
         this.loading = false;
-        this.errorMsg = 'Product not found for this barcode.';
       }
     });
   }
@@ -318,24 +366,6 @@ export class ProductPageComponent implements OnInit {
     });
   }
 
-  downloadSampleTSV() {
-    const sampleData = [
-      ['clientName', 'barcode', 'name', 'mrp', 'imageUrl'],
-      ['ABC Company', '1234567890123', 'Premium Wireless Headphones', '2999.00', 'https://example.com/headphones.jpg'],
-      ['XYZ Electronics', '9876543210987', 'Smart LED TV 55 inch', '45999.00', 'https://example.com/tv.jpg']
-    ];
-    
-    const tsvContent = sampleData.map(row => row.join('\t')).join('\n');
-    const blob = new Blob([tsvContent], { type: 'text/tab-separated-values' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'sample_products.tsv';
-    link.click();
-    window.URL.revokeObjectURL(url);
-    this.toastr.success('Sample TSV file downloaded successfully!');
-  }
-
   onPageChange(page: number): void {
     this.loadProducts(page);
   }
@@ -374,56 +404,36 @@ export class ProductPageComponent implements OnInit {
   }
 
   openAddProductModal() {
-    // Wait for Bootstrap to be available
-    setTimeout(() => {
-      if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap not loaded, trying alternative method');
-        // Fallback: try to show modal manually
-        const modalElement = document.getElementById('addProductModal');
-        if (modalElement) {
-          modalElement.classList.add('show');
-          modalElement.style.display = 'block';
-          modalElement.setAttribute('aria-hidden', 'false');
-          // Add backdrop
-          const backdrop = document.createElement('div');
-          backdrop.className = 'modal-backdrop fade show';
-          document.body.appendChild(backdrop);
-        }
-        return;
-      }
-      
-      if (!this.addProductModal) {
-        const modalElement = document.getElementById('addProductModal');
-        if (modalElement) {
-          this.addProductModal = new bootstrap.Modal(modalElement);
-        }
-      }
-      
-      if (this.addProductModal) {
-        this.addProductModal.show();
-      } else {
-        console.error('Could not initialize add product modal');
-      }
-    }, 100);
+    this.showAddProductModal = true;
   }
 
   closeAddProductModal() {
-    if (this.addProductModal) {
-      this.addProductModal.hide();
-    } else {
-      // Handle fallback modal
-      const modalElement = document.getElementById('addProductModal');
-      if (modalElement) {
-        modalElement.classList.remove('show');
-        modalElement.style.display = 'none';
-        modalElement.setAttribute('aria-hidden', 'true');
-        // Remove backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-          backdrop.remove();
-        }
-      }
-    }
+    this.showAddProductModal = false;
     this.singleProductForm.reset();
+  }
+
+  setActiveTab(tab: 'single' | 'bulk') {
+    this.activeTab = tab;
+  }
+
+  handleModalSubmit() {
+    if (this.activeTab === 'single') {
+      this.addSingleProduct();
+    } else {
+      this.uploadMaster();
+    }
+  }
+
+  downloadSampleTSV() {
+    const headerRow = ['clientName', 'barcode', 'name', 'mrp', 'imageUrl'];
+    const tsvContent = headerRow.join('\t');
+    const blob = new Blob([tsvContent], { type: 'text/tab-separated-values' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sample_products.tsv';
+    link.click();
+    window.URL.revokeObjectURL(url);
+    this.toastr.success('TSV header file downloaded!');
   }
 }

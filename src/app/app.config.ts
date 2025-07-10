@@ -1,24 +1,37 @@
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
-import { provideToastr } from 'ngx-toastr';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; // ✅ required
-
 import { routes } from './app.routes';
+import { provideHttpClient } from '@angular/common/http';
+import { provideToastr } from 'ngx-toastr';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideHttpClient(),
+    provideAnimations(),
     provideToastr({
-      positionClass: 'toast-top-center', 
-      timeOut: 0, // No auto-dismiss
+      timeOut: 3000,
+      extendedTimeOut: 1000,
       closeButton: true,
-      progressBar: false,
-      tapToDismiss: false, // Only close on button click
+      progressBar: true,
       preventDuplicates: true,
-      newestOnTop: true
-    }),
-    importProvidersFrom(HttpClientModule, BrowserAnimationsModule) 
+      positionClass: 'toast-top-right',
+      toastClass: 'ngx-toastr',
+      titleClass: 'toast-title',
+      messageClass: 'toast-message',
+      tapToDismiss: true,
+      enableHtml: true,
+      onActivateTick: true,
+      newestOnTop: true,
+      maxOpened: 5,
+      autoDismiss: true,
+      iconClasses: {
+        error: 'toast-error',
+        info: 'toast-info',
+        success: 'toast-success',
+        warning: 'toast-warning'
+      }
+    })
   ]
 };
