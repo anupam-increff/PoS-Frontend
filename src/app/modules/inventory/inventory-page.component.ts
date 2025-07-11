@@ -34,6 +34,7 @@ export class InventoryPageComponent implements OnInit {
   showSuggestions: boolean = false;
   showAddInventoryModal = false;
   activeTab: 'single' | 'bulk' = 'single';
+  showSchema = false;
   private addInventoryModal: any = null;
   // Pagination
   currentPage = 0;
@@ -372,6 +373,19 @@ export class InventoryPageComponent implements OnInit {
       this.addInventory();
     } else {
       this.uploadInventory();
+    }
+  }
+
+  toggleSchemaWithScroll() {
+    this.showSchema = !this.showSchema;
+    if (this.showSchema) {
+      // Scroll to show the schema after it's displayed
+      setTimeout(() => {
+        const modalBody = document.querySelector('.modal-body-modern');
+        if (modalBody) {
+          modalBody.scrollTop = modalBody.scrollHeight;
+        }
+      }, 100);
     }
   }
 

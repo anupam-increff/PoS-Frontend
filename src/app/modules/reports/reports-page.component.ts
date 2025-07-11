@@ -56,6 +56,14 @@ export class ReportsPageComponent implements OnInit {
   salesStartDate = '';
   salesEndDate = '';
   salesClientName = '';
+  
+  // Debounce timer for client search
+  private clientSearchTimer: any;
+  
+  // Client autocomplete
+  clientSuggestions: any[] = [];
+  showClientSuggestions = false;
+  private clientSuggestionsTimer: any;
 
   constructor(
     private fb: FormBuilder,
@@ -172,6 +180,78 @@ export class ReportsPageComponent implements OnInit {
         this.clientSalesLoading = false;
       }
     });
+  }
+
+  onClientSearchInput(event: any) {
+    this.salesClientName = event.target.value;
+    
+    // Clear previous timers
+    if (this.clientSearchTimer) {
+      clearTimeout(this.clientSearchTimer);
+    }
+    if (this.clientSuggestionsTimer) {
+      clearTimeout(this.clientSuggestionsTimer);
+    }
+    
+    // Get suggestions if input is not empty
+    if (this.salesClientName && this.salesClientName.length >= 2) {
+      this.clientSuggestionsTimer = setTimeout(() => {
+        this.getClientSuggestions();
+      }, 300); // 300ms delay for suggestions
+    } else {
+      this.clientSuggestions = [];
+      this.showClientSuggestions = false;
+    }
+    
+    // Set new timer for debounced search
+    this.clientSearchTimer = setTimeout(() => {
+      this.applyClientSalesFilters();
+    }, 500); // 500ms delay
+  }
+
+  onClientSearchFocus() {
+    if (this.salesClientName && this.salesClientName.length >= 2) {
+      this.getClientSuggestions();
+    }
+  }
+
+  onClientSearchBlur() {
+    // Delay hiding suggestions to allow for click
+    setTimeout(() => {
+      this.showClientSuggestions = false;
+    }, 200);
+  }
+
+  getClientSuggestions() {
+    if (!this.salesClientName || this.salesClientName.length < 2) {
+      this.clientSuggestions = [];
+      this.showClientSuggestions = false;
+      return;
+    }
+
+    this.apiService.get<any>('/client/search', {
+      params: {
+        name: this.salesClientName,
+        page: '0',
+        pageSize: '5'
+      }
+    }).subscribe({
+      next: (response) => {
+        this.clientSuggestions = response.content || [];
+        this.showClientSuggestions = this.clientSuggestions.length > 0;
+      },
+      error: () => {
+        this.clientSuggestions = [];
+        this.showClientSuggestions = false;
+      }
+    });
+  }
+
+  selectClientSuggestion(client: any) {
+    this.salesClientName = client.name;
+    this.clientSuggestions = [];
+    this.showClientSuggestions = false;
+    this.applyClientSalesFilters();
   }
 
   applyClientSalesFilters() {

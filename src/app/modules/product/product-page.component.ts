@@ -259,7 +259,7 @@ export class ProductPageComponent implements OnInit {
       return;
     }
     this.loading = true;
-    this.api.get<any>('/products/search', {
+    this.api.get<any>('/product/search', {
       params: {
         barcode: this.searchBarcode,
         page: this.currentPage.toString(),
@@ -399,8 +399,17 @@ export class ProductPageComponent implements OnInit {
     });
   }
 
-  toggleSchema() {
+  toggleSchemaWithScroll() {
     this.showSchema = !this.showSchema;
+    if (this.showSchema) {
+      // Scroll to show the schema after it's displayed
+      setTimeout(() => {
+        const modalBody = document.querySelector('.modal-body-modern');
+        if (modalBody) {
+          modalBody.scrollTop = modalBody.scrollHeight;
+        }
+      }, 100);
+    }
   }
 
   openAddProductModal() {

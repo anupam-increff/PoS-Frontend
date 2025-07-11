@@ -59,9 +59,9 @@
         </li>
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item d-flex align-items-center" *ngIf="isAuthenticated">
+        <!-- <li class="nav-item d-flex align-items-center" *ngIf="isAuthenticated">
           <span class="badge bg-primary me-2">{{ currentUser?.role === 'operator' ? 'Operator' : 'Admin' }}</span>
-        </li>
+        </li> -->
         <li class="nav-item" *ngIf="isAuthenticated">
           <span class="nav-link">{{ currentUser?.name || currentUser?.email }}</span>
         </li>

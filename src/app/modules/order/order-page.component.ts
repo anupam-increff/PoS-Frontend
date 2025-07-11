@@ -60,11 +60,13 @@ export class OrderPageComponent implements OnInit {
   totalPages = 1;
   totalItems = 0;
   Math = Math;
-  
+
   // Autocomplete for barcode search
   barcodeSuggestions: any[] = [];
   showBarcodeSuggestions: boolean = false;
   currentBarcodeIndex: number = -1;
+  suggestionPosition = { top: 0, left: 0 };
+
 
   constructor(
     private fb: FormBuilder,
@@ -79,7 +81,7 @@ export class OrderPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.addItem();
+    this.loadCartFromStorage();
     
     // Set default dates: start as 1 Jan 1970, end as today
     const today = new Date();
@@ -107,11 +109,18 @@ export class OrderPageComponent implements OnInit {
     });
 
     this.items.push(group);
+    this.saveCartToStorage();
   }
 
   removeItem(index: number) {
     if (this.items.length > 1) {
       this.items.removeAt(index);
+      this.saveCartToStorage();
+    } else {
+      // Clear the only row
+      this.items.at(0).reset();
+      this.items.at(0).get('quantity')!.setValue(1);
+      this.saveCartToStorage();
     }
   }
 
@@ -126,8 +135,8 @@ export class OrderPageComponent implements OnInit {
         group.get('mrp')!.setValue(product.mrp);
         group.get('sellingPrice')!.setValue(product.mrp);
         this.updateItemTotal(index);
-      },
-      error: () => {
+          },
+          error: () => {
         group.get('mrp')!.reset();
         group.get('sellingPrice')!.reset();
         this.toastr.error(`Product with barcode ${barcode} not found.`);
@@ -135,7 +144,7 @@ export class OrderPageComponent implements OnInit {
     });
   }
 
-  onBarcodeInput(index: number) {
+    onBarcodeInput(index: number) {
     const group = this.items.at(index);
     const barcode = group.get('barcode')!.value;
     
@@ -146,7 +155,30 @@ export class OrderPageComponent implements OnInit {
     }
 
     this.currentBarcodeIndex = index;
+    this.updateSuggestionPosition(index);
     this.getBarcodeSuggestions(barcode);
+  }
+
+  updateSuggestionPosition(index: number) {
+    setTimeout(() => {
+      const inputElement = document.querySelector(`tbody tr:nth-child(${index + 1}) .barcode-input`) as HTMLElement;
+      if (inputElement) {
+        const rect = inputElement.getBoundingClientRect();
+        this.suggestionPosition = {
+          top: rect.bottom + 5, // Remove window.scrollY for fixed positioning
+          left: rect.left // Remove window.scrollX for fixed positioning
+        };
+      }
+    }, 0);
+  }
+
+  onBarcodeKeydown(event: KeyboardEvent, index: number) {
+    if (this.showBarcodeSuggestions && this.barcodeSuggestions.length > 0) {
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
+        this.selectBarcodeSuggestion(this.barcodeSuggestions[0]);
+      }
+    }
   }
 
   getBarcodeSuggestions(barcode: string) {
@@ -170,6 +202,18 @@ export class OrderPageComponent implements OnInit {
 
   selectBarcodeSuggestion(suggestion: any) {
     if (this.currentBarcodeIndex >= 0) {
+      // Check for duplicate barcode
+      const existingIndex = this.items.controls.findIndex((item, index) => 
+        index !== this.currentBarcodeIndex && item.get('barcode')?.value === suggestion.barcode
+      );
+      
+      if (existingIndex >= 0) {
+        this.toastr.warning(`Product ${suggestion.barcode} already exists in item ${existingIndex + 1}. Please edit the quantity there.`);
+        this.barcodeSuggestions = [];
+        this.showBarcodeSuggestions = false;
+        return;
+      }
+      
       const group = this.items.at(this.currentBarcodeIndex);
       group.get('barcode')!.setValue(suggestion.barcode);
       this.barcodeSuggestions = [];
@@ -177,6 +221,8 @@ export class OrderPageComponent implements OnInit {
       this.updateMRPForItem(this.currentBarcodeIndex);
     }
   }
+
+
 
   validateSellingPrice(index: number) {
     const group = this.items.at(index);
@@ -197,6 +243,7 @@ export class OrderPageComponent implements OnInit {
     if (quantity && sellingPrice) {
       // Trigger change detection for the total display
       this.orderForm.updateValueAndValidity();
+      this.saveCartToStorage();
     }
   }
 
@@ -214,6 +261,62 @@ export class OrderPageComponent implements OnInit {
       total += this.getItemTotal(i);
     }
     return total;
+  }
+
+  getTotalQuantity(): number {
+    return this.items.controls.reduce((total, item) => {
+      const quantity = item.get('quantity')!.value || 0;
+      return total + quantity;
+    }, 0);
+  }
+
+  clearAllItems() {
+    while (this.items.length > 1) {
+      this.items.removeAt(this.items.length - 1);
+    }
+    // Reset the first item
+    this.items.at(0).reset();
+    this.items.at(0).get('quantity')!.setValue(1);
+    this.saveCartToStorage();
+  }
+
+  loadCartFromStorage() {
+    const savedCart = localStorage.getItem('orderCart');
+    if (savedCart) {
+      try {
+        const cartData = JSON.parse(savedCart);
+        this.items.clear();
+        cartData.forEach((item: any) => {
+          const group = this.fb.group({
+            barcode: [item.barcode || '', Validators.required],
+            quantity: [item.quantity || 1, [Validators.required, Validators.min(1)]],
+            mrp: [item.mrp || '', Validators.required],
+            sellingPrice: [item.sellingPrice || '', Validators.required]
+          });
+          this.items.push(group);
+        });
+        this.toastr.info('Cart restored from previous session');
+      } catch (error) {
+        this.addItem(); // Fallback to empty cart
+      }
+    } else {
+      this.addItem(); // No saved cart, start fresh
+    }
+  }
+
+  saveCartToStorage() {
+    const cartData = this.items.value;
+    // Only save if there are items with barcodes
+    const validItems = cartData.filter((item: any) => item.barcode && item.barcode.trim());
+    if (validItems.length > 0) {
+      localStorage.setItem('orderCart', JSON.stringify(validItems));
+    } else {
+      localStorage.removeItem('orderCart');
+    }
+  }
+
+  clearCartFromStorage() {
+    localStorage.removeItem('orderCart');
   }
 
   increaseQuantity(index: number) {
@@ -282,37 +385,8 @@ export class OrderPageComponent implements OnInit {
       0
     );
     
-    // Show modal using Bootstrap
-    setTimeout(() => {
-      if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap not loaded, trying alternative method');
-        // Fallback: try to show modal manually
-        const modalElement = document.getElementById('confirmOrderModal');
-        if (modalElement) {
-          modalElement.classList.add('show');
-          modalElement.style.display = 'block';
-          modalElement.setAttribute('aria-hidden', 'false');
-          // Add backdrop
-          const backdrop = document.createElement('div');
-          backdrop.className = 'modal-backdrop fade show';
-          document.body.appendChild(backdrop);
-        }
-        return;
-      }
-      
-      if (!this.confirmModal) {
-        const modalElement = document.getElementById('confirmOrderModal');
-        if (modalElement) {
-          this.confirmModal = new bootstrap.Modal(modalElement);
-        }
-      }
-      
-      if (this.confirmModal) {
-        this.confirmModal.show();
-      } else {
-        console.error('Could not initialize confirm modal');
-      }
-    }, 100);
+    // Show modern modal
+    this.showConfirmModal = true;
   }
 
   confirmOrderSubmit() {
@@ -324,6 +398,7 @@ export class OrderPageComponent implements OnInit {
         this.toastr.success(`Order #${id} placed`);
         this.loading = false;
         this.closeConfirmModal();
+        this.clearCartFromStorage(); // Clear cart on successful order
         this.resetForm();
         this.setTab('list');
       },
@@ -335,22 +410,7 @@ export class OrderPageComponent implements OnInit {
   }
 
   closeConfirmModal() {
-    if (this.confirmModal) {
-      this.confirmModal.hide();
-    } else {
-      // Handle fallback modal
-      const modalElement = document.getElementById('confirmOrderModal');
-      if (modalElement) {
-        modalElement.classList.remove('show');
-        modalElement.style.display = 'none';
-        modalElement.setAttribute('aria-hidden', 'true');
-        // Remove backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-          backdrop.remove();
-        }
-      }
-    }
+    this.showConfirmModal = false;
   }
 
   resetForm() {
@@ -404,22 +464,22 @@ export class OrderPageComponent implements OnInit {
       this.api.post<any>('/order/search', searchForm).subscribe({
         next: (res) => {
           this.orders = res.content.map((o: any) => ({
-            ...o,
+          ...o,
             placedAt: new Date(Number(o.time) * 1000),
             items: []
-          }));
+        }));
           this.totalItems = res.totalItems;
           this.totalPages = res.totalPages;
           this.currentPage = res.currentPage;
           this.pageSize = res.pageSize;
-          this.loadingOrders = false;
-        },
-        error: () => {
+        this.loadingOrders = false;
+      },
+      error: () => {
           this.toastr.error('Failed to fetch orders');
-          this.loadingOrders = false;
-        }
-      });
-    }
+        this.loadingOrders = false;
+      }
+    });
+  }
   }
 
   applyFilters() {
@@ -508,60 +568,13 @@ export class OrderPageComponent implements OnInit {
     this.loadOrders(p);
   }
 
-  duplicateOrder(order: Order) {
-    this.setTab('create');
-    this.items.clear();
-    for (const item of order.items || []) {
-      const fg = this.fb.group({
-        barcode: [item.barcode, Validators.required],
-        quantity: [item.quantity, [Validators.required, Validators.min(1)]],
-        sellingPrice: [{ value: item.sellingPrice, disabled: true }, Validators.required]
-      });
-      this.items.push(fg);
-    }
-  }
 
-  duplicateViewedOrder() {
-    const fakeOrder: Order = {
-      id: 0,
-      time: '',
-      placedAt: new Date(),
-      items: this.viewedItems
-    };
-    this.duplicateOrder(fakeOrder);
-    this.closeViewModal();
-  }
 
   getViewedOrderTotal(): number {
     return this.viewedItems.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0);
   }
 
-  getProductInfoByBarcode(barcode: string): { name: string } | null {
-    // Get product info from the current form items
-    const values = this.items.getRawValue();
-    for (const item of values) {
-      if (item.barcode === barcode) {
-        // Try to get product info from API or return barcode as fallback
-        return { name: item.barcode }; // For now, return barcode as name
-      }
-    }
-    return null;
-  }
 
-  // Add method to get product name from API
-  getProductName(barcode: string): string {
-    // Try to get product info from the current form items first
-    const values = this.items.getRawValue();
-    for (const item of values) {
-      if (item.barcode === barcode) {
-        return item.name || barcode; // Use actual product name if available
-      }
-    }
-    
-    // If not found in current form, try to fetch from API
-    // For now, return a formatted version of the barcode
-    return barcode || 'Unknown Product';
-  }
 
   // Fix date formatting for order history - show only one formatted date
   formatOrderDate(dateInput: string | Date): string {
@@ -588,7 +601,7 @@ export class OrderPageComponent implements OnInit {
       });
     } catch (error) {
       return dateInput.toString();
-    }
+  }
   }
 
   // Get only the date part for order history
@@ -602,8 +615,8 @@ export class OrderPageComponent implements OnInit {
         date = dateInput;
       } else {
         date = new Date(dateInput);
-      }
-      
+  }
+
       if (isNaN(date.getTime())) {
         return dateInput.toString();
       }
@@ -637,6 +650,6 @@ export class OrderPageComponent implements OnInit {
       });
     } catch (error) {
       return '';
-    }
   }
+}
 }

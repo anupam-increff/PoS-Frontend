@@ -152,101 +152,169 @@
   </div>
 </div>
 
-<!-- Add Product Modal with Tabs -->
-<div class="modal-overlay" *ngIf="showAddProductModal" (click)="closeAddProductModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h5 class="modal-title">Add Product</h5>
-      <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
+<!-- MODERN PRODUCT MODAL -->
+<div class="modern-modal-overlay" *ngIf="showAddProductModal" (click)="closeAddProductModal()">
+  <div class="modern-modal-content" (click)="$event.stopPropagation()">
+    <!-- Modern Header -->
+    <div class="modal-header-modern">
+      <div class="modal-icon">
+        <i class="fas fa-box"></i>
+      </div>
+      <h3 class="modal-title-modern">Add Product</h3>
+      <p class="modal-subtitle-modern">Add single products or upload bulk product data</p>
+      <button type="button" class="modal-close-btn" (click)="closeAddProductModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
-    <div class="modal-body">
-      <!-- Tab Navigation -->
-      <ul class="nav nav-tabs mb-3">
-        <li class="nav-item">
-          <a class="nav-link active" id="single-tab" (click)="setActiveTab('single')" style="cursor: pointer;">
-            <i class="fas fa-plus me-1"></i>Single Product
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="bulk-tab" (click)="setActiveTab('bulk')" style="cursor: pointer;">
-            <i class="fas fa-upload me-1"></i>Bulk Upload
-          </a>
-        </li>
-      </ul>
+
+    <!-- Modern Body -->
+    <div class="modal-body-modern">
+      <!-- Modern Tab Navigation -->
+      <div class="modern-tabs">
+        <div class="tab-nav">
+          <button class="tab-btn" 
+                  [class.active]="activeTab === 'single'" 
+                  (click)="setActiveTab('single')">
+            <i class="fas fa-plus me-2"></i>Single Product
+          </button>
+          <button class="tab-btn" 
+                  [class.active]="activeTab === 'bulk'" 
+                  (click)="setActiveTab('bulk')">
+            <i class="fas fa-upload me-2"></i>Bulk Upload
+          </button>
+        </div>
+      </div>
 
       <!-- Tab Content -->
-      <div class="tab-content">
+      <div class="tab-content-modern">
         <!-- Single Product Tab -->
-        <div class="tab-pane" [class.active]="activeTab === 'single'">
-          <form [formGroup]="singleProductForm">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label">Client Name</label>
-                <input type="text" class="form-control" formControlName="clientName" placeholder="Enter client name (alphabets only)">
-                <div class="text-danger small" *ngIf="singleProductForm.get('clientName')?.invalid && singleProductForm.get('clientName')?.touched">
-                  <span *ngIf="singleProductForm.get('clientName')?.errors?.['required']">Client name is required.</span>
-                  <span *ngIf="singleProductForm.get('clientName')?.errors?.['pattern']">Only alphabets are allowed.</span>
-                </div>
+        <div class="tab-pane-modern" *ngIf="activeTab === 'single'">
+          <form [formGroup]="singleProductForm" class="product-form">
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-user me-2"></i>Client Name
+              </label>
+              <input type="text" 
+                     class="form-input-modern" 
+                     formControlName="clientName" 
+                     placeholder="Enter client name">
+              <div class="form-error" *ngIf="singleProductForm.get('clientName')?.invalid && singleProductForm.get('clientName')?.touched">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                <span *ngIf="singleProductForm.get('clientName')?.errors?.['required']">Client name is required</span>
+                <span *ngIf="singleProductForm.get('clientName')?.errors?.['pattern']">Only alphabets are allowed</span>
               </div>
-              <div class="col-12">
-                <label class="form-label">Barcode</label>
-                <input type="text" class="form-control" formControlName="barcode" placeholder="Enter barcode (alphanumeric)">
-                <div class="text-danger small" *ngIf="singleProductForm.get('barcode')?.invalid && singleProductForm.get('barcode')?.touched">
-                  <span *ngIf="singleProductForm.get('barcode')?.errors?.['required']">Barcode is required.</span>
-                  <span *ngIf="singleProductForm.get('barcode')?.errors?.['pattern']">Only alphanumeric characters are allowed.</span>
-                </div>
+            </div>
+            
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-barcode me-2"></i>Product Barcode
+              </label>
+              <input type="text" 
+                     class="form-input-modern" 
+                     formControlName="barcode" 
+                     placeholder="Enter product barcode">
+              <div class="form-error" *ngIf="singleProductForm.get('barcode')?.invalid && singleProductForm.get('barcode')?.touched">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                <span *ngIf="singleProductForm.get('barcode')?.errors?.['required']">Barcode is required</span>
+                <span *ngIf="singleProductForm.get('barcode')?.errors?.['pattern']">Only alphanumeric characters are allowed</span>
               </div>
-              <div class="col-12">
-                <label class="form-label">Product Name</label>
-                <input type="text" class="form-control" formControlName="name" placeholder="Enter product name (alphanumeric)">
-                <div class="text-danger small" *ngIf="singleProductForm.get('name')?.invalid && singleProductForm.get('name')?.touched">
-                  <span *ngIf="singleProductForm.get('name')?.errors?.['required']">Product name is required.</span>
-                  <span *ngIf="singleProductForm.get('name')?.errors?.['pattern']">Only alphanumeric characters are allowed.</span>
-                </div>
+            </div>
+            
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-tag me-2"></i>Product Name
+              </label>
+              <input type="text" 
+                     class="form-input-modern" 
+                     formControlName="name" 
+                     placeholder="Enter product name">
+              <div class="form-error" *ngIf="singleProductForm.get('name')?.invalid && singleProductForm.get('name')?.touched">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                <span *ngIf="singleProductForm.get('name')?.errors?.['required']">Product name is required</span>
+                <span *ngIf="singleProductForm.get('name')?.errors?.['pattern']">Only alphanumeric characters are allowed</span>
               </div>
-              <div class="col-12">
-                <label class="form-label">MRP</label>
-                <input type="number" class="form-control" formControlName="mrp" placeholder="Enter MRP" min="0" step="0.01">
-                <div class="text-danger small" *ngIf="singleProductForm.get('mrp')?.invalid && singleProductForm.get('mrp')?.touched">
-                  <span *ngIf="singleProductForm.get('mrp')?.errors?.['required']">MRP is required.</span>
-                  <span *ngIf="singleProductForm.get('mrp')?.errors?.['min']">MRP must be greater than 0.</span>
-                </div>
+            </div>
+            
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-dollar-sign me-2"></i>MRP (Maximum Retail Price)
+              </label>
+              <input type="number" 
+                     class="form-input-modern" 
+                     formControlName="mrp" 
+                     placeholder="Enter MRP" 
+                     min="0" 
+                     step="0.01">
+              <div class="form-error" *ngIf="singleProductForm.get('mrp')?.invalid && singleProductForm.get('mrp')?.touched">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                <span *ngIf="singleProductForm.get('mrp')?.errors?.['required']">MRP is required</span>
+                <span *ngIf="singleProductForm.get('mrp')?.errors?.['min']">MRP must be greater than 0</span>
               </div>
-              <div class="col-12">
-                <label class="form-label">Image URL</label>
-                <input type="url" class="form-control" formControlName="imageUrl" placeholder="Enter image URL (https://...)">
-                <div class="text-danger small" *ngIf="singleProductForm.get('imageUrl')?.invalid && singleProductForm.get('imageUrl')?.touched">
-                  <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['required']">Image URL is required.</span>
-                  <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['pattern']">Please enter a valid URL starting with http:// or https://</span>
-                </div>
+            </div>
+            
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-image me-2"></i>Product Image URL
+              </label>
+              <input type="url" 
+                     class="form-input-modern" 
+                     formControlName="imageUrl" 
+                     placeholder="Enter image URL (https://)">
+              <div class="form-error" *ngIf="singleProductForm.get('imageUrl')?.invalid && singleProductForm.get('imageUrl')?.touched">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['required']">Image URL is required</span>
+                <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['pattern']">Please enter a valid URL starting with http:// or https://</span>
               </div>
             </div>
           </form>
         </div>
 
         <!-- Bulk Upload Tab -->
-        <div class="tab-pane" [class.active]="activeTab === 'bulk'">
-          <form [formGroup]="productForm">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label">Upload TSV File</label>
-                <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv,.txt">
-                <div class="form-text">
+        <div class="tab-pane-modern" *ngIf="activeTab === 'bulk'">
+          <form [formGroup]="productForm" class="product-form">
+            <div class="upload-section">
+              <div class="upload-header">
+                <i class="fas fa-file-upload upload-icon"></i>
+                <h4>Upload Product Data</h4>
+                <p>Upload your product data in TSV format</p>
+              </div>
+              
+              <div class="file-upload-area">
+                <input type="file" 
+                       class="file-input" 
+                       (change)="onFileChange($event)" 
+                       accept=".tsv,.txt"
+                       id="productFileInput">
+                <label for="productFileInput" class="file-upload-label">
+                  <i class="fas fa-cloud-upload-alt me-2"></i>
+                  Choose TSV File
+                </label>
+                <div class="file-help">
                   <i class="fas fa-info-circle me-1"></i>
-                  Upload a TSV file with columns: clientName, barcode, name, mrp, imageUrl
+                  TSV format: clientName, barcode, name, mrp, imageUrl
                 </div>
-                <div class="mt-2">
-                  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadSampleTSV()">
-                    <i class="fas fa-download me-1"></i>Download Sample
-                  </button>
-                  <button type="button" class="btn btn-outline-info btn-sm ms-2" (click)="toggleSchema()">
-                    <i class="fas fa-eye me-1"></i>View Schema
-                  </button>
-                </div>
-                <div *ngIf="showSchema" class="mt-3 p-3 bg-light rounded">
-                  <h6>TSV Schema:</h6>
-                  <pre class="mb-0"><code>clientName	barcode	name	mrp	imageUrl
-ABC Company	1234567890123	Premium Wireless Headphones	2999.00	https://example.com/headphones.jpg</code></pre>
+              </div>
+              
+              <div class="upload-actions">
+                <button type="button" 
+                        class="btn-download-modern" 
+                        (click)="downloadSampleTSV()">
+                  <i class="fas fa-download me-2"></i>
+                  Download Sample
+                </button>
+                <button type="button" 
+                        class="btn-info-modern" 
+                        (click)="toggleSchemaWithScroll()">
+                  <i class="fas fa-eye me-2"></i>
+                  {{ showSchema ? 'Hide' : 'View' }} Schema
+                </button>
+              </div>
+              
+              <div class="schema-display" *ngIf="showSchema">
+                <h6><i class="fas fa-table me-2"></i>Expected Format:</h6>
+                <div class="schema-content">
+                  <pre>clientName	barcode	name	mrp	imageUrl
+ABC Company	1234567890123	Premium Wireless Headphones	2999.00	https://example.com/headphones.jpg</pre>
                 </div>
               </div>
             </div>
@@ -254,9 +322,18 @@ ABC Company	1234567890123	Premium Wireless Headphones	2999.00	https://example.co
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="closeAddProductModal()">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="handleModalSubmit()" [disabled]="activeTab === 'single' ? singleProductForm.invalid : productForm.invalid">
+
+    <!-- Modern Footer -->
+    <div class="modal-footer-modern">
+      <button type="button" class="btn btn-cancel" (click)="closeAddProductModal()">
+        <i class="fas fa-times me-2"></i>Cancel
+      </button>
+      <button type="button" 
+              class="btn btn-confirm" 
+              (click)="handleModalSubmit()" 
+              [disabled]="activeTab === 'single' ? singleProductForm.invalid : productForm.invalid">
+        <i class="fas fa-check me-2" *ngIf="activeTab === 'single'"></i>
+        <i class="fas fa-upload me-2" *ngIf="activeTab === 'bulk'"></i>
         <span *ngIf="activeTab === 'single'">Add Product</span>
         <span *ngIf="activeTab === 'bulk'">Upload Products</span>
       </button>

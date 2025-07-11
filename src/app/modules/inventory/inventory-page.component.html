@@ -101,71 +101,141 @@
   </div>
 </div>
 
-<!-- Add Inventory Modal (simple overlay) -->
-<div class="modal-overlay" *ngIf="showAddInventoryModal" (click)="closeAddInventoryModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h5 class="modal-title">Add Inventory</h5>
-      <button type="button" class="btn-close" (click)="closeAddInventoryModal()"></button>
+<!-- MODERN INVENTORY MODAL -->
+<div class="modern-modal-overlay" *ngIf="showAddInventoryModal" (click)="closeAddInventoryModal()">
+  <div class="modern-modal-content" (click)="$event.stopPropagation()">
+    <!-- Modern Header -->
+    <div class="modal-header-modern">
+      <div class="modal-icon">
+        <i class="fas fa-boxes"></i>
+      </div>
+      <h3 class="modal-title-modern">Add Inventory</h3>
+      <p class="modal-subtitle-modern">Add single items or upload bulk inventory data</p>
+      <button type="button" class="modal-close-btn" (click)="closeAddInventoryModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
-    <div class="modal-body">
-      <!-- Tab Navigation -->
-      <ul class="nav nav-tabs mb-3">
-        <li class="nav-item">
-          <a class="nav-link active" (click)="activeTab='single'" [class.active]="activeTab==='single'" style="cursor:pointer;">
-            <i class="fas fa-plus me-1"></i>Single Inventory
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" (click)="activeTab='bulk'" [class.active]="activeTab==='bulk'" style="cursor:pointer;">
-            <i class="fas fa-upload me-1"></i>Bulk Upload
-          </a>
-        </li>
-      </ul>
 
-      <div class="tab-content">
-        <!-- Single Tab -->
-        <div class="tab-pane" [class.active]="activeTab==='single'">
-          <form [formGroup]="addForm">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label">Barcode</label>
-                <input type="text" class="form-control" formControlName="barcode" placeholder="Enter barcode">
-                <div class="text-danger small" *ngIf="addForm.get('barcode')?.invalid && addForm.get('barcode')?.touched">
-                  Barcode is required.
-                </div>
+    <!-- Modern Body -->
+    <div class="modal-body-modern">
+      <!-- Modern Tab Navigation -->
+      <div class="modern-tabs">
+        <div class="tab-nav">
+          <button class="tab-btn" 
+                  [class.active]="activeTab==='single'" 
+                  (click)="activeTab='single'">
+            <i class="fas fa-plus me-2"></i>Single Item
+          </button>
+          <button class="tab-btn" 
+                  [class.active]="activeTab==='bulk'" 
+                  (click)="activeTab='bulk'">
+            <i class="fas fa-upload me-2"></i>Bulk Upload
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content-modern">
+        <!-- Single Item Tab -->
+        <div class="tab-pane-modern" *ngIf="activeTab==='single'">
+          <form [formGroup]="addForm" class="inventory-form">
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-barcode me-2"></i>Product Barcode
+              </label>
+              <input type="text" 
+                     class="form-input-modern" 
+                     formControlName="barcode" 
+                     placeholder="Enter or scan product barcode">
+              <div class="form-error" *ngIf="addForm.get('barcode')?.invalid && addForm.get('barcode')?.touched">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                Barcode is required
               </div>
-              <div class="col-12">
-                <label class="form-label">Quantity</label>
-                <input type="number" class="form-control" formControlName="quantity" min="1" placeholder="Enter quantity">
-                <div class="text-danger small" *ngIf="addForm.get('quantity')?.invalid && addForm.get('quantity')?.touched">
-                  Quantity must be at least 1.
-                </div>
+            </div>
+            
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-sort-numeric-up me-2"></i>Quantity
+              </label>
+              <input type="number" 
+                     class="form-input-modern" 
+                     formControlName="quantity" 
+                     min="1" 
+                     placeholder="Enter quantity">
+              <div class="form-error" *ngIf="addForm.get('quantity')?.invalid && addForm.get('quantity')?.touched">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                Quantity must be at least 1
               </div>
             </div>
           </form>
         </div>
 
-        <!-- Bulk Tab -->
-        <div class="tab-pane" [class.active]="activeTab==='bulk'">
-          <form [formGroup]="uploadForm">
-            <div class="mb-3">
-              <label class="form-label">Upload TSV File</label>
-              <input type="file" class="form-control" (change)="onFileChange($event)" accept=".tsv,.txt">
-              <div class="form-text">Upload TSV with headers: barcode, quantity</div>
-              <button type="button" class="btn btn-outline-secondary btn-sm mt-2" (click)="downloadSampleTSV()">
-                <i class="fas fa-download me-1"></i>Download Header
-              </button>
+        <!-- Bulk Upload Tab -->
+        <div class="tab-pane-modern" *ngIf="activeTab==='bulk'">
+          <form [formGroup]="uploadForm" class="inventory-form">
+            <div class="upload-section">
+              <div class="upload-header">
+                <i class="fas fa-file-upload upload-icon"></i>
+                <h4>Upload TSV File</h4>
+                <p>Upload your inventory data in TSV format</p>
+              </div>
+              
+              <div class="file-upload-area">
+                <input type="file" 
+                       class="file-input" 
+                       (change)="onFileChange($event)" 
+                       accept=".tsv,.txt"
+                       id="fileInput">
+                <label for="fileInput" class="file-upload-label">
+                  <i class="fas fa-cloud-upload-alt me-2"></i>
+                  Choose TSV File
+                </label>
+                <div class="file-help">
+                  <i class="fas fa-info-circle me-1"></i>
+                  TSV format: barcode, quantity
+                </div>
+              </div>
+              
+              <div class="upload-actions">
+                <button type="button" 
+                        class="btn-info-modern" 
+                        (click)="toggleSchemaWithScroll()">
+                  <i class="fas fa-info-circle me-2"></i>
+                  {{ showSchema ? 'Hide' : 'Show' }} Schema
+                </button>
+                <button type="button" 
+                        class="btn-download-modern" 
+                        (click)="downloadSampleTSV()">
+                  <i class="fas fa-download me-2"></i>
+                  Download Sample
+                </button>
+              </div>
+              
+              <div class="schema-display" *ngIf="showSchema">
+                <h6><i class="fas fa-table me-2"></i>Expected Format:</h6>
+                <div class="schema-content">
+                  <pre>barcode	quantity</pre>
+                </div>
+              </div>
             </div>
           </form>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="closeAddInventoryModal()">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="handleInventoryModalSubmit()" [disabled]="activeTab==='single' ? addForm.invalid : uploadForm.invalid">
-        <span *ngIf="activeTab==='single'">Add</span>
-        <span *ngIf="activeTab==='bulk'">Upload</span>
+
+    <!-- Modern Footer -->
+    <div class="modal-footer-modern">
+      <button type="button" class="btn btn-cancel" (click)="closeAddInventoryModal()">
+        <i class="fas fa-times me-2"></i>Cancel
+      </button>
+      <button type="button" 
+              class="btn btn-confirm" 
+              (click)="handleInventoryModalSubmit()" 
+              [disabled]="activeTab==='single' ? addForm.invalid : uploadForm.invalid">
+        <i class="fas fa-check me-2" *ngIf="activeTab==='single'"></i>
+        <i class="fas fa-upload me-2" *ngIf="activeTab==='bulk'"></i>
+        <span *ngIf="activeTab==='single'">Add Item</span>
+        <span *ngIf="activeTab==='bulk'">Upload File</span>
       </button>
     </div>
   </div>

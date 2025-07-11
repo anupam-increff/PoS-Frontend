@@ -1,3 +1,4 @@
+<!-- Hero Section -->
 <div class="hero-section">
   <div class="container">
     <h1 class="hero-title">
@@ -13,9 +14,9 @@
 <div class="main-container">
   <div class="container">
     <div class="feature-card">
-
+      
       <!-- Tab Header -->
-      <ul class="nav nav-tabs">
+      <ul class="nav nav-tabs modern-tabs">
         <li class="nav-item">
           <a class="nav-link" [class.active]="tab==='create'" (click)="setTab('create')">
             <i class="fas fa-plus-circle me-2"></i>Create Order
@@ -29,57 +30,92 @@
       </ul>
 
       <!-- CREATE TAB -->
-      <div *ngIf="tab==='create'" class="tab-content-area">
+      <div *ngIf="tab==='create'" class="tab-content-area mt-4">
         <form [formGroup]="orderForm" (ngSubmit)="submitOrder()" novalidate>
-          <div class="content-header">
-            <h4 class="content-title">
-              <i class="fas fa-barcode me-2"></i>
-              New Order Details
-            </h4>
-            <p class="content-subtitle">Add Order Items by entering barcodes</p>
+          
+          <!-- Professional Header Section -->
+          <div class="order-header-section">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h3 class="order-title">
+                  <i class="fas fa-receipt me-3"></i>
+                  New Order Creation
+                </h3>
+                <p class="order-subtitle">Build your order by scanning barcodes or entering product details</p>
+              </div>
+              <div class="col-md-4 text-end">
+                <div class="order-stats">
+                  <div class="stat-item">
+                    <span class="stat-label">Items</span>
+                    <span class="stat-value">{{ items.length }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Total</span>
+                    <span class="stat-value">₹{{ getOrderTotal() | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions Bar -->
+          <div class="quick-actions-bar">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="order-summary">
+                <span class="summary-text">{{ items.length }} items • ₹{{ getOrderTotal() | number:'1.2-2' }}</span>
+              </div>
+              <div class="action-buttons">
+                <button type="button" class="btn btn-outline-secondary btn-action" (click)="clearAllItems()" *ngIf="items.length > 1">
+                  <i class="fas fa-trash me-2"></i>Clear All
+                </button>
+                <button type="button" class="btn btn-primary btn-action" (click)="addItem()">
+                  <i class="fas fa-plus me-2"></i>Add Item
+                </button>
+              </div>
+            </div>
           </div>
           
-          <!-- Order Items Table -->
-          <div class="order-items-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="mb-0 fw-bold">Order Items</h6>
-              <button type="button" class="btn btn-success btn-sm" (click)="addItem()">
-                <i class="fas fa-plus me-1"></i>Add Item
-              </button>
-            </div>
+          <!-- Modern Order Items Table -->
+          <div class="order-items-container">
+            <div class="order-table-header">
+              <h5 class="table-title">
+                <i class="fas fa-box me-2"></i>Order Items
+              </h5>
+        </div>
             
-            <div class="table-wrapper">
-              <table class="table table-sm table-bordered table-hover">
-                <thead class="table-light">
+            <div class="modern-table-wrapper">
+              <table class="table order-table-modern">
+                <thead>
                   <tr>
-                    <th style="width: 5%;" class="text-center">#</th>
-                    <th style="width: 20%;">Barcode</th>
-                    <th style="width: 15%;">Quantity</th>
-                    <th style="width: 20%;">MRP (₹)</th>
-                    <th style="width: 20%;">Selling Price (₹)</th>
-                    <th style="width: 15%;">Total (₹)</th>
-                    <th style="width: 5%;" class="text-center">Action</th>
+                    <th class="col-index">#</th>
+                    <th class="col-barcode">Product Barcode</th>
+                    <th class="col-quantity">Qty</th>
+                    <th class="col-mrp">MRP</th>
+                    <th class="col-price">Price</th>
+                    <th class="col-total">Total</th>
+                    <th class="col-action">Action</th>
                   </tr>
                 </thead>
                 <tbody formArrayName="items">
-                  <tr *ngFor="let item of items.controls; let i=index" [formGroupName]="i">
-                    <td class="text-center fw-bold">{{ i + 1 }}</td>
-                    <td>
-                      <div class="input-group input-group-sm position-relative">
+                  <tr *ngFor="let item of items.controls; let i=index" [formGroupName]="i" class="order-row">
+                    <td class="col-index">
+                      <div class="item-number">{{ i + 1 }}</div>
+                    </td>
+                    <td class="col-barcode">
+                      <div class="barcode-input-container">
                         <input formControlName="barcode" 
-                              class="form-control"
-                              placeholder="Scan barcode"
+                              class="form-control barcode-input"
+                              placeholder="Enter barcode"
                               (input)="onBarcodeInput(i)"
-                              (blur)="updateMRPForItem(i)">
-                        <button type="button" 
-                                class="btn btn-outline-primary btn-sm" 
-                                (click)="updateMRPForItem(i)"
-                                title="Update MRP">
-                          <i class="fas fa-sync-alt"></i>
-                        </button>
+                              (blur)="updateMRPForItem(i)"
+                              (keydown)="onBarcodeKeydown($event, i)"
+                              #barcodeInput>
                         
-                        <!-- Barcode Suggestions Dropdown -->
-                        <div class="suggestions-dropdown" *ngIf="showBarcodeSuggestions && barcodeSuggestions.length > 0 && currentBarcodeIndex === i">
+                        <!-- Barcode Suggestions - Fixed Position -->
+                        <div class="barcode-suggestions" 
+                             *ngIf="showBarcodeSuggestions && barcodeSuggestions.length > 0 && currentBarcodeIndex === i"
+                             [style.top.px]="suggestionPosition.top"
+                             [style.left.px]="suggestionPosition.left">
                           <div class="suggestion-item" *ngFor="let suggestion of barcodeSuggestions" 
                                (click)="selectBarcodeSuggestion(suggestion)">
                             {{ suggestion.barcode }} - {{ suggestion.name }}
@@ -87,77 +123,117 @@
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <div class="input-group input-group-sm">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="decreaseQuantity(i)" title="Decrease">
+                    <td class="col-quantity">
+                      <div class="quantity-controls">
+                        <button type="button" class="btn btn-quantity" (click)="decreaseQuantity(i)" 
+                                [disabled]="item.get('quantity')?.value <= 1">
                           <i class="fas fa-minus"></i>
                         </button>
                         <input type="number" 
                               formControlName="quantity" 
-                              class="form-control form-control-sm text-center"
+                              class="form-control quantity-input"
                               min="1"
                               (input)="updateItemTotal(i)">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="increaseQuantity(i)" title="Increase">
-                          <i class="fas fa-plus"></i>
-                        </button>
+                        <button type="button" class="btn btn-quantity" (click)="increaseQuantity(i)">
+                      <i class="fas fa-plus"></i>
+                    </button>
                       </div>
                     </td>
-                    <td>
+                    <td class="col-mrp">
                       <input formControlName="mrp" 
-                            class="form-control form-control-sm"
+                            class="form-control price-input"
                             readonly>
                     </td>
-                    <td>
+                    <td class="col-price">
                       <input type="number" 
                             formControlName="sellingPrice" 
-                            class="form-control form-control-sm"
+                            class="form-control price-input"
                             min="0" 
                             step="0.01"
+                            placeholder="0.00"
                             (input)="validateSellingPrice(i)"
                             (blur)="updateItemTotal(i)">
                     </td>
-                    <td class="text-end fw-bold text-success">
-                      ₹{{ getItemTotal(i) | number:'1.2-2' }}
+                    <td class="col-total">
+                      <div class="total-amount">₹{{ getItemTotal(i) | number:'1.2-2' }}</div>
                     </td>
-                    <td class="text-center">
-                      <button type="button" 
-                              class="btn btn-danger btn-sm" 
-                              (click)="removeItem(i)" 
-                              [disabled]="items.length === 1"
-                              title="Remove Item">
-                        <i class="fas fa-trash"></i>
-                      </button>
+                    <td class="col-action">
+                      <div class="action-buttons">
+                    <button type="button" 
+                                class="btn btn-remove" 
+                            (click)="removeItem(i)"
+                            [disabled]="items.length === 1"
+                            title="Remove Item">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                        <button type="button" 
+                                class="btn btn-add-item" 
+                                (click)="addItem()"
+                                title="Add New Item">
+                          <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
                     </td>
                   </tr>
                 </tbody>
-                <tfoot class="table-info">
-                  <tr>
-                    <td colspan="5" class="text-end fw-bold">Order Total:</td>
-                    <td class="text-end fw-bold text-success">₹{{ getOrderTotal() | number:'1.2-2' }}</td>
-                    <td></td>
-                  </tr>
-                </tfoot>
               </table>
-            </div>
-          </div>
+                </div>
 
-          <div class="form-actions mt-4">
-            <button type="button" 
-                    class="btn btn-success btn-lg"
-                    (click)="submitOrder()"
-                    [disabled]="orderForm.invalid || loading">
-              <i class="fas fa-check me-2"></i>
-              <span *ngIf="!loading">Place Order</span>
-              <span *ngIf="loading">
-                <i class="fas fa-spinner fa-spin me-2"></i>Placing...
-              </span>
-            </button>
-          </div>
-        </form>
+            <!-- Order Summary Footer -->
+            <div class="order-summary-footer">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="summary-details">
+                    <div class="detail-item">
+                      <span class="detail-label">Total Items:</span>
+                      <span class="detail-value">{{ items.length }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Total Quantity:</span>
+                      <span class="detail-value">{{ getTotalQuantity() }}</span>
+                    </div>
+                  </div>
+                  </div>
+                  <div class="col-md-4">
+                  <div class="grand-total">
+                    <span class="total-label">Order Total:</span>
+                    <span class="total-amount">₹{{ getOrderTotal() | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+              </div>
+
+          <!-- Place Order Section -->
+          <div class="place-order-section">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <div class="order-notes">
+                  <p class="note-text">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Please review all items before placing the order. Once placed, the order cannot be modified.
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-4 text-end">
+                <button type="button" 
+                        class="btn btn-place-order"
+                        (click)="submitOrder()"
+                      [disabled]="orderForm.invalid || loading">
+                  <i class="fas fa-check me-2"></i>
+                <span *ngIf="!loading">Place Order</span>
+                <span *ngIf="loading">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Processing...
+                </span>
+              </button>
+              </div>
+            </div>
+            </div>
+          </form>
       </div>
 
       <!-- LIST TAB -->
-      <div *ngIf="tab==='list'" class="tab-content-area">
+      <div *ngIf="tab==='list'" class="tab-content-area mt-4">
         <div class="content-header">
           <div class="d-flex justify-content-between align-items-center">
             <div>
@@ -243,45 +319,45 @@
         <!-- Orders Table -->
         <div class="table-wrapper" *ngIf="!loadingOrders && orders.length > 0">
           <table class="table table-hover table-striped" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
-            <thead>
-              <tr>
+              <thead>
+                <tr>
                 <th style="width: 15%;">Order ID</th>
                 <th style="width: 25%;">Date</th>
                 <th style="width: 20%;">Total</th>
                 <th style="width: 25%;" *ngIf="authService.isSupervisor() || authService.isAdmin()">Invoice</th>
                 <th style="width: 15%;" *ngIf="authService.isSupervisor() || authService.isAdmin()">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+                </tr>
+              </thead>
+              <tbody>
               <tr *ngFor="let order of orders">
-                <td><strong class="text-primary">#{{ order.id }}</strong></td>
-                <td>
+                <td><strong>#{{ order.id }}</strong></td>
+                  <td>
                   <div class="d-flex flex-column">
                     <span class="fw-semibold">{{ getOrderDate(order.placedAt) }}</span>
-                    <small class="text-muted">{{ getOrderTime(order.placedAt) }}</small>
-                  </div>
-                </td>
-                <td>
-                  <span class="fw-bold text-success">₹{{ order.total | number:'1.2-2' }}</span>
-                </td>
+                    <small>{{ getOrderTime(order.placedAt) }}</small>
+                    </div>
+                  </td>
+                  <td>
+                  <span class="fw-bold">₹{{ order.total | number:'1.2-2' }}</span>
+                  </td>
                 <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
-                  <button class="btn btn-sm" 
-                          [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
+                    <button class="btn btn-sm"
+                            [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
                           (click)="handleInvoice(order)"
                           [title]="order.invoicePath ? 'Download Invoice' : 'Generate Invoice'">
-                    <i class="fas" [ngClass]="order.invoicePath ? 'fa-download' : 'fa-file-invoice'"></i>
-                    {{ order.invoicePath ? 'Download' : 'Generate' }}
-                  </button>
-                </td>
+                      <i class="fas" [ngClass]="order.invoicePath ? 'fa-download' : 'fa-file-invoice'"></i>
+                      {{ order.invoicePath ? 'Download' : 'Generate' }}
+                    </button>
+                  </td>
                 <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
                   <button class="btn btn-outline-primary btn-sm" (click)="openViewItems(order.id)" title="View Order Details">
-                    <i class="fas fa-eye"></i>
+                        <i class="fas fa-eye"></i>
                     View
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                      </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           
           <!-- Pagination and Range Display -->
           <div class="d-flex justify-content-between align-items-center mt-2 mb-3" *ngIf="totalItems > 0">
@@ -302,142 +378,133 @@
               </ul>
             </nav>
           </div>
-        </div>
+          </div>
 
-        <!-- Empty State -->
+          <!-- Empty State -->
         <div *ngIf="orders.length === 0" class="empty-state">
-          <div class="empty-icon">
-            <i class="fas fa-shopping-cart"></i>
-          </div>
-          <h5>No Orders Found</h5>
-          <p class="text-muted mb-4">
+            <div class="empty-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h5>No Orders Found</h5>
+            <p class="text-muted mb-4">
             <span *ngIf="searchQuery || startDate || endDate || invoiceStatus !== 'all'">
-              No orders match your current filters. Try adjusting your search criteria.
-            </span>
+                No orders match your current filters. Try adjusting your search criteria.
+              </span>
             <span *ngIf="!searchQuery && !startDate && !endDate && invoiceStatus === 'all'">
-              You haven't placed any orders yet. Create your first order to get started!
-            </span>
-          </p>
-          <button class="btn btn-primary-custom" (click)="setTab('create')">
-            <i class="fas fa-plus me-2"></i>
-            Create First Order
-          </button>
+                You haven't placed any orders yet. Create your first order to get started!
+              </span>
+            </p>
+            <button class="btn btn-primary-custom" (click)="setTab('create')">
+              <i class="fas fa-plus me-2"></i>
+              Create First Order
+            </button>
         </div>
       </div>
 
     </div>
   </div>
-</div>
+          </div>
 
-<!-- Confirm Modal -->
-<div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmOrderModalLabel">
-          <i class="fas fa-receipt me-2"></i>
-          Order Confirmation
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="closeConfirmModal()" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div *ngIf="confirmSummary.length > 0">
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-              <thead class="table-light">
-                <tr>
-                  <th style="width: 25%;">Barcode</th>
-                  <th style="width: 15%;" class="text-center">Qty</th>
-                  <th style="width: 20%;" class="text-end">MRP</th>
-                  <th style="width: 20%;" class="text-end">Selling Price</th>
-                  <th style="width: 20%;" class="text-end">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of confirmSummary">
-                  <td>
-                    <small class="text-muted">{{ item.barcode }}</small>
-                  </td>
-                  <td class="text-center">{{ item.quantity }}</td>
-                  <td class="text-end">₹{{ item.mrp | number:'1.2-2' }}</td>
-                  <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
-                  <td class="text-end fw-bold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
-                </tr>
-              </tbody>
-              <tfoot class="table-info">
-                <tr>
-                  <td colspan="4" class="text-end fw-bold">Total:</td>
-                  <td class="text-end fw-bold">₹{{ confirmTotal | number:'1.2-2' }}</td>
-                </tr>
-              </tfoot>
-            </table>
+<!-- Beautiful Order Confirmation Modal -->
+<div class="modern-modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+  <div class="modern-modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header-modern">
+      <div class="modal-icon">
+        <i class="fas fa-receipt"></i>
+            </div>
+      <h3 class="modal-title-modern">Order Confirmation</h3>
+      <p class="modal-subtitle-modern">Please review your order before confirming</p>
+      <button class="modal-close-btn" (click)="closeConfirmModal()">
+        <i class="fas fa-times"></i>
+                </button>
+    </div>
+              
+    <div class="modal-body-modern">
+      <div class="order-summary-card">
+        <div class="summary-header">
+          <h4>Order Summary</h4>
+          <span class="item-count">{{ confirmSummary.length }} items</span>
+        </div>
+        
+                 <div class="items-list">
+           <div class="item-row" *ngFor="let item of confirmSummary; let idx = index">
+             <div class="item-info">
+               <div class="item-index">{{ idx + 1 }}</div>
+               <div class="item-details">
+                 <div class="item-barcode">{{ item.barcode }}</div>
+                 <div class="item-quantity">Quantity: {{ item.quantity }}</div>
+                 <div class="item-price">Unit Price: ₹{{ item.sellingPrice | number:'1.2-2' }}</div>
+               </div>
+             </div>
+             <div class="item-total">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</div>
+           </div>
+         </div>
+        
+        <div class="order-total-section">
+          <div class="total-row">
+            <span class="total-label">Order Total</span>
+            <span class="total-amount">₹{{ confirmTotal | number:'1.2-2' }}</span>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeConfirmModal()">Cancel</button>
-        <button type="button" class="btn btn-success" (click)="confirmOrderSubmit()" [disabled]="loading">
-          <span *ngIf="!loading">
-            <i class="fas fa-check me-2"></i>Confirm Order
-          </span>
-          <span *ngIf="loading">
-            <i class="fas fa-spinner fa-spin me-2"></i>Placing...
-          </span>
-        </button>
-      </div>
+    </div>
+    
+    <div class="modal-footer-modern">
+      <button class="btn btn-cancel" (click)="closeConfirmModal()">
+        <i class="fas fa-times me-2"></i>Cancel
+      </button>
+      <button class="btn btn-confirm" (click)="confirmOrderSubmit()" [disabled]="loading">
+        <i class="fas fa-check me-2" *ngIf="!loading"></i>
+        <i class="fas fa-spinner fa-spin me-2" *ngIf="loading"></i>
+        {{ loading ? 'Processing...' : 'Confirm Order' }}
+      </button>
     </div>
   </div>
 </div>
 
-<!-- View Items Modal -->
-<div class="modal fade show" tabindex="-1" *ngIf="showViewModal" [ngStyle]="{ display: 'block', background: 'rgba(240,247,255,0.95)' }">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content p-2" style="border-radius: 14px;">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title">
-          <i class="fas fa-shopping-cart me-2"></i>
-          Order #{{ viewedOrderId }} Items
-        </h5>
-        <button type="button" class="btn-close" (click)="closeViewModal()"></button>
+<!-- Beautiful View Items Modal -->
+<div class="modern-modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="modern-modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header-modern">
+      <div class="modal-icon">
+        <i class="fas fa-shopping-cart"></i>
       </div>
-      <div class="modal-body pt-0">
-        <div class="table-responsive">
-          <table class="table table-sm align-middle" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
-            <thead class="table-light">
-              <tr>
-                <th>#</th>
-                <th>Barcode</th>
-                <th>Quantity</th>
-                <th class="text-end">MRP</th>
-                <th class="text-end">Selling Price</th>
-                <th class="text-end">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of viewedItems; let idx = index">
-                <td>{{ idx + 1 }}</td>
-                <td>{{ item.barcode }}</td>
-                <td>{{ item.quantity }}</td>
-                <td class="text-end">₹{{ item.mrp | number:'1.2-2' }}</td>
-                <td class="text-end">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
-                <td class="text-end fw-semibold">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</td>
-              </tr>
-            </tbody>
-            <tfoot class="table-info">
-              <tr>
-                <td colspan="5" class="text-end fw-bold">Total:</td>
-                <td class="text-end fw-bold">₹{{ getViewedOrderTotal() | number:'1.2-2' }}</td>
-              </tr>
-            </tfoot>
-          </table>
+      <h3 class="modal-title-modern">Order #{{ viewedOrderId }}</h3>
+      <p class="modal-subtitle-modern">Order items and details</p>
+      <button class="modal-close-btn" (click)="closeViewModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body-modern">
+      <div class="order-items-card">
+        <div class="items-list">
+          <div class="item-row" *ngFor="let item of viewedItems; let idx = index">
+            <div class="item-info">
+              <div class="item-index">{{ idx + 1 }}</div>
+              <div class="item-details">
+                <div class="item-barcode">{{ item.barcode }}</div>
+                <div class="item-meta">Qty: {{ item.quantity }} × ₹{{ item.sellingPrice | number:'1.2-2' }}</div>
+              </div>
+            </div>
+            <div class="item-total">₹{{ (item.quantity * item.sellingPrice) | number:'1.2-2' }}</div>
+          </div>
+        </div>
+        
+        <div class="order-total-section">
+          <div class="total-row">
+            <span class="total-label">Order Total</span>
+            <span class="total-amount">₹{{ getViewedOrderTotal() | number:'1.2-2' }}</span>
+          </div>
         </div>
       </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-secondary" (click)="closeViewModal()">
-          <i class="fas fa-times me-2"></i>
-          Close
+    </div>
+    
+    <div class="modal-footer-modern">
+      <button class="btn btn-close-modal" (click)="closeViewModal()">
+        <i class="fas fa-times me-2"></i>Close
         </button>
-      </div>
     </div>
   </div>
 </div>
+

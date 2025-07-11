@@ -53,7 +53,7 @@ export class ApiService {
     }
 
     const headers = this.getRequestHeaders();
-    
+
     return this.http.get(url, {
       ...options,
       headers,
