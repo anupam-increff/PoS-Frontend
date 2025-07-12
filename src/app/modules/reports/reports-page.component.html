@@ -154,8 +154,7 @@
                 <div class="suggestions-dropdown" *ngIf="showClientSuggestions && clientSuggestions.length > 0">
                   <div class="suggestion-item" *ngFor="let client of clientSuggestions" 
                        (click)="selectClientSuggestion(client)">
-                    <div class="suggestion-name">{{ client.name }}</div>
-                    <div class="suggestion-id">ID: {{ client.id }}</div>
+                    {{ client.name }}
                   </div>
                 </div>
               </div>

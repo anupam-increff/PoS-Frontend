@@ -434,14 +434,42 @@ export class OrderPageComponent implements OnInit {
     
     // Add search query if provided
     if (this.searchQuery) {
-      // For now, we'll use the existing endpoint structure
-      // The backend should handle the search query in the OrderSearchForm
-      const params: any = {
-        ...searchForm,
-        query: this.searchQuery
-      };
+      // Check if search query is a number (Order ID)
+      const isOrderId = /^\d+$/.test(this.searchQuery.trim());
       
-      this.api.get<any>('/order/search', { params }).subscribe({
+      if (isOrderId) {
+        // Search by Order ID - use POST with orderId in body
+        const searchFormWithId = {
+          ...searchForm,
+          orderId: parseInt(this.searchQuery.trim())
+        };
+        
+        this.api.post<any>('/order/search', searchFormWithId).subscribe({
+          next: (res) => {
+            this.orders = res.content.map((o: any) => ({
+              ...o,
+              placedAt: new Date(Number(o.time) * 1000),
+              items: []
+            }));
+            this.totalItems = res.totalItems;
+            this.totalPages = res.totalPages;
+            this.currentPage = res.currentPage;
+            this.pageSize = res.pageSize;
+            this.loadingOrders = false;
+          },
+          error: () => {
+            this.toastr.error('Failed to fetch orders');
+            this.loadingOrders = false;
+          }
+        });
+      } else {
+        // Invalid search query
+        this.toastr.error('Please enter a valid Order ID (numbers only)');
+        this.loadingOrders = false;
+      }
+    } else {
+      // Use the new OrderSearchForm structure
+      this.api.post<any>('/order/search', searchForm).subscribe({
         next: (res) => {
           this.orders = res.content.map((o: any) => ({
             ...o,
@@ -459,27 +487,7 @@ export class OrderPageComponent implements OnInit {
           this.loadingOrders = false;
         }
       });
-    } else {
-      // Use the new OrderSearchForm structure
-      this.api.post<any>('/order/search', searchForm).subscribe({
-        next: (res) => {
-          this.orders = res.content.map((o: any) => ({
-          ...o,
-            placedAt: new Date(Number(o.time) * 1000),
-            items: []
-        }));
-          this.totalItems = res.totalItems;
-          this.totalPages = res.totalPages;
-          this.currentPage = res.currentPage;
-          this.pageSize = res.pageSize;
-        this.loadingOrders = false;
-      },
-      error: () => {
-          this.toastr.error('Failed to fetch orders');
-        this.loadingOrders = false;
-      }
-    });
-  }
+    }
   }
 
   applyFilters() {

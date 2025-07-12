@@ -12,7 +12,7 @@
   </div>
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-header">
   <h5 class="mb-0">Inventory Management</h5>
   <button class="btn btn-primary" (click)="openAddInventoryModal()">
     <i class="fas fa-plus me-1"></i>
@@ -20,21 +20,30 @@
   </button>
 </div>
 
-<div class="d-flex justify-content-end align-items-center mb-3">
-  <div class="d-flex align-items-center position-relative">
-    <input type="text" class="form-control me-2" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
-      name="searchBarcode" (input)="onSearchChange()" style="max-width: 300px;">
-    
-    <!-- Suggestions Dropdown -->
-    <div class="suggestions-dropdown" *ngIf="showSuggestions && searchSuggestions.length > 0">
-      <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions" 
-           (click)="selectSuggestion(suggestion)">
-        {{ suggestion.barcode }} - {{ suggestion.name }}
+<div class="d-flex justify-content-end align-items-center mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <div class="search-container position-relative">
+      <input type="text" class="form-control" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
+        name="searchBarcode" (input)="onSearchChange()" style="min-width: 280px;">
+      <i class="fas fa-search search-icon"></i>
+      
+      <!-- Suggestions Dropdown -->
+      <div class="suggestions-dropdown" *ngIf="showSuggestions && searchSuggestions.length > 0">
+        <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions" 
+             (click)="selectSuggestion(suggestion)">
+          {{ suggestion.barcode }} - {{ suggestion.name }}
+        </div>
       </div>
     </div>
     
-    <button class="btn btn-outline-primary me-2" (click)="searchByBarcode()">Search</button>
-    <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">Clear</button>
+    <button class="btn btn-outline-primary" (click)="searchByBarcode()">
+      <i class="fas fa-search me-1"></i>
+      Search
+    </button>
+    <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">
+      <i class="fas fa-times me-1"></i>
+      Clear
+    </button>
   </div>
 </div>
 

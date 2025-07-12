@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-header">
   <h5 class="mb-0">Product Management</h5>
   <button class="btn btn-primary" (click)="openAddProductModal()">
     <i class="fas fa-plus me-1"></i>
@@ -18,21 +18,30 @@
   </button>
 </div>
 
-<div class="d-flex justify-content-end align-items-center mb-3">
-  <div class="d-flex align-items-center position-relative">
-    <input type="text" class="form-control me-2" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
-      name="searchBarcode" (input)="onSearchChange()" style="max-width: 250px;">
-    
-    <!-- Suggestions Dropdown -->
-    <div class="suggestions-dropdown" *ngIf="showSuggestions && searchSuggestions.length > 0">
-      <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions" 
-           (click)="selectSuggestion(suggestion)">
-        {{ suggestion.barcode }} - {{ suggestion.name }}
+<div class="d-flex justify-content-end align-items-center mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <div class="search-container position-relative">
+      <input type="text" class="form-control" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
+        name="searchBarcode" (input)="onSearchChange()" style="min-width: 280px;">
+      <i class="fas fa-search search-icon"></i>
+      
+      <!-- Suggestions Dropdown -->
+      <div class="suggestions-dropdown" *ngIf="showSuggestions && searchSuggestions.length > 0">
+        <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions" 
+             (click)="selectSuggestion(suggestion)">
+          {{ suggestion.barcode }} - {{ suggestion.name }}
+        </div>
       </div>
     </div>
     
-    <button class="btn btn-outline-primary me-2" (click)="searchByBarcode()">Search</button>
-    <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">Clear</button>
+    <button class="btn btn-outline-primary" (click)="searchByBarcode()">
+      <i class="fas fa-search me-1"></i>
+      Search
+    </button>
+    <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">
+      <i class="fas fa-times me-1"></i>
+      Clear
+    </button>
   </div>
 </div>
 
@@ -342,12 +351,14 @@ ABC Company	1234567890123	Premium Wireless Headphones	2999.00	https://example.co
 </div>
 
 <!-- Responsive Image Zoom Modal -->
-<div class="modal fade show" tabindex="-1" *ngIf="showImageModal" [ngStyle]="{ display: 'block', background: 'rgba(0,0,0,0.85)' }">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade show" tabindex="-1" *ngIf="showImageModal" [ngStyle]="{ display: 'block', background: 'rgba(0,0,0,0.85)' }" (click)="closeImageModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content bg-transparent border-0 shadow-none">
-      <div class="modal-body d-flex flex-column align-items-center justify-content-center p-0">
+      <div class="modal-body d-flex flex-column align-items-center justify-content-center p-0 position-relative">
         <img [src]="imageToZoom" class="img-fluid rounded shadow-lg" style="max-width:90vw; max-height:80vh; object-fit:contain; background:#fff;" alt="Product Image" />
-        <button class="btn btn-light position-absolute top-0 end-0 m-3" (click)="closeImageModal()" style="z-index:2; border-radius:50%;"><i class="fas fa-times"></i></button>
+        <button class="btn btn-danger position-absolute" (click)="closeImageModal()" style="top: 10px; right: 10px; z-index: 10; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold;">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
     </div>
   </div>

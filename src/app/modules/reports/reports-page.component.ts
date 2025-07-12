@@ -203,10 +203,10 @@ export class ReportsPageComponent implements OnInit {
       this.showClientSuggestions = false;
     }
     
-    // Set new timer for debounced search
+    // Set longer timer for debounced search to prevent table refresh on every keystroke
     this.clientSearchTimer = setTimeout(() => {
       this.applyClientSalesFilters();
-    }, 500); // 500ms delay
+    }, 1000); // 1 second delay - only search after user stops typing
   }
 
   onClientSearchFocus() {
@@ -231,7 +231,7 @@ export class ReportsPageComponent implements OnInit {
 
     this.apiService.get<any>('/client/search', {
       params: {
-        name: this.salesClientName,
+        query: this.salesClientName,
         page: '0',
         pageSize: '5'
       }

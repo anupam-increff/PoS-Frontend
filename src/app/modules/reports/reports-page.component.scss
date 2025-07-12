@@ -288,6 +288,9 @@
     cursor: pointer !important;
     border-bottom: 1px solid #f8f9fa !important;
     transition: background-color 0.2s ease !important;
+    font-weight: 500 !important;
+    color: #2c3e50 !important;
+    font-size: 0.9rem !important;
     
     &:hover {
       background: #f8f9fa !important;
@@ -295,18 +298,6 @@
     
     &:last-child {
       border-bottom: none !important;
-    }
-    
-    .suggestion-name {
-      font-weight: 600 !important;
-      color: #2c3e50 !important;
-      font-size: 0.9rem !important;
-    }
-    
-    .suggestion-id {
-      font-size: 0.8rem !important;
-      color: #6c757d !important;
-      margin-top: 0.25rem !important;
     }
   }
 }
