@@ -191,6 +191,19 @@ export class ClientPageComponent implements OnInit {
     }, 300);
   }
 
+  onSearchFocus() {
+    if (this.searchName && this.searchName.length >= 2) {
+      this.getSearchSuggestions();
+    }
+  }
+
+  onSearchBlur() {
+    // Delay hiding suggestions to allow for click
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 300);
+  }
+
   getSearchSuggestions() {
     if (!this.searchName.trim()) {
       this.searchSuggestions = [];
@@ -220,7 +233,39 @@ export class ClientPageComponent implements OnInit {
     this.searchName = suggestion.name;
     this.searchSuggestions = [];
     this.showSuggestions = false;
-    this.searchClient();
+    // Use the selected suggestion's name directly
+    this.searchClientWithValue(suggestion.name);
+  }
+
+  searchClientWithValue(name: string) {
+    if (!name.trim()) {
+      this.loadClients();
+      return;
+    }
+    this.loading = true;
+    this.api.get<any>('/client/search', {
+      params: {
+        query: name,
+        page: this.currentPage.toString(),
+        pageSize: this.pageSize.toString()
+      }
+    }).subscribe({
+      next: (response) => {
+        this.clients = response.content || [];
+        this.totalItems = response.totalItems || 0;
+        this.totalPages = response.totalPages || 0;
+        this.pageSize = response.pageSize || this.pageSize;
+        this.loading = false;
+        this.isSearchMode = true;
+      },
+      error: () => {
+        this.loading = false;
+        this.clients = [];
+        this.totalItems = 0;
+        this.totalPages = 0;
+        this.isSearchMode = true;
+      }
+    });
   }
 
   clearSearch(): void {

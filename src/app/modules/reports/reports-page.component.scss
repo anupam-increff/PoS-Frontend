@@ -1,4 +1,41 @@
 /* === REPORTS PAGE PROPER STYLING === */
+
+/* Modern Tabs Styling */
+.modern-tabs {
+  margin-bottom: 2rem !important;
+  
+  .tab-nav {
+    display: flex !important;
+    gap: 0.5rem !important;
+    background: #f8f9fa !important;
+    padding: 0.5rem !important;
+    border-radius: 12px !important;
+    
+    .tab-btn {
+      flex: 1 !important;
+      padding: 0.75rem 1.5rem !important;
+      border: none !important;
+      background: transparent !important;
+      color: #6c757d !important;
+      font-weight: 500 !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease !important;
+      cursor: pointer !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.5) !important;
+        color: #495057 !important;
+      }
+      
+      &.active {
+        background: #fff !important;
+        color: #0d6efd !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      }
+    }
+  }
+}
 .hero-section {
   margin-bottom: 2rem !important;
   padding: 2rem 1rem !important;

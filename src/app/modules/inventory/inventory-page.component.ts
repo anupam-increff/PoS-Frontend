@@ -287,6 +287,19 @@ export class InventoryPageComponent implements OnInit {
     }, 300);
   }
 
+  onSearchFocus() {
+    if (this.searchBarcode && this.searchBarcode.length >= 2) {
+      this.getSearchSuggestions();
+    }
+  }
+
+  onSearchBlur() {
+    // Delay hiding suggestions to allow for click
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 300);
+  }
+
   getSearchSuggestions() {
     if (!this.searchBarcode.trim()) {
       this.searchSuggestions = [];
@@ -315,7 +328,35 @@ export class InventoryPageComponent implements OnInit {
     this.searchBarcode = suggestion.barcode;
     this.searchSuggestions = [];
     this.showSuggestions = false;
-    this.searchByBarcode();
+    // Use the selected suggestion's barcode directly
+    this.searchByBarcodeWithValue(suggestion.barcode);
+  }
+
+  searchByBarcodeWithValue(barcode: string) {
+    if (!barcode.trim()) {
+      this.loadInventory();
+      return;
+    }
+    this.loading = true;
+    this.api.get<any>('/inventory/search', {
+      params: {
+        barcode: barcode,
+        page: this.currentPage.toString(),
+        pageSize: this.pageSize.toString()
+      }
+    }).subscribe({
+      next: (response) => {
+        this.inventory = response.content || [];
+        this.totalItems = response.totalItems || 0;
+        this.totalPages = response.totalPages || 0;
+        this.pageSize = response.pageSize || this.pageSize;
+        this.loading = false;
+      },
+      error: () => {
+        this.errorMsg = 'Failed to search inventory.';
+        this.loading = false;
+      }
+    });
   }
 
   clearBarcodeSearch() {

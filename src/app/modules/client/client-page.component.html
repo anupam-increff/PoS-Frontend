@@ -23,7 +23,7 @@
   <div class="d-flex align-items-center gap-2">
     <div class="search-container position-relative">
       <input type="text" class="form-control" placeholder="Search by name" [(ngModel)]="searchName"
-        name="searchName" (input)="onSearchChange()" style="min-width: 280px;">
+        name="searchName" (input)="onSearchChange()" (focus)="onSearchFocus()" (blur)="onSearchBlur()" style="min-width: 280px;">
       <i class="fas fa-search search-icon"></i>
       
       <!-- Suggestions Dropdown -->
@@ -35,11 +35,11 @@
       </div>
     </div>
     
-    <button class="btn btn-outline-primary" (click)="searchClient()">
+    <button class="btn btn-outline-primary btn-sm" (click)="searchClient()">
       <i class="fas fa-search me-1"></i>
       Search
     </button>
-    <button class="btn btn-outline-secondary" (click)="clearSearch()">
+    <button class="btn btn-outline-secondary btn-sm" (click)="clearSearch()">
       <i class="fas fa-times me-1"></i>
       Clear
     </button>
@@ -149,7 +149,7 @@
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">Client Name</label>
-            <input type="text" class="form-control" formControlName="name" placeholder="Enter client name (alphabets only)"
+            <input type="text" class="form-control" formControlName="name" placeholder="Enter client name"
               [class.is-invalid]="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
             <div class="invalid-feedback"
               *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">

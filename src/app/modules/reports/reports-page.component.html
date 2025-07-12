@@ -14,20 +14,18 @@
 <div class="feature-grid">
   <div class="feature-card">
     <!-- Tab Header -->
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'dateRange'" (click)="setTab('dateRange')">
-          <i class="fas fa-calendar me-1"></i>
+    <div class="modern-tabs mb-4">
+      <div class="tab-nav">
+        <button class="tab-btn" [class.active]="tab === 'dateRange'" (click)="setTab('dateRange')">
+          <i class="fas fa-calendar me-2"></i>
           Date Range Sales Report
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="tab === 'clientSales'" (click)="setTab('clientSales')">
-          <i class="fas fa-users me-1"></i>
+        </button>
+        <button class="tab-btn" [class.active]="tab === 'clientSales'" (click)="setTab('clientSales')">
+          <i class="fas fa-users me-2"></i>
           Client Sales Report
-        </a>
-      </li>
-    </ul>
+        </button>
+      </div>
+    </div>
 
     <!-- Date Range Sales Report -->
     <div *ngIf="tab === 'dateRange'">
@@ -82,13 +80,15 @@
         </div>
 
         <div *ngIf="dateRangeData.length > 0" class="table-wrapper">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0">Sales Report: {{ dateRangeForm.value.startDate | date }} to {{ dateRangeForm.value.endDate | date }}</h6>
+          <div class="table-title">
+            <i class="fas fa-table me-2"></i>Sales Report: {{ dateRangeForm.value.startDate | date }} to {{ dateRangeForm.value.endDate | date }}
+          </div>
+          <div class="d-flex justify-content-end align-items-center mb-3">
             <button class="btn btn-outline-success btn-sm" (click)="downloadDateRangeCSV()">
               <i class="fas fa-download me-1"></i>Download CSV
             </button>
           </div>
-          <table [class.focus-mode]="false" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
+          <table class="table-custom" [class.focus-mode]="false" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
             <thead>
               <tr>
                 <th>Date</th>
@@ -148,7 +148,9 @@
                        [(ngModel)]="salesClientName"
                        (input)="onClientSearchInput($event)"
                        (focus)="onClientSearchFocus()"
-                       (blur)="onClientSearchBlur()">
+                       (blur)="onClientSearchBlur()"
+                       (keydown.enter)="applyClientSalesFilters()"
+                       autocomplete="off">
                 
                 <!-- Client Suggestions Dropdown -->
                 <div class="suggestions-dropdown" *ngIf="showClientSuggestions && clientSuggestions.length > 0">
@@ -179,10 +181,16 @@
                      [(ngModel)]="salesEndDate"
                      (change)="applyClientSalesFilters()">
             </div>
-            <div class="col-md-3">
-              <button class="btn btn-outline-secondary" (click)="clearClientSalesFilters()">
+            <div class="col-md-2">
+              <button class="btn btn-outline-primary btn-sm" (click)="applyClientSalesFilters()">
+                <i class="fas fa-search me-1"></i>
+                Search
+              </button>
+            </div>
+            <div class="col-md-1">
+              <button class="btn btn-outline-secondary btn-sm" (click)="clearClientSalesFilters()">
                 <i class="fas fa-times me-1"></i>
-                Clear Filters
+                Clear
               </button>
             </div>
           </div>
@@ -198,13 +206,15 @@
 
         <!-- Client Sales Table -->
         <div *ngIf="!clientSalesLoading && clientSales.length > 0" class="table-wrapper">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0">Client Sales Report</h6>
+          <div class="table-title">
+            <i class="fas fa-table me-2"></i>Client Sales Report
+          </div>
+          <div class="d-flex justify-content-end align-items-center mb-3">
             <button class="btn btn-outline-success btn-sm" (click)="downloadClientSalesCSV()">
               <i class="fas fa-download me-1"></i>Download CSV
             </button>
           </div>
-          <table [class.focus-mode]="false" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
+          <table class="table-custom" [class.focus-mode]="false" style="width: 100%; min-width: 800px; max-width: 1200px; margin: 0 auto;">
             <thead>
               <tr>
                 <th>Client Name</th>

@@ -203,10 +203,7 @@ export class ReportsPageComponent implements OnInit {
       this.showClientSuggestions = false;
     }
     
-    // Set longer timer for debounced search to prevent table refresh on every keystroke
-    this.clientSearchTimer = setTimeout(() => {
-      this.applyClientSalesFilters();
-    }, 1000); // 1 second delay - only search after user stops typing
+    // Removed automatic table reload - only reload when user selects suggestion or manually searches
   }
 
   onClientSearchFocus() {
@@ -219,7 +216,7 @@ export class ReportsPageComponent implements OnInit {
     // Delay hiding suggestions to allow for click
     setTimeout(() => {
       this.showClientSuggestions = false;
-    }, 200);
+    }, 300);
   }
 
   getClientSuggestions() {

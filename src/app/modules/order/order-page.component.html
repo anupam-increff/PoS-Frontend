@@ -39,7 +39,7 @@
                   <i class="fas fa-receipt me-3"></i>
                   New Order Creation
                 </h3>
-                <p class="order-subtitle">Build your order by scanning barcodes or entering product details</p>
+                <p class="order-subtitle">Build your order by entering product barcodes and details</p>
               </div>
               <div class="col-md-4 text-end">
                 <div class="order-stats">
@@ -63,8 +63,8 @@
                 <span class="summary-text">{{ items.length }} items • ₹{{ getOrderTotal() | number:'1.2-2' }}</span>
               </div>
               <div class="action-buttons">
-                <button type="button" class="btn btn-outline-secondary" (click)="clearAllItems()" *ngIf="items.length > 1">
-                  <i class="fas fa-trash me-2"></i>Clear All
+                <button type="button" class="btn btn-outline-danger" (click)="clearAllItems()" *ngIf="items.length > 0">
+                  <i class="fas fa-trash me-2"></i>Clear All Items
                 </button>
                 <button type="button" class="btn btn-primary" (click)="addItem()">
                   <i class="fas fa-plus me-2"></i>Add Item

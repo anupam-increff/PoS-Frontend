@@ -22,7 +22,7 @@
   <div class="d-flex align-items-center gap-2">
     <div class="search-container position-relative">
       <input type="text" class="form-control" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
-        name="searchBarcode" (input)="onSearchChange()" style="min-width: 280px;">
+        name="searchBarcode" (input)="onSearchChange()" (focus)="onSearchFocus()" (blur)="onSearchBlur()" style="min-width: 280px;">
       <i class="fas fa-search search-icon"></i>
       
       <!-- Suggestions Dropdown -->
@@ -34,11 +34,11 @@
       </div>
     </div>
     
-    <button class="btn btn-outline-primary" (click)="searchByBarcode()">
+    <button class="btn btn-outline-primary btn-sm" (click)="searchByBarcode()">
       <i class="fas fa-search me-1"></i>
       Search
     </button>
-    <button class="btn btn-outline-secondary" (click)="clearBarcodeSearch()">
+    <button class="btn btn-outline-secondary btn-sm" (click)="clearBarcodeSearch()">
       <i class="fas fa-times me-1"></i>
       Clear
     </button>
