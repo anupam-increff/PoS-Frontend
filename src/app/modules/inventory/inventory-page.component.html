@@ -56,6 +56,10 @@
 </div>
 
 <div class="table-wrapper" tabindex="0" *ngIf="inventory.length > 0 && !loading">
+  <div class="table-title">
+    <i class="fas fa-boxes"></i>
+    Inventory Snapshot
+  </div>
   <table class="table-custom" [class.focus-mode]="editIndex !== null">
     <thead>
       <tr>

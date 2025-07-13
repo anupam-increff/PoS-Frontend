@@ -241,6 +241,7 @@ export class ProductPageComponent implements OnInit {
       this.showSuggestions = false;
       return;
     }
+    
     this.api.get<any>('/product/search', {
       params: {
         barcode: this.searchBarcode,

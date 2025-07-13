@@ -306,6 +306,7 @@ export class InventoryPageComponent implements OnInit {
       this.showSuggestions = false;
       return;
     }
+    
     this.api.get<any>('/inventory/search', {
       params: {
         barcode: this.searchBarcode,
@@ -367,7 +368,7 @@ export class InventoryPageComponent implements OnInit {
   saveEdit() {
     if (!this.editItem) return;
     const payload = { ...this.editItem, barcode: this.editItem.barcode };
-    this.api.put(`/inventory/${this.editItem.barcode}`, payload).subscribe({
+    this.api.put(`/inventory/`, payload).subscribe({
       next: () => {
         this.toastr.success('Inventory updated');
         this.inventory[this.editIndex!] = { ...this.editItem };

@@ -53,6 +53,10 @@
 <div *ngIf="errorMsg" class="alert alert-danger m-3">{{ errorMsg }}</div>
 
 <div class="table-wrapper" tabindex="0" *ngIf="!loading">
+  <div class="table-title">
+    <i class="fas fa-box"></i>
+    Product Catalog
+  </div>
   <table class="table-custom" [class.focus-mode]="editIndex !== null">
     <thead>
       <tr>

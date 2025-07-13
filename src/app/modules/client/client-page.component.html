@@ -51,6 +51,10 @@
 </div>
 
 <div class="table-wrapper" tabindex="0" *ngIf="!loading && clients.length > 0">
+  <div class="table-title">
+    <i class="fas fa-users"></i>
+    Client Directory
+  </div>
   <table class="table-custom" [class.focus-mode]="editIndex !== null">
     <thead>
       <tr>
@@ -135,34 +139,58 @@
   </div>
 </div>
 
-<!-- Add/Edit Modal -->
-<div class="modal fade show" tabindex="-1"
-  [ngStyle]="{ display: showModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)' }"
-  [class.show]="showModal" *ngIf="showModal">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+<!-- Add/Edit Modal - Modern Style -->
+<div class="modern-modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modern-modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header-modern">
+      <div class="modal-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h4 class="modal-title-modern">{{ editingId ? 'Edit Client' : 'Add Client' }}</h4>
+      <p class="modal-subtitle-modern">{{ editingId ? 'Update client information' : 'Add a new client to your system' }}</p>
+      <button class="modal-close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body-modern">
       <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
-        <div class="modal-header">
-          <h5 class="modal-title">{{ editingId ? 'Edit Client' : 'Add Client' }}</h5>
-          <button type="button" class="btn-close" (click)="closeModal()"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Client Name</label>
-            <input type="text" class="form-control" formControlName="name" placeholder="Enter client name"
-              [class.is-invalid]="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
-            <div class="invalid-feedback"
-              *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
-              <span *ngIf="clientForm.get('name')?.errors?.['required']">Client name is required.</span>
-              <span *ngIf="clientForm.get('name')?.errors?.['pattern']">Only alphabets are allowed.</span>
-              <span *ngIf="clientForm.get('name')?.errors?.['maxlength']">Name must be under 50 characters.</span>
-            </div>
+        <div class="form-group-modern">
+          <label class="form-label-modern">
+            <i class="fas fa-user me-2"></i>
+            Client Name
+          </label>
+          <input type="text" 
+                 class="form-control-modern" 
+                 formControlName="name" 
+                 placeholder="Enter client name"
+                 [class.is-invalid]="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
+          <div class="invalid-feedback-modern"
+               *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
+            <span *ngIf="clientForm.get('name')?.errors?.['required']">
+              <i class="fas fa-exclamation-circle me-1"></i>
+              Client name is required.
+            </span>
+            <span *ngIf="clientForm.get('name')?.errors?.['pattern']">
+              <i class="fas fa-exclamation-circle me-1"></i>
+              Only alphabets and spaces are allowed.
+            </span>
+            <span *ngIf="clientForm.get('name')?.errors?.['maxlength']">
+              <i class="fas fa-exclamation-circle me-1"></i>
+              Name must be under 50 characters.
+            </span>
           </div>
-          
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="clientForm.invalid">Save</button>
+        
+        <div class="modal-footer-modern">
+          <button type="button" class="btn-modern btn-secondary-modern" (click)="closeModal()">
+            <i class="fas fa-times me-2"></i>
+            Cancel
+          </button>
+          <button type="submit" class="btn-modern btn-primary-modern" [disabled]="clientForm.invalid">
+            <i class="fas fa-save me-2"></i>
+            {{ editingId ? 'Update' : 'Save' }}
+          </button>
         </div>
       </form>
     </div>
