@@ -14,55 +14,6 @@
     </div>
   </div>
 
-  <!-- Quick Actions -->
-  <div class="quick-actions-section">
-    <div class="section-header">
-      <h3 class="section-title">
-        <i class="fas fa-bolt me-2"></i>
-        Quick Actions
-      </h3>
-      <p class="section-subtitle">Access frequently used features instantly</p>
-    </div>
-    <div class="action-buttons">
-      <a [routerLink]="['/client']" class="action-btn">
-        <div class="action-icon">
-          <i class="fas fa-user-plus"></i>
-        </div>
-        <div class="action-content">
-          <div class="action-title">Add Client</div>
-          <div class="action-desc">Register new customer</div>
-        </div>
-      </a>
-      <a [routerLink]="['/product']" class="action-btn">
-        <div class="action-icon">
-          <i class="fas fa-box-open"></i>
-        </div>
-        <div class="action-content">
-          <div class="action-title">Add Product</div>
-          <div class="action-desc">Add new inventory</div>
-        </div>
-      </a>
-      <a [routerLink]="['/order']" class="action-btn">
-        <div class="action-icon">
-          <i class="fas fa-shopping-bag"></i>
-        </div>
-        <div class="action-content">
-          <div class="action-title">New Order</div>
-          <div class="action-desc">Create sale order</div>
-        </div>
-      </a>
-      <a [routerLink]="['/inventory']" class="action-btn">
-        <div class="action-icon">
-          <i class="fas fa-boxes"></i>
-        </div>
-        <div class="action-content">
-          <div class="action-title">Manage Inventory</div>
-          <div class="action-desc">Stock management</div>
-        </div>
-      </a>
-    </div>
-  </div>
-
   <!-- Feature Grid -->
   <div class="feature-section">
     <div class="section-header">
@@ -129,7 +80,7 @@
         </a>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" *ngIf="authService.isAdmin() || authService.isSupervisor()">
         <div class="feature-icon">
           <i class="fas fa-chart-line"></i>
         </div>

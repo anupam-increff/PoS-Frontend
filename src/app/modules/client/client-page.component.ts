@@ -11,6 +11,8 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 
+declare var bootstrap: any;
+
 @Component({
   selector: 'app-client-page',
   standalone: true,

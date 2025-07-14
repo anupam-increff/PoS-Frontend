@@ -483,6 +483,7 @@
             <div class="item-info">
               <div class="item-index">{{ idx + 1 }}</div>
               <div class="item-details">
+                <div class="item-name" *ngIf="item.productName">{{ item.productName }}</div>
                 <div class="item-barcode">{{ item.barcode }}</div>
                 <div class="item-meta">Qty: {{ item.quantity }} × ₹{{ item.sellingPrice | number:'1.2-2' }}</div>
               </div>

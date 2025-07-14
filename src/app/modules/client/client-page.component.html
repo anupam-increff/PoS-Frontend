@@ -13,7 +13,7 @@
 
 <div class="page-header">
   <h5 class="mb-0">Client Management</h5>
-  <button class="btn btn-primary" (click)="openModal()">
+  <button class="btn btn-primary" (click)="openModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
     <i class="fas fa-plus me-1"></i>
     Add Client
   </button>

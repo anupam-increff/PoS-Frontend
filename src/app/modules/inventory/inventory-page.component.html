@@ -14,7 +14,7 @@
 
 <div class="page-header">
   <h5 class="mb-0">Inventory Management</h5>
-  <button class="btn btn-primary" (click)="openAddInventoryModal()">
+  <button class="btn btn-primary" (click)="openAddInventoryModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
     <i class="fas fa-plus me-1"></i>
     Add Inventory
   </button>

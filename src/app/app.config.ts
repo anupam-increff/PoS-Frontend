@@ -20,12 +20,12 @@ export const appConfig: ApplicationConfig = {
       toastClass: 'ngx-toastr',
       titleClass: 'toast-title',
       messageClass: 'toast-message',
-      tapToDismiss: false, // Don't dismiss on tap
+      tapToDismiss: false, 
       enableHtml: true,
       onActivateTick: true,
       newestOnTop: true,
       maxOpened: 5,
-      autoDismiss: true,
+      autoDismiss: false,
       iconClasses: {
         error: 'toast-error',
         info: 'toast-info',

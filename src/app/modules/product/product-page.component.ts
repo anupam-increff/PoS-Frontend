@@ -128,22 +128,27 @@ export class ProductPageComponent implements OnInit {
           this.productForm.reset();
           this.loadProducts(); // Reload products instead of redirecting
         } else {
-          // Handle validation errors
-          let errorMessage = `Upload failed: ${res.message}\n\n`;
-          errorMessage += `Total Rows: ${res.totalRows}\n`;
-          errorMessage += `Success: ${res.successRows}\n`;
-          errorMessage += `Errors: ${res.errorRows}\n\n`;
-          errorMessage += 'Validation Errors:\n';
-          res.errors.forEach((error: string) => {
-            errorMessage += `• ${error}\n`;
-          });
+          // Handle validation errors with shorter message
+          let errorMessage = `Upload failed: ${res.message}`;
+          if (res.errors && res.errors.length > 0) {
+            errorMessage += `\n\nFirst 3 errors:\n`;
+            res.errors.slice(0, 3).forEach((error: string) => {
+              errorMessage += `• ${error}\n`;
+            });
+            if (res.errors.length > 3) {
+              errorMessage += `... and ${res.errors.length - 3} more errors.`;
+            }
+          }
           
           this.toastr.error(errorMessage, 'Upload Failed', {
             timeOut: 0,
             extendedTimeOut: 0,
-            closeButton: true
+            closeButton: true,
+            tapToDismiss: false,
+            positionClass: 'toast-top-center'
           });
           
+          // Keep modal open for user to try again or close manually
           // Download the error TSV file if available
           if (res.downloadUrl) {
             this.downloadErrorTSV(res.downloadUrl);
@@ -153,20 +158,26 @@ export class ProductPageComponent implements OnInit {
       error: (err) => {
         let errorMessage = err?.error?.message || 'Upload failed';
         
-        // Handle detailed error response
+        // Handle detailed error response with shorter message
         if (err?.error?.errors) {
-          errorMessage += '\n\nValidation Errors:\n';
-          err.error.errors.forEach((error: string) => {
+          errorMessage += '\n\nFirst 3 validation errors:\n';
+          err.error.errors.slice(0, 3).forEach((error: string) => {
             errorMessage += `• ${error}\n`;
           });
+          if (err.error.errors.length > 3) {
+            errorMessage += `... and ${err.error.errors.length - 3} more errors.`;
+          }
         }
         
         this.toastr.error(errorMessage, 'Upload Failed', {
           timeOut: 0,
           extendedTimeOut: 0,
-          closeButton: true
+          closeButton: true,
+          tapToDismiss: false,
+          positionClass: 'toast-top-center'
         });
         
+        // Keep modal open for user to try again or close manually
         // Download error file if available
         if (err?.error?.downloadUrl) {
           this.downloadErrorTSV(err.error.downloadUrl);

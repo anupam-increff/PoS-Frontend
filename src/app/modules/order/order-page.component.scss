@@ -912,3 +912,94 @@
     }
   }
 }
+
+/* Order items card styles */
+.order-items-card {
+  .items-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #f8f9fa;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .item-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        
+        .item-index {
+          background: #0d6efd;
+          color: white;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 0.875rem;
+        }
+        
+        .item-details {
+          .item-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+          }
+          
+          .item-barcode {
+            font-family: 'Courier New', monospace;
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+          }
+          
+          .item-meta {
+            color: #6c757d;
+            font-size: 0.875rem;
+          }
+        }
+      }
+      
+      .item-total {
+        font-weight: 600;
+        color: #198754;
+        font-size: 1rem;
+      }
+    }
+  }
+  
+  .order-total-section {
+    border-top: 2px solid #e9ecef;
+    padding-top: 1rem;
+    
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .total-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+      
+      .total-amount {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #198754;
+      }
+    }
+  }
+}

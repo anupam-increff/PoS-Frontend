@@ -615,8 +615,8 @@ table {
 .hero-section {
   background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
   color: #fff;
-  padding: 3rem 0;
-  margin-bottom: 2rem;
+  padding: 2rem 0;
+  margin-bottom: 1rem;
   border-radius: 16px;
   position: relative;
   overflow: hidden;
@@ -638,9 +638,9 @@ table {
   }
   
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     
     @media (max-width: 768px) {
@@ -649,10 +649,10 @@ table {
   }
   
   .hero-subtitle {
-    font-size: 1.2rem;
+    font-size: 1rem;
     opacity: 0.9;
     margin-bottom: 0;
-    line-height: 1.6;
+    line-height: 1.2;
     
     @media (max-width: 768px) {
       font-size: 1rem;
@@ -726,10 +726,10 @@ table {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   
   h5 {
@@ -1172,7 +1172,7 @@ table input[type="text"]:focus, table input[type="number"]:focus {
 /* Fix search alignment */
 .d-flex.justify-content-end {
   width: 100% !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 0.2rem !important;
 }
 
 .d-flex.justify-content-end .position-relative {
@@ -1739,17 +1739,17 @@ tr.focused-row .save-row-btn:hover, tr.focused-row .save-row-btn:focus {
 
 /* Hero section - make smaller */
 .hero-section {
-  margin-bottom: 1.5rem;
-  padding: 1rem 0;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0;
 }
 
 .hero-title {
-  font-size: 1.75rem;
-  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
 }
 
 .hero-subtitle {
-  font-size: 1rem;
+  font-size: 0.5rem;
   margin-bottom: 0;
 }
 
@@ -1837,11 +1837,27 @@ tr.focused-row .save-row-btn:hover, tr.focused-row .save-row-btn:focus {
 /* Error messages should not auto-dismiss */
 .toast-error {
   timeOut: 0 !important;
+  extendedTimeOut: 0 !important;
+  closeButton: true !important;
+  tapToDismiss: false !important;
 }
 
 /* Success messages should auto-dismiss in 3 seconds */
 .toast-success {
   timeOut: 3000 !important;
+  extendedTimeOut: 1000 !important;
+}
+
+/* Warning messages should auto-dismiss in 5 seconds */
+.toast-warning {
+  timeOut: 5000 !important;
+  extendedTimeOut: 1000 !important;
+}
+
+/* Info messages should auto-dismiss in 3 seconds */
+.toast-info {
+  timeOut: 3000 !important;
+  extendedTimeOut: 1000 !important;
 }
 
 /* === COMPACT RESPONSIVE MODAL SYSTEM === */

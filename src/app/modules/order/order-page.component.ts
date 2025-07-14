@@ -15,6 +15,7 @@ declare var bootstrap: any;
 
 interface OrderItem {
   barcode: string;
+  productName?: string;  // Add productName field
   quantity: number;
   mrp: number;
   sellingPrice: number;
@@ -139,7 +140,12 @@ export class OrderPageComponent implements OnInit {
           error: () => {
         group.get('mrp')!.reset();
         group.get('sellingPrice')!.reset();
-        this.toastr.error(`Product with barcode ${barcode} not found.`);
+        this.toastr.error(`Product with barcode ${barcode} not found.`, 'Product Not Found', {
+          timeOut: 0,
+          extendedTimeOut: 0,
+          closeButton: true,
+          tapToDismiss: false
+        });
       }
     });
   }
@@ -216,9 +222,13 @@ export class OrderPageComponent implements OnInit {
       
       const group = this.items.at(this.currentBarcodeIndex);
       group.get('barcode')!.setValue(suggestion.barcode);
+      // Set MRP and selling price directly from suggestion data
+      group.get('mrp')!.setValue(suggestion.mrp);
+      group.get('sellingPrice')!.setValue(suggestion.mrp);
+      this.updateItemTotal(this.currentBarcodeIndex);
+      
       this.barcodeSuggestions = [];
       this.showBarcodeSuggestions = false;
-      this.updateMRPForItem(this.currentBarcodeIndex);
     }
   }
 
