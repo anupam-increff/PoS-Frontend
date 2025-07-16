@@ -48,6 +48,7 @@ export class OrderPageComponent implements OnInit {
   loading = false;
   showConfirmModal = false;
   showViewModal = false;
+  showNewOrderModal = false;
   confirmSummary: OrderItem[] = [];
   confirmTotal = 0;
   private confirmModal: any;
@@ -84,9 +85,10 @@ export class OrderPageComponent implements OnInit {
   ngOnInit(): void {
     this.loadCartFromStorage();
     
-    // Set default dates: start as 1 Jan 1970, end as today
+    // Set default dates: start as beginning of current month, end as today
     const today = new Date();
-    this.startDate = '1970-01-01';
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    this.startDate = firstDayOfMonth.toISOString().split('T')[0];
     this.endDate = today.toISOString().split('T')[0];
     
     this.loadOrders();
@@ -208,30 +210,45 @@ export class OrderPageComponent implements OnInit {
 
   selectBarcodeSuggestion(suggestion: any) {
     if (this.currentBarcodeIndex >= 0) {
-      // Check for duplicate barcode
-      const existingIndex = this.items.controls.findIndex((item, index) => 
-        index !== this.currentBarcodeIndex && item.get('barcode')?.value === suggestion.barcode
-      );
-      
-      if (existingIndex >= 0) {
-        this.toastr.warning(`Product ${suggestion.barcode} already exists in item ${existingIndex + 1}. Please edit the quantity there.`);
-        this.barcodeSuggestions = [];
-        this.showBarcodeSuggestions = false;
-        return;
-      }
-      
       const group = this.items.at(this.currentBarcodeIndex);
       group.get('barcode')!.setValue(suggestion.barcode);
-      // Set MRP and selling price directly from suggestion data
       group.get('mrp')!.setValue(suggestion.mrp);
       group.get('sellingPrice')!.setValue(suggestion.mrp);
       this.updateItemTotal(this.currentBarcodeIndex);
-      
-      this.barcodeSuggestions = [];
-      this.showBarcodeSuggestions = false;
+      this.hideBarcodeSuggestions();
     }
   }
 
+  // Prevent scientific notation in number inputs
+  onNumberKeyPress(event: KeyboardEvent) {
+    const char = String.fromCharCode(event.which);
+    // Allow only digits, decimal point, and control keys
+    if (!/[0-9.]/.test(char) && event.which !== 8 && event.which !== 9 && event.which !== 46) {
+      event.preventDefault();
+    }
+    // Prevent 'e', 'E', '+', '-' which can create scientific notation
+    if (['e', 'E', '+', '-'].includes(char)) {
+      event.preventDefault();
+    }
+  }
+
+  // Prevent scientific notation in integer inputs
+  onIntegerKeyPress(event: KeyboardEvent) {
+    const char = String.fromCharCode(event.which);
+    // Allow only digits and control keys
+    if (!/[0-9]/.test(char) && event.which !== 8 && event.which !== 9 && event.which !== 46) {
+      event.preventDefault();
+    }
+    // Prevent 'e', 'E', '+', '-', '.' which can create scientific notation or decimals
+    if (['e', 'E', '+', '-', '.'].includes(char)) {
+      event.preventDefault();
+    }
+  }
+
+  hideBarcodeSuggestions() {
+    this.barcodeSuggestions = [];
+    this.showBarcodeSuggestions = false;
+  }
 
 
   validateSellingPrice(index: number) {
@@ -278,6 +295,13 @@ export class OrderPageComponent implements OnInit {
       const quantity = item.get('quantity')!.value || 0;
       return total + quantity;
     }, 0);
+  }
+
+  getValidItemsCount(): number {
+    return this.items.controls.filter(item => {
+      const barcode = item.get('barcode')!.value;
+      return barcode && barcode.trim().length > 0;
+    }).length;
   }
 
   clearAllItems() {
@@ -408,9 +432,10 @@ export class OrderPageComponent implements OnInit {
         this.toastr.success(`Order #${id} placed`);
         this.loading = false;
         this.closeConfirmModal();
+        this.closeNewOrderModal(); // Close the new order modal too
         this.clearCartFromStorage(); // Clear cart on successful order
         this.resetForm();
-        this.setTab('list');
+        this.loadOrders(0); // Reload orders to show the new one
       },
       error: () => {
         this.toastr.error('Failed to place order');
@@ -533,6 +558,17 @@ export class OrderPageComponent implements OnInit {
   closeViewModal() {
     this.showViewModal = false;
     this.viewedItems = [];
+  }
+
+  openNewOrderModal() {
+    this.showNewOrderModal = true;
+    // Reset form and ensure we have at least one item
+    this.resetForm();
+  }
+
+  closeNewOrderModal() {
+    this.showNewOrderModal = false;
+    this.resetForm();
   }
 
   handleInvoice(order: Order) {

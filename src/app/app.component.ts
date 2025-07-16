@@ -96,8 +96,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  logout(): void {
+  logout() {
     this.authService.logout();
+    // Clear localStorage including order cart
+    localStorage.removeItem('orderCart');
     this.closeLogoutModal();
   }
 

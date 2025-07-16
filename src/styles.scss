@@ -2,7 +2,7 @@
 
 #toast-container {
   position: fixed !important;
-  z-index: 9999 !important;
+  z-index: 10000 !important; /* Increased from 9999 to appear above modals */
   pointer-events: none;
 }
 
@@ -277,35 +277,34 @@ table {
 .table-custom {
   width: 100%;
   margin: 0;
-  font-family: 'Inter', 'Poppins', Arial, sans-serif;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 0;
-  overflow: visible;
-  box-shadow: none;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  background: white;
   border: none;
-  background: transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
   thead {
-    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    background: #f8f9fa;
     
     th {
-      border-bottom: none;
+      color: #495057;
       font-weight: 600;
-      color: #fff;
-      padding: 1rem 1rem;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      border: none;
+      border-bottom: 2px solid #dee2e6;
       font-size: 0.9rem;
+      text-transform: none;
       letter-spacing: 0.3px;
-      text-transform: uppercase;
       
       &:first-child {
-        padding-left: 1rem;
-        border-radius: 12px 0 0 0;
+        border-radius: 0;
       }
       
       &:last-child {
-        padding-right: 1rem;
-        border-radius: 0 12px 0 0;
+        border-radius: 0;
       }
     }
   }
@@ -319,116 +318,44 @@ table {
       &:hover {
         background: #f8f9fa;
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-      
-      &:last-child {
-        border-bottom: none;
-        
-        td {
-          &:first-child {
-            border-radius: 0 0 0 12px;
-          }
-          
-          &:last-child {
-            border-radius: 0 0 12px 0;
-          }
-        }
       }
       
       td {
-        padding: 1rem 1rem;
+        padding: 1rem 1.25rem;
         vertical-align: middle;
-        font-size: 0.9rem;
         color: #495057;
-        
-        &:first-child {
-          padding-left: 1rem;
-        }
-        
-        &:last-child {
-          padding-right: 1rem;
-        }
       }
-    }
-  }
-  
-  .badge {
-    font-size: 0.75rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 20px;
-    font-weight: 500;
-    
-    &.badge-success {
-      background: linear-gradient(135deg, #198754 0%, #157347 100%);
-      color: #fff;
-    }
-    
-    &.badge-warning {
-      background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-      color: #000;
-    }
-    
-    &.badge-danger {
-      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-      color: #fff;
-    }
-    
-    &.badge-info {
-      background: linear-gradient(135deg, #0dcaf0 0%, #3dd5f3 100%);
-      color: #000;
     }
   }
 }
 
 /* TABLE WRAPPER IMPROVEMENTS */
 .table-wrapper {
-  // background: #fff;
-  // border-radius: 12px;
-  // overflow: hidden;
-  // box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  //  border: 1px solid #e9ecef;
-  // margin-bottom: 1.5rem;
-  // padding: 0;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  margin-top: 2rem; /* Added consistent top margin */
+  /* Removed margin-left and margin-right that were causing alignment issues */
   
-  /* Style similar to order page table container */
-  .table-title {
-    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
-    color: #fff;
-    padding: 1rem 1rem;
-    margin: 0.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 12px 12px 0 0;
-    
-    i {
-      margin-right: 0.5rem;
-    }
+  /* Fix for higher resolutions */
+  @media (min-width: 1400px) {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2rem;
   }
   
-  .table-custom {
+  .table-title {
+    
+    // background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #495057;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem 1.5rem;
     margin: 0;
-    border-radius: 0;
-    
-    thead th {
-      &:first-child {
-        border-radius: 0;
-      }
-      
-      &:last-child {
-        border-radius: 0;
-      }
-    }
-    
-    tbody tr:last-child td {
-      &:first-child {
-        border-radius: 0 0 0 12px;
-      }
-      
-      &:last-child {
-        border-radius: 0 0 12px 0;
-      }
-    }
+    border-bottom: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 }
 
@@ -492,7 +419,7 @@ table {
   background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
   color: #fff;
   border: none;
-  padding: 0.5rem 1rem;
+  // padding: 0.5rem 1rem;
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 500;
@@ -766,10 +693,7 @@ table {
 }
 
 /* Table wrapper for responsive design - remove card styling */
-.table-wrapper {
-  overflow-x: auto;
-  margin-bottom: 1rem;
-}
+/* Removed duplicate - using main definition above */
 
 /* Remove card wrappers from tables */
 .table-container {
@@ -984,7 +908,7 @@ td.editable-cell.editing {
 tr .edit-row-btn {
   display: none;
   position: absolute;
-  right: 1.2rem;
+  // right: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
   background: var(--table-edit-btn-bg);
@@ -996,7 +920,7 @@ tr .edit-row-btn {
   font-size: 1.1rem;
   box-shadow: 0 2px 8px 0 #2563eb22;
   transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-  z-index: 2;
+  z-index: 1;
   cursor: pointer;
 }
 tr:hover .edit-row-btn {
@@ -1107,12 +1031,12 @@ table input[type="text"]:focus, table input[type="number"]:focus {
 /* === FIXED TABLE SYSTEM === */
 .table-custom {
   width: 100% !important;
-  min-width: 900px !important;
-  margin: 0 auto !important;
+  min-width: 100% !important;
+  margin: 0 !important;
   background: white !important;
   border-radius: 8px !important;
   overflow: hidden !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
   border-collapse: collapse !important;
   
   th {
@@ -1123,8 +1047,8 @@ table input[type="text"]:focus, table input[type="number"]:focus {
     text-align: left !important;
     border-bottom: 2px solid #dee2e6 !important;
     font-size: 0.9rem !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
+    text-transform: none !important;
+    letter-spacing: 0.3px !important;
   }
   
   td {
@@ -1139,22 +1063,38 @@ table input[type="text"]:focus, table input[type="number"]:focus {
     
     &:hover {
       background-color: #f8f9fa !important;
-    }
-    
-    &:last-child td {
-      border-bottom: none !important;
+      transform: translateY(-1px) !important;
     }
   }
 }
 
+/* TABLE WRAPPER IMPROVEMENTS */
 .table-wrapper {
-  width: 100% !important;
-  overflow-x: auto !important;
-  overflow-y: visible !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  // margin: 1.5rem 0 !important;
-  padding: 0 !important;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  margin-top: 2rem;
+  width: 100%;
+  
+  /* Fix for higher resolutions */
+  @media (min-width: 1400px) {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 2rem;
+  }
+  
+  .table-title {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #495057;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+    margin: 0;
+    border-bottom: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
 .table-responsive {
@@ -1166,46 +1106,21 @@ table input[type="text"]:focus, table input[type="number"]:focus {
 }
 
 .table-container {
-  // margin: 1.5rem 0 !important;
+  margin: 1.5rem 0 !important;
 }
 
 /* Fix search alignment */
 .d-flex.justify-content-end {
-  width: 100% !important;
+  width: 100% ;
   margin-bottom: 0.2rem !important;
+
 }
 
 .d-flex.justify-content-end .position-relative {
-  width: 100% !important;
+  width: 100% important;
   max-width: 400px !important;
 }
 
-/* Hero Section Global Styles */
-.hero-section {
-  background: linear-gradient(120deg, #e8f2ff 0%, #f0f7ff 100%);
-  padding: 3rem 1rem 2rem;
-  text-align: center;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 2rem;
-}
-
-.hero-title {
-//   font-family: 'Poppins', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 0.5rem;
-}
-
-.hero-subtitle {
-  font-size: 1rem;
-  font-weight: 400;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.6;
-  text-align: center;
-}
 
 /* Feature Card Global Styles */
 .feature-card {
@@ -1590,6 +1505,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin : 0rem;
 }
 
 .app-footer {
@@ -1676,9 +1592,9 @@ tr.focused-row .save-row-btn:hover, tr.focused-row .save-row-btn:focus {
 .table-wrapper {
  
  margin-bottom: 1.5rem;
- margin-left: 1rem;
+//  margin-left: 1rem;
  margin-right: 1rem;
- max-width: 1225px;
+ max-width: 100%;
 }
 
 .pagination-bar {
@@ -1768,7 +1684,7 @@ tr.focused-row .save-row-btn:hover, tr.focused-row .save-row-btn:focus {
   width: auto !important;
   min-width: 70px;
   height: auto !important;
-  padding: 4px 10px !important;
+  padding: 8px 10px !important;
   border-radius: 4px !important;
   font-size: 0.8rem !important;
   font-weight: 500;
@@ -2004,11 +1920,11 @@ th.edit-btn-cell {
   position: static !important;
   right: auto !important;
   top: auto !important;
-  left: auto !important;
+  // left: 0.5rem !important;
   transform: none !important;
   display: inline-block !important;
-  margin: 0 2px !important;
-  padding: 6px 12px !important;
+  // margin: 0 2px !important;
+  // padding: 6px 12px !important;
   font-size: 0.8rem !important;
   line-height: 1.2 !important;
   border-radius: 4px !important;
@@ -2052,7 +1968,7 @@ tr .close-row-btn {
   transform: none !important;
   display: inline-block !important;
   vertical-align: middle !important;
-  margin: 0 2px !important;
+  // margin: 0 2px !important;
 }
 
 /* Consistent table cell padding */
@@ -2627,16 +2543,16 @@ div.suggestions-dropdown div.suggestion-item:hover {
 
 
 .table-title {
-  background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+  // background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
   color: white;
   // padding: 1.25rem 1rem;
   max-width: 1400px;
-  margin: 1rem;
   font-size: 1.125rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-top: 0rem;
 }
 
 .table-custom {
@@ -2657,7 +2573,7 @@ div.suggestions-dropdown div.suggestion-item:hover {
       text-align: left;
       border: none;
       font-size: 0.9rem;
-      text-transform: uppercase;
+      text-transform: u;
       letter-spacing: 0.5px;
       
       &:first-child {
@@ -2712,7 +2628,7 @@ div.suggestions-dropdown div.suggestion-item:hover {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            // padding: 0.5rem 1rem;
             border-radius: 8px;
             font-size: 0.875rem;
             font-weight: 500;
@@ -2729,7 +2645,7 @@ div.suggestions-dropdown div.suggestion-item:hover {
             background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 2rem;
             border-radius: 8px;
             font-size: 0.875rem;
             font-weight: 500;
@@ -2747,7 +2663,7 @@ div.suggestions-dropdown div.suggestion-item:hover {
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
             border: none;
-            padding: 0.5rem 0.75rem;
+            padding: 0.5rem 1rem;
             border-radius: 8px;
             font-size: 0.875rem;
             cursor: pointer;
@@ -2766,11 +2682,15 @@ div.suggestions-dropdown div.suggestion-item:hover {
 
 /* IMPROVED SEARCH BUTTONS */
 .btn-outline-primary.btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 6px;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
   
   &:hover {
     background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
@@ -2780,15 +2700,135 @@ div.suggestions-dropdown div.suggestion-item:hover {
 }
 
 .btn-outline-secondary.btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 6px;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
   
   &:hover {
     background: #6c757d;
     border-color: #6c757d;
     transform: translateY(-1px);
+  }
+}
+
+/* Search container positioning fix */
+.d-flex.justify-content-end.align-items-center.mb-4 {
+  margin-right: 6rem;
+  
+  .d-flex.align-items-center.gap-2 {
+    gap: 0.5rem;
+  }
+}
+
+/* Ensure button text and icons stay on same line */
+.btn i {
+  margin-right: 0.25rem;
+  display: inline;
+  vertical-align: middle;
+}
+
+.btn-sm i {
+  font-size: 0.75rem;
+}
+
+/* INTEGER INPUT VALIDATION - PREVENT SCIENTIFIC NOTATION */
+input[type="number"]:not([readonly]) {
+  -moz-appearance: textfield; /* Firefox */
+  
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Prevent scientific notation */
+  &[onkeypress]:not([onkeypress*="return"]) {
+    /* Will be handled by component */
+  }
+}
+
+/* Fix for form validation states - disabled buttons should look disabled */
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  background: #6c757d !important;
+  border-color: #6c757d !important;
+  color: #fff !important;
+  filter: grayscale(100%);
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Form validation aware button states */
+.btn-modern.btn-primary-modern:disabled,
+.btn-primary:disabled {
+  background: #adb5bd !important;
+  border-color: #adb5bd !important;
+  color: #6c757d !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Make sure cancel buttons always look clickable */
+.btn-secondary,
+.btn-cancel,
+.btn-modern.btn-secondary-modern {
+  opacity: 1 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Table row action buttons - save button disabled state */
+.save-row-btn:disabled {
+  background: #adb5bd !important;
+  color: #6c757d !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  border-color: #adb5bd !important;
+}
+
+/* Make sure edit buttons are always visible and clickable */
+.edit-row-btn {
+  opacity: 1 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  align-items: left;
+  justify-content: left;
+}
+
+/* Close/cancel buttons should always be clickable */
+.close-row-btn,
+.btn-close,
+.modal-close-btn {
+  opacity: 1 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  padding-left: 1rem;
+}
+
+/* Filter Section Styling */
+.filter-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  
+  .btn {
+    height: 38px; /* Match input height */
   }
 }

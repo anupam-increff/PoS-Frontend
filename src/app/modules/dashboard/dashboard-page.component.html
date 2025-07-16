@@ -32,10 +32,12 @@
         <p class="feature-description">
           Manage your customer database with advanced search, filtering, and customer insights.
         </p>
-        <a [routerLink]="['/client']" class="btn-primary-custom">
-          <i class="fas fa-arrow-right"></i>
-          Manage Clients
-        </a>
+        <div class="feature-card-footer">
+          <a [routerLink]="['/client']" class="btn-primary-custom">
+            <i class="fas fa-arrow-right"></i>
+            Manage Clients
+          </a>
+        </div>
       </div>
 
       <div class="feature-card">
@@ -46,10 +48,12 @@
         <p class="feature-description">
           Organize inventory with real-time stock tracking and smart categorization.
         </p>
-        <a [routerLink]="['/product']" class="btn-primary-custom">
-          <i class="fas fa-arrow-right"></i>
-          Manage Products
-        </a>
+        <div class="feature-card-footer">
+          <a [routerLink]="['/product']" class="btn-primary-custom">
+            <i class="fas fa-arrow-right"></i>
+            Manage Products
+          </a>
+        </div>
       </div>
 
       <div class="feature-card">
@@ -60,10 +64,12 @@
         <p class="feature-description">
           Streamline your sales process with easy order creation and delivery tracking.
         </p>
-        <a [routerLink]="['/order']" class="btn-primary-custom">
-          <i class="fas fa-arrow-right"></i>
-          Process Orders
-        </a>
+        <div class="feature-card-footer">
+          <a [routerLink]="['/order']" class="btn-primary-custom">
+            <i class="fas fa-arrow-right"></i>
+            Process Orders
+          </a>
+        </div>
       </div>
 
       <div class="feature-card">
@@ -74,10 +80,12 @@
         <p class="feature-description">
           Track stock levels, manage inventory, and monitor product availability.
         </p>
-        <a [routerLink]="['/inventory']" class="btn-primary-custom">
-          <i class="fas fa-arrow-right"></i>
-          Manage Inventory
-        </a>
+        <div class="feature-card-footer">
+          <a [routerLink]="['/inventory']" class="btn-primary-custom">
+            <i class="fas fa-arrow-right"></i>
+            Manage Inventory
+          </a>
+        </div>
       </div>
 
       <div class="feature-card" *ngIf="authService.isAdmin() || authService.isSupervisor()">
@@ -88,10 +96,12 @@
         <p class="feature-description">
           Analyze your business with detailed performance metrics and reports.
         </p>
-        <a [routerLink]="['/reports']" class="btn-primary-custom">
-          <i class="fas fa-arrow-right"></i>
-          View Analytics
-        </a>
+        <div class="feature-card-footer">
+          <a [routerLink]="['/reports']" class="btn-primary-custom">
+            <i class="fas fa-arrow-right"></i>
+            View Analytics
+          </a>
+        </div>
       </div>
     </div>
   </div>

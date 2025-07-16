@@ -1,15 +1,3 @@
-<div class="hero-section">
-  <div class="container">
-    <h1 class="hero-title">
-      <i class="fas fa-box me-3"></i>
-      Product Management
-    </h1>
-    <p class="hero-subtitle">
-      Upload, view and manage your product catalog efficiently with client-level filtering and barcode search
-    </p>
-  </div>
-</div>
-
 <div class="page-header">
   <h5 class="mb-0">Product Management</h5>
   <button class="btn btn-primary" (click)="openAddProductModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
@@ -21,7 +9,7 @@
 <div class="d-flex justify-content-end align-items-center mb-4">
   <div class="d-flex align-items-center gap-2">
     <div class="search-container position-relative">
-      <input type="text" class="form-control" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
+      <input type="text" class="form-control" placeholder="Search by Barcode or Name" [(ngModel)]="searchBarcode"
         name="searchBarcode" (input)="onSearchChange()" (focus)="onSearchFocus()" (blur)="onSearchBlur()" style="min-width: 280px;">
       <i class="fas fa-search search-icon"></i>
       
@@ -53,14 +41,11 @@
 <div *ngIf="errorMsg" class="alert alert-danger m-3">{{ errorMsg }}</div>
 
 <div class="table-wrapper" tabindex="0" *ngIf="!loading">
-  <div class="table-title">
-    <i class="fas fa-box"></i>
-    Product Catalog
-  </div>
+ 
   <table class="table-custom" [class.focus-mode]="editIndex !== null">
     <thead>
       <tr>
-        <th>Image</th>
+        <!-- <th>Image</th> -->
         <th>Client Name</th>
         <th>Barcode</th>
         <th>Name</th>
@@ -70,14 +55,14 @@
     </thead>
     <tbody>
       <tr *ngFor="let product of products; let i = index; trackBy: trackByProductId" [ngClass]="{'focused-row': editIndex === i}">
-        <td [ngClass]="editIndex === i ? 'non-editable' : ''">
+        <!-- <td [ngClass]="editIndex === i ? 'non-editable' : ''">
           <ng-container *ngIf="editIndex === i; else viewImageList">
             <input [(ngModel)]="editProduct.imageUrl" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
           </ng-container>
           <ng-template #viewImageList>
             <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="img" class="product-thumb" (click)="openImageModal(product.imageUrl)">
           </ng-template>
-        </td>
+        </td> -->
         <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
           <ng-container *ngIf="editIndex === i; else viewClientNameList">
             <input [(ngModel)]="editProduct.clientName" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
@@ -100,6 +85,7 @@
               min="0"
               step="0.01"
               required
+              (keypress)="onNumberKeyPress($event)"
             />
           </ng-container>
           <ng-template #viewMrpList>{{ product.mrp }}</ng-template>
@@ -109,7 +95,7 @@
             Edit
           </button>
           <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save">
-            <span style="font-size:1.2em;">&#10003; Save</span>
+            <span style="font-size:1.2em;">&#10003; </span>
           </button>
           <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel">
             <i class="fas fa-times"></i>
@@ -207,14 +193,27 @@
               <label class="form-label-modern">
                 <i class="fas fa-user me-2"></i>Client Name
               </label>
-              <input type="text" 
-                     class="form-input-modern" 
-                     formControlName="clientName" 
-                     placeholder="Enter client name">
+              <div class="position-relative">
+                <input type="text" 
+                       class="form-input-modern" 
+                       formControlName="clientName" 
+                       placeholder="Enter client name"
+                       (input)="onClientNameInput()"
+                       (focus)="onClientNameFocus()"
+                       (blur)="onClientNameBlur()">
+                
+                <!-- Client Suggestions Dropdown -->
+                <div class="suggestions-dropdown" *ngIf="showClientSuggestions && clientSuggestions.length > 0">
+                  <div class="suggestion-item" *ngFor="let client of clientSuggestions" 
+                       (click)="selectClientSuggestion(client)">
+                    {{ client.name }}
+                  </div>
+                </div>
+              </div>
               <div class="form-error" *ngIf="singleProductForm.get('clientName')?.invalid && singleProductForm.get('clientName')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 <span *ngIf="singleProductForm.get('clientName')?.errors?.['required']">Client name is required</span>
-                <span *ngIf="singleProductForm.get('clientName')?.errors?.['pattern']">Only alphabets are allowed</span>
+                <span *ngIf="singleProductForm.get('clientName')?.errors?.['pattern']">Only letters, numbers, spaces, hyphens, underscores, &#64; and dots are allowed</span>
               </div>
             </div>
             
@@ -222,14 +221,25 @@
               <label class="form-label-modern">
                 <i class="fas fa-barcode me-2"></i>Product Barcode
               </label>
-              <input type="text" 
-                     class="form-input-modern" 
-                     formControlName="barcode" 
-                     placeholder="Enter product barcode">
+              <div class="position-relative">
+                <input type="text" 
+                       class="form-input-modern" 
+                       formControlName="barcode" 
+                       placeholder="Enter product barcode"
+                       >
+                
+                <!-- Client Suggestions Dropdown -->
+                <!-- <div class="suggestions-dropdown" *ngIf="showClientSuggestions && clientSuggestions.length > 0">
+                  <div class="suggestion-item" *ngFor="let client of clientSuggestions" 
+                       (click)="selectClientSuggestion(client)">
+                    {{ client.name }}
+                  </div>
+                </div> -->
+              </div>
               <div class="form-error" *ngIf="singleProductForm.get('barcode')?.invalid && singleProductForm.get('barcode')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 <span *ngIf="singleProductForm.get('barcode')?.errors?.['required']">Barcode is required</span>
-                <span *ngIf="singleProductForm.get('barcode')?.errors?.['pattern']">Only alphanumeric characters are allowed</span>
+                <span *ngIf="singleProductForm.get('barcode')?.errors?.['pattern']">Letters, numbers, spaces, hyphens, underscores, &#64; and brackets are allowed</span>
               </div>
             </div>
             
@@ -244,30 +254,31 @@
               <div class="form-error" *ngIf="singleProductForm.get('name')?.invalid && singleProductForm.get('name')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 <span *ngIf="singleProductForm.get('name')?.errors?.['required']">Product name is required</span>
-                <span *ngIf="singleProductForm.get('name')?.errors?.['pattern']">Only alphanumeric characters are allowed</span>
+                <span *ngIf="singleProductForm.get('name')?.errors?.['pattern']">Letters, numbers, spaces, hyphens, underscores, &#64; and brackets are allowed</span>
               </div>
             </div>
             
             <div class="form-group-modern">
               <label class="form-label-modern">
-                <i class="fas fa-dollar-sign me-2"></i>MRP (Maximum Retail Price)
+                <i class="fas fa-rupee-sign me-2"></i>MRP
               </label>
               <input type="number" 
                      class="form-input-modern" 
                      formControlName="mrp" 
-                     placeholder="Enter MRP" 
                      min="0" 
-                     step="0.01">
+                     step="0.01" 
+                     placeholder="Enter MRP"
+                     (keypress)="onNumberKeyPress($event)">
               <div class="form-error" *ngIf="singleProductForm.get('mrp')?.invalid && singleProductForm.get('mrp')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 <span *ngIf="singleProductForm.get('mrp')?.errors?.['required']">MRP is required</span>
-                <span *ngIf="singleProductForm.get('mrp')?.errors?.['min']">MRP must be greater than 0</span>
+                <span *ngIf="singleProductForm.get('mrp')?.errors?.['min']">MRP must be at least 0</span>
               </div>
             </div>
-            
+
             <div class="form-group-modern">
               <label class="form-label-modern">
-                <i class="fas fa-image me-2"></i>Product Image URL
+                <i class="fas fa-image me-2"></i>Product Image URL (Optional)
               </label>
               <input type="url" 
                      class="form-input-modern" 
@@ -275,8 +286,7 @@
                      placeholder="Enter image URL (https://)">
               <div class="form-error" *ngIf="singleProductForm.get('imageUrl')?.invalid && singleProductForm.get('imageUrl')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
-                <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['required']">Image URL is required</span>
-                <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['pattern']">Please enter a valid URL starting with http:// or https://</span>
+                <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['pattern']">Please enter a valid image URL ending with jpg, jpeg, png, webp, or gif</span>
               </div>
             </div>
           </form>

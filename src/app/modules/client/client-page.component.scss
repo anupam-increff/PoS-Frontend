@@ -7,4 +7,30 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+/* Client table specific column widths */
+.table-custom {
+  th:nth-child(1), td:nth-child(1) { /* Client ID */
+    width: 15%;
+    min-width: 80px;
   }
+  
+  th:nth-child(2), td:nth-child(2) { /* Client Name */
+    width: 65%;
+    min-width: 200px;
+  }
+  
+  th:nth-child(3), td:nth-child(3) { /* Action */
+    width: 20%;
+    min-width: 120px;
+    text-align: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Fix search button positioning - move 3rem left from table edge */
+.d-flex.justify-content-end {
+  margin-right: 3rem;
+}

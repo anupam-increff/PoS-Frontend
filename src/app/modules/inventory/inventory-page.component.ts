@@ -42,6 +42,11 @@ export class InventoryPageComponent implements OnInit {
   totalItems = 0;
   pageSize = 10;
   Math = Math;
+  
+  // Barcode autocomplete for add form
+  addBarcodeSuggestions: any[] = [];
+  showAddBarcodeSuggestions: boolean = false;
+  addBarcodeSearchTimeout: any;
 
   constructor(private fb: FormBuilder, private api: ApiService, private toastr: ToastrService, public authService: AuthService) {
     this.uploadForm = this.fb.group({
@@ -442,6 +447,76 @@ export class InventoryPageComponent implements OnInit {
     }
   }
 
+  // Barcode autocomplete methods for add form
+  onAddBarcodeInput() {
+    const barcode = this.addForm.get('barcode')?.value;
+    
+    if (!barcode || barcode.length < 2) {
+      this.addBarcodeSuggestions = [];
+      this.showAddBarcodeSuggestions = false;
+      return;
+    }
+
+    // Debounce the search
+    if (this.addBarcodeSearchTimeout) {
+      clearTimeout(this.addBarcodeSearchTimeout);
+    }
+    this.addBarcodeSearchTimeout = setTimeout(() => {
+      this.getAddBarcodeSuggestions(barcode);
+    }, 300);
+  }
+
+  onAddBarcodeFocus() {
+    const barcode = this.addForm.get('barcode')?.value;
+    if (barcode && barcode.length >= 2) {
+      this.getAddBarcodeSuggestions(barcode);
+    }
+  }
+
+  onAddBarcodeBlur() {
+    setTimeout(() => {
+      this.showAddBarcodeSuggestions = false;
+    }, 200);
+  }
+
+  // Prevent scientific notation in integer inputs
+  onIntegerKeyPress(event: KeyboardEvent) {
+    const char = String.fromCharCode(event.which);
+    // Allow only digits and control keys (backspace, delete, tab)
+    if (!/[0-9]/.test(char) && event.which !== 8 && event.which !== 9 && event.which !== 46) {
+      event.preventDefault();
+    }
+    // Prevent 'e', 'E', '+', '-', '.' which can create scientific notation or decimals
+    if (['e', 'E', '+', '-', '.'].includes(char)) {
+      event.preventDefault();
+    }
+  }
+
+  getAddBarcodeSuggestions(barcode: string) {
+    this.api.get<any>('/product/search', { 
+      params: { 
+        barcode: barcode,
+        page: '0', 
+        pageSize: '5' 
+      } 
+    }).subscribe({
+      next: (response) => {
+        this.addBarcodeSuggestions = response.content || [];
+        this.showAddBarcodeSuggestions = this.addBarcodeSuggestions.length > 0;
+      },
+      error: () => {
+        this.addBarcodeSuggestions = [];
+        this.showAddBarcodeSuggestions = false;
+      }
+    });
+  }
+
+  selectAddBarcodeSuggestion(product: any) {
+    this.addForm.get('barcode')?.setValue(product.barcode);
+    this.addBarcodeSuggestions = [];
+    this.showAddBarcodeSuggestions = false;
+  }
+
   onPageChange(page: number): void {
     if (this.searchBarcode) {
       this.searchByBarcode(page);
@@ -460,5 +535,60 @@ export class InventoryPageComponent implements OnInit {
       }
     }
     return pages;
+  }
+
+  saveInventoryItem() {
+    if (this.editForm.invalid) {
+      this.toastr.error('Please fill in all required fields correctly.');
+      return;
+    }
+
+    this.loading = true;
+    const payload = {
+      barcode: this.editForm.value.barcode,
+      quantity: this.editForm.value.quantity
+    };
+
+    this.api.post(`${environment.apiBaseUrl}/inventory`, payload).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.toastr.success('Inventory updated successfully');
+        this.closeEditModal();
+        this.loadInventory();
+      },
+      error: (error) => {
+        this.loading = false;
+        this.toastr.error(error.error?.message || 'Failed to update inventory');
+        this.closeEditModal(); // Close modal on error
+      }
+    });
+  }
+
+  addSingleInventory() {
+    if (this.addForm.invalid) {
+      this.toastr.error('Please fill in all required fields correctly.');
+      return;
+    }
+
+    this.loading = true;
+    const payload = {
+      barcode: this.addForm.value.barcode,
+      quantity: this.addForm.value.quantity
+    };
+
+    this.api.post(`${environment.apiBaseUrl}/inventory`, payload).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.toastr.success('Inventory item added successfully');
+        this.closeAddInventoryModal(); // Close modal on success
+        this.loadInventory();
+        this.addForm.reset();
+      },
+      error: (error) => {
+        this.loading = false;
+        this.toastr.error(error.error?.message || 'Failed to add inventory item');
+        this.closeAddInventoryModal(); // Close modal on error
+      }
+    });
   }
 }

@@ -31,7 +31,8 @@
     backdrop-filter: blur(20px);
     border: none;
     border-bottom: 0.8px solid rgba(0, 0, 0, 0.08);
-    padding: 0.5rem 0;
+    padding: 0.5rem 2rem;
+    margin-bottom: 2rem;
     box-shadow: 0 2px 25px rgba(0, 0, 0, 0.08);
     z-index: 1000;
     position: sticky;
@@ -48,10 +49,10 @@
     transition: all 0.3s ease;
   }
   
-  .navbar-brand:hover {
-    color: var(--accent-color);
-    transform: translateY(-1px);
-  }
+  // .navbar-brand:hover {
+  //   color: var(--accent-color);
+  //   transform: translateY(-1px);
+  // }
   
   .nav-link {
     color: var(--text-light);
@@ -81,9 +82,9 @@
   }
   
   .nav-link:hover {
-    color: var(--accent-color);
     background: rgba(74, 144, 226, 0.08);
     transform: translateY(-1px);
+    color: var(--accent-color) !important; /* Added to change text color on hover */
   }
   
   .nav-link:hover::after {
@@ -149,11 +150,36 @@
     font-weight: 600;
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    padding: 0.5rem 1rem !important;
+    margin: 0.25rem 0;
     
     &:hover {
       background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-color) !important;
+      color: var(--text-dark) !important;
     }
+  }
+
+  /* Fix navbar user and logout button alignment */
+  .navbar-nav.ms-auto {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .navbar-nav.ms-auto .nav-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-nav.ms-auto .btn {
+    height: auto;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
   }
   
   /* Mobile responsive */

@@ -1,5 +1,5 @@
-<!-- Hero Section -->
-<div class="hero-section">
+<!-- Remove Hero Section -->
+<!-- <div class="hero-section">
   <div class="container">
     <h1 class="hero-title">
       <i class="fas fa-boxes text-primary me-3"></i>
@@ -10,7 +10,7 @@
       Upload bulk data, add individual items, and monitor your stock levels in real-time.
     </p>
   </div>
-</div>
+</div> -->
 
 <div class="page-header">
   <h5 class="mb-0">Inventory Management</h5>
@@ -56,10 +56,7 @@
 </div>
 
 <div class="table-wrapper" tabindex="0" *ngIf="inventory.length > 0 && !loading">
-  <div class="table-title">
-    <i class="fas fa-boxes"></i>
-    Inventory Snapshot
-  </div>
+
   <table class="table-custom" [class.focus-mode]="editIndex !== null">
     <thead>
       <tr>
@@ -75,7 +72,7 @@
         <td>{{ item.name }}</td>
         <td [ngClass]="'editable-cell' + (editIndex === i ? ' editing' : '')">
           <ng-container *ngIf="editIndex === i; else viewQty">
-            <input type="number" [(ngModel)]="editItem.quantity" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus />
+            <input type="number" [(ngModel)]="editItem.quantity" class="form-control form-control-sm d-inline-block" style="width: 70%; display: inline-block;" autofocus (keypress)="onIntegerKeyPress($event)" />
           </ng-container>
           <ng-template #viewQty>{{ item.quantity }}</ng-template>
         </td>
@@ -84,7 +81,7 @@
             Edit
           </button>
           <button *ngIf="editIndex === i" class="save-row-btn" (click)="saveEdit()" title="Save">
-            <span style="font-size:1.2em;">&#10003; Save</span>
+            <span style="font-size:1.2em;">&#10003;</span>
           </button>
           <button *ngIf="editIndex === i" class="close-row-btn" (click)="cancelEdit()" title="Cancel">
             <i class="fas fa-times"></i>
@@ -156,10 +153,23 @@
               <label class="form-label-modern">
                 <i class="fas fa-barcode me-2"></i>Product Barcode
               </label>
-              <input type="text" 
-                     class="form-input-modern" 
-                     formControlName="barcode" 
-                     placeholder="Enter product barcode">
+              <div class="position-relative">
+                <input type="text" 
+                       class="form-input-modern" 
+                       formControlName="barcode" 
+                       placeholder="Enter product barcode"
+                       (input)="onAddBarcodeInput()"
+                       (focus)="onAddBarcodeFocus()"
+                       (blur)="onAddBarcodeBlur()">
+                
+                <!-- Barcode Suggestions Dropdown -->
+                <div class="suggestions-dropdown" *ngIf="showAddBarcodeSuggestions && addBarcodeSuggestions.length > 0">
+                  <div class="suggestion-item" *ngFor="let product of addBarcodeSuggestions" 
+                       (click)="selectAddBarcodeSuggestion(product)">
+                    {{ product.barcode }} - {{ product.name }}
+                  </div>
+                </div>
+              </div>
               <div class="form-error" *ngIf="addForm.get('barcode')?.invalid && addForm.get('barcode')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 Barcode is required
@@ -174,7 +184,8 @@
                      class="form-input-modern" 
                      formControlName="quantity" 
                      min="1" 
-                     placeholder="Enter quantity">
+                     placeholder="Enter quantity"
+                     (keypress)="onIntegerKeyPress($event)">
               <div class="form-error" *ngIf="addForm.get('quantity')?.invalid && addForm.get('quantity')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 Quantity must be at least 1

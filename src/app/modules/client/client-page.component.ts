@@ -54,7 +54,7 @@ export class ClientPageComponent implements OnInit {
     private toastr: ToastrService
   ) {
     this.clientForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(50), Validators.pattern(/^[a-zA-Z\s]+$/)]]
+      name: ['', [Validators.required, Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9\s\-_@.]+$/)]]
     });
   }
 

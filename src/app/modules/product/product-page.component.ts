@@ -46,6 +46,11 @@ export class ProductPageComponent implements OnInit {
   showAddProductModal = false;
   activeTab = 'single';
   private addProductModal: any;
+  
+  // Client name autocomplete
+  clientSuggestions: any[] = [];
+  showClientSuggestions: boolean = false;
+  clientSearchTimeout: any;
 
   constructor(
     private api: ApiService,
@@ -58,11 +63,11 @@ export class ProductPageComponent implements OnInit {
       file: [null, Validators.required]
     });
     this.singleProductForm = this.fb.group({
-      clientName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z\s]+$/)]],
-      barcode: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)]],
-      name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s]+$/)]],
+      clientName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s\-_@.]+$/)]],
+      barcode: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s\-_@()]+$/)]],
+      name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s\-_@()]+$/)]],
       mrp: ['', [Validators.required, Validators.min(0)]],
-      imageUrl: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]]
+      imageUrl: ['', [Validators.pattern(/^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i)]] // Optional with proper image extension validation
     });
   }
 
@@ -497,5 +502,76 @@ export class ProductPageComponent implements OnInit {
     link.click();
     window.URL.revokeObjectURL(url);
     this.toastr.success('TSV header file downloaded!');
+  }
+
+  // Client name autocomplete methods
+  onClientNameInput() {
+    const clientName = this.singleProductForm.get('clientName')?.value;
+    
+    if (!clientName || clientName.length < 2) {
+      this.clientSuggestions = [];
+      this.showClientSuggestions = false;
+      return;
+    }
+
+    // Debounce the search
+    if (this.clientSearchTimeout) {
+      clearTimeout(this.clientSearchTimeout);
+    }
+    this.clientSearchTimeout = setTimeout(() => {
+      this.getClientSuggestions(clientName);
+    }, 300);
+  }
+
+  onClientNameFocus() {
+    const clientName = this.singleProductForm.get('clientName')?.value;
+    if (clientName && clientName.length >= 2) {
+      this.getClientSuggestions(clientName);
+    }
+  }
+
+  onClientNameBlur() {
+    // Delay hiding to allow click on suggestions
+    setTimeout(() => {
+      this.showClientSuggestions = false;
+    }, 200);
+  }
+
+  // Prevent scientific notation in number inputs
+  onNumberKeyPress(event: KeyboardEvent) {
+    const char = String.fromCharCode(event.which);
+    // Allow only digits, decimal point, and backspace/delete
+    if (!/[0-9.]/.test(char) && event.which !== 8 && event.which !== 9 && event.which !== 46) {
+      event.preventDefault();
+    }
+    // Prevent 'e', 'E', '+', '-' which can create scientific notation
+    if (['e', 'E', '+', '-'].includes(char)) {
+      event.preventDefault();
+    }
+  }
+
+  getClientSuggestions(clientName: string) {
+    this.api.get<any>('/client/search', { 
+      params: { 
+        query: clientName,
+        page: '0', 
+        pageSize: '5' 
+      } 
+    }).subscribe({
+      next: (response) => {
+        this.clientSuggestions = response.content || [];
+        this.showClientSuggestions = this.clientSuggestions.length > 0;
+      },
+      error: () => {
+        this.clientSuggestions = [];
+        this.showClientSuggestions = false;
+      }
+    });
+  }
+
+  selectClientSuggestion(client: any) {
+    this.singleProductForm.get('clientName')?.setValue(client.name);
+    this.clientSuggestions = [];
+    this.showClientSuggestions = false;
   }
 }

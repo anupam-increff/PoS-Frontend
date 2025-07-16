@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { ClientPageComponent } from './modules/client/client-page.component';
 import { ProductPageComponent } from './modules/product/product-page.component';
 import { OrderPageComponent } from './modules/order/order-page.component';
-import { InvoicePageComponent } from './modules/invoice/invoice-page.component';
 import { AuthPageComponent } from './modules/auth/auth-page.component';
 import { TestPageComponent } from './modules/test/test-page.component';
 import { DashboardPageComponent } from './modules/dashboard/dashboard-page.component';
@@ -17,7 +16,6 @@ export const routes: Routes = [
   { path: 'client', component: ClientPageComponent, canActivate: [AuthGuard] },
   { path: 'product', component: ProductPageComponent, canActivate: [AuthGuard] },
   { path: 'order', component: OrderPageComponent, canActivate: [AuthGuard] },
-  { path: 'invoice', component: InvoicePageComponent, canActivate: [AuthGuard] },
   { path: 'inventory', component: InventoryPageComponent, canActivate: [AuthGuard] },
   { path: 'test', component: TestPageComponent, canActivate: [AuthGuard] },
   { path: 'reports', component: ReportsPageComponent, canActivate: [AuthGuard] },
