@@ -14,7 +14,7 @@
 
 <div class="page-header">
   <h5 class="mb-0">Inventory Management</h5>
-  <button class="btn btn-primary" (click)="openAddInventoryModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
+  <button class="btn btn-success" (click)="openAddInventoryModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
     <i class="fas fa-plus me-1"></i>
     Add Inventory
   </button>
@@ -23,7 +23,7 @@
 <div class="d-flex justify-content-end align-items-center mb-4">
   <div class="d-flex align-items-center gap-2">
     <div class="search-container position-relative">
-      <input type="text" class="form-control" placeholder="Search by Barcode" [(ngModel)]="searchBarcode"
+      <input type="text" class="form-control" placeholder="Search by Barcode or Name" [(ngModel)]="searchBarcode"
         name="searchBarcode" (input)="onSearchChange()" (focus)="onSearchFocus()" (blur)="onSearchBlur()" style="min-width: 280px;">
       <i class="fas fa-search search-icon"></i>
       
@@ -116,14 +116,12 @@
   <div class="modern-modal-content" (click)="$event.stopPropagation()">
     <!-- Modern Header -->
     <div class="modal-header-modern">
-      <div class="modal-icon">
+      <!-- <div class="modal-icon">
         <i class="fas fa-boxes"></i>
-      </div>
+      </div> -->
       <h3 class="modal-title-modern">Add Inventory</h3>
       <p class="modal-subtitle-modern">Add single items or upload bulk inventory data</p>
-      <button type="button" class="modal-close-btn" (click)="closeAddInventoryModal()">
-        <i class="fas fa-times"></i>
-      </button>
+      
     </div>
 
     <!-- Modern Body -->
@@ -199,7 +197,7 @@
           <form [formGroup]="uploadForm" class="inventory-form">
             <div class="upload-section">
               <div class="upload-header">
-                <i class="fas fa-file-upload upload-icon"></i>
+                <!-- <i class="fas fa-file-upload upload-icon"></i> -->
                 <h4>Upload TSV File</h4>
                 <p>Upload your inventory data in TSV format</p>
               </div>

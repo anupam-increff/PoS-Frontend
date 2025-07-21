@@ -118,7 +118,7 @@ export class InventoryPageComponent implements OnInit {
     if (this.uploadForm.invalid) return;
     const formData = new FormData();
     formData.append('file', this.uploadForm.value.file);
-    this.api.post('/inventory/upload', formData).subscribe({
+    this.api.post('/inventory/upload-tsv', formData).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.toastr.success(res?.message || 'Inventory uploaded.');
@@ -559,7 +559,7 @@ export class InventoryPageComponent implements OnInit {
       error: (error) => {
         this.loading = false;
         this.toastr.error(error.error?.message || 'Failed to update inventory');
-        this.closeEditModal(); // Close modal on error
+        // Keep modal open for single item errors so user can fix and retry
       }
     });
   }
@@ -587,7 +587,7 @@ export class InventoryPageComponent implements OnInit {
       error: (error) => {
         this.loading = false;
         this.toastr.error(error.error?.message || 'Failed to add inventory item');
-        this.closeAddInventoryModal(); // Close modal on error
+        // Keep modal open for single item errors so user can fix and retry
       }
     });
   }

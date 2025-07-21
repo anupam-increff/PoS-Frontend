@@ -1,6 +1,6 @@
 <div class="page-header">
   <h5 class="mb-0">Product Management</h5>
-  <button class="btn btn-primary" (click)="openAddProductModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
+  <button class="btn btn-success" (click)="openAddProductModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
     <i class="fas fa-plus me-1"></i>
     Add Product
   </button>
@@ -8,27 +8,57 @@
 
 <div class="d-flex justify-content-end align-items-center mb-4">
   <div class="d-flex align-items-center gap-2">
-    <div class="search-container position-relative">
-      <input type="text" class="form-control" placeholder="Search by Barcode or Name" [(ngModel)]="searchBarcode"
-        name="searchBarcode" (input)="onSearchChange()" (focus)="onSearchFocus()" (blur)="onSearchBlur()" style="min-width: 280px;">
-      <i class="fas fa-search search-icon"></i>
-      
-      <!-- Suggestions Dropdown -->
-      <div class="suggestions-dropdown" *ngIf="showSuggestions && searchSuggestions.length > 0">
-        <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions" 
-             (click)="selectSuggestion(suggestion)">
-          {{ suggestion.barcode }} - {{ suggestion.name }}
+    <!-- Client Filter Section -->
+    <div class="d-flex align-items-center gap-1">
+      <div class="search-container position-relative">
+        <input type="text" class="form-control" placeholder="Filter by Client Name" [(ngModel)]="searchClientName"
+          name="searchClientName" (input)="onClientSearchChange()" (focus)="onClientSearchFocus()" (blur)="onClientSearchBlur()" style="min-width: 200px;">
+        <i class="fas fa-user search-icon"></i>
+        
+        <!-- Client Suggestions Dropdown -->
+        <div class="suggestions-dropdown" *ngIf="showClientSuggestions && clientSuggestions.length > 0">
+          <div class="suggestion-item" *ngFor="let suggestion of clientSuggestions" 
+               (click)="selectClientSuggestion(suggestion)">
+            {{ suggestion.name }}
+          </div>
         </div>
       </div>
+      
+      <button class="btn btn-outline-primary btn-sm" (click)="searchByClientFilter()">
+        <i class="fas fa-user me-1"></i>
+        Client
+      </button>
     </div>
     
-    <button class="btn btn-outline-primary btn-sm" (click)="searchByBarcode()">
-      <i class="fas fa-search me-1"></i>
-      Search
-    </button>
-    <button class="btn btn-outline-secondary btn-sm" (click)="clearBarcodeSearch()">
+    <!-- Separator -->
+    <div class="mx-1 text-muted">|</div>
+    
+    <!-- Product Search Section -->
+    <div class="d-flex align-items-center gap-1">
+      <div class="search-container position-relative">
+        <input type="text" class="form-control" placeholder="Search by Barcode or Name" [(ngModel)]="searchBarcode"
+          name="searchBarcode" (input)="onSearchChange()" (focus)="onSearchFocus()" (blur)="onSearchBlur()" style="min-width: 280px;">
+        <i class="fas fa-search search-icon"></i>
+        
+        <!-- Suggestions Dropdown -->
+        <div class="suggestions-dropdown" *ngIf="showSuggestions && searchSuggestions.length > 0">
+          <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions" 
+               (click)="selectSuggestion(suggestion)">
+            {{ suggestion.barcode }} - {{ suggestion.name }}
+          </div>
+        </div>
+      </div>
+      
+      <button class="btn btn-outline-primary btn-sm" (click)="searchByBarcode()">
+        <i class="fas fa-search me-1"></i>
+        Product
+      </button>
+    </div>
+    
+    <!-- Clear All Button -->
+    <button class="btn btn-outline-secondary btn-sm" (click)="clearAllFilters()">
       <i class="fas fa-times me-1"></i>
-      Clear
+      Clear All
     </button>
   </div>
 </div>
@@ -156,9 +186,9 @@
   <div class="modern-modal-content" (click)="$event.stopPropagation()">
     <!-- Modern Header -->
     <div class="modal-header-modern">
-      <div class="modal-icon">
+      <!-- <div class="modal-icon">
         <i class="fas fa-box"></i>
-      </div>
+      </div> -->
       <h3 class="modal-title-modern">Add Product</h3>
       <p class="modal-subtitle-modern">Add single products or upload bulk product data</p>
       <button type="button" class="modal-close-btn" (click)="closeAddProductModal()">
@@ -197,7 +227,7 @@
                 <input type="text" 
                        class="form-input-modern" 
                        formControlName="clientName" 
-                       placeholder="Enter client name"
+                       placeholder="Enter client Name"
                        (input)="onClientNameInput()"
                        (focus)="onClientNameFocus()"
                        (blur)="onClientNameBlur()">
@@ -225,7 +255,7 @@
                 <input type="text" 
                        class="form-input-modern" 
                        formControlName="barcode" 
-                       placeholder="Enter product barcode"
+                       placeholder="Enter product Barcode"
                        >
                 
                 <!-- Client Suggestions Dropdown -->
@@ -250,7 +280,7 @@
               <input type="text" 
                      class="form-input-modern" 
                      formControlName="name" 
-                     placeholder="Enter product name">
+                     placeholder="Enter Product Name">
               <div class="form-error" *ngIf="singleProductForm.get('name')?.invalid && singleProductForm.get('name')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 <span *ngIf="singleProductForm.get('name')?.errors?.['required']">Product name is required</span>
@@ -283,7 +313,7 @@
               <input type="url" 
                      class="form-input-modern" 
                      formControlName="imageUrl" 
-                     placeholder="Enter image URL (https://)">
+                     placeholder="Enter Image URL (https://)">
               <div class="form-error" *ngIf="singleProductForm.get('imageUrl')?.invalid && singleProductForm.get('imageUrl')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
                 <span *ngIf="singleProductForm.get('imageUrl')?.errors?.['pattern']">Please enter a valid image URL ending with jpg, jpeg, png, webp, or gif</span>
@@ -297,7 +327,7 @@
           <form [formGroup]="productForm" class="product-form">
             <div class="upload-section">
               <div class="upload-header">
-                <i class="fas fa-file-upload upload-icon"></i>
+                <!-- <i class="fas fa-file-upload upload-icon"></i> -->
                 <h4>Upload Product Data</h4>
                 <p>Upload your product data in TSV format</p>
               </div>

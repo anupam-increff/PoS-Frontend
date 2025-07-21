@@ -286,8 +286,10 @@ export class ApiService {
   }
 
   async getDateRangeReport(startDate: string, endDate: string): Promise<any[]> {
+    const start = new Date(startDate + 'T00:00:00').toISOString();
+    const end = new Date(endDate + 'T23:59:59').toISOString();
     const result = await this.get<any[]>('/reports/day-sales', {
-      params: { start: startDate, end: endDate }
+      params: { start, end }
     }).toPromise();
     return result || [];
   }

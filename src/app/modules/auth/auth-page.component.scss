@@ -73,25 +73,84 @@
 
 .btn-auth {
   width: 100%;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+  border: none;
+  border-radius: 12px;
   color: white;
   font-weight: 600;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  border: none;
   font-size: 1rem;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.3);
   }
-
+  
   &:disabled {
-    opacity: 0.6;
+    background: #6c757d;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+  }
+}
+
+/* Auth Toggle Styles */
+.auth-toggle {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  
+  p {
+    margin-bottom: 0;
+    color: #6c757d;
+    font-size: 0.95rem;
+  }
+  
+  .btn-link {
+    background: none;
+    border: none;
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0;
+    margin-left: 0.5rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Enhanced form validation styling */
+.form-control.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #dc3545;
+}
+
+/* Alert styling */
+.alert {
+  padding: 1rem;
+  margin-top: 1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  
+  &.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
   }
 }
 
@@ -105,12 +164,18 @@
   margin-top: 1rem;
 }
 
+/* Responsive adjustments */
 @media (max-width: 576px) {
   .auth-card {
+    margin: 1rem;
     padding: 2rem 1.5rem;
   }
-
+  
   .auth-title {
     font-size: 1.75rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.95rem;
   }
 }

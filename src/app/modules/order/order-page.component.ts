@@ -23,10 +23,9 @@ interface OrderItem {
 
 interface Order {
   id: number;
-  time: string;
   placedAt: Date;
-  invoicePath?: string;
-  total?: number;
+  invoiceGenerated: boolean;
+  total: number;
   items?: OrderItem[];
 }
 
@@ -68,6 +67,8 @@ export class OrderPageComponent implements OnInit {
   showBarcodeSuggestions: boolean = false;
   currentBarcodeIndex: number = -1;
   suggestionPosition = { top: 0, left: 0 };
+
+  searchOrderId: number | null = null;
 
 
   constructor(
@@ -298,10 +299,38 @@ export class OrderPageComponent implements OnInit {
   }
 
   getValidItemsCount(): number {
-    return this.items.controls.filter(item => {
-      const barcode = item.get('barcode')!.value;
-      return barcode && barcode.trim().length > 0;
-    }).length;
+    return this.items.value.filter((item: any) => 
+      item.barcode && item.barcode.trim() && 
+      item.quantity > 0 && 
+      item.sellingPrice > 0
+    ).length;
+  }
+
+  getDuplicateBarcodes(): string[] {
+    const barcodes: string[] = [];
+    const duplicates: string[] = [];
+    
+    this.items.value.forEach((item: any) => {
+      if (item.barcode && item.barcode.trim()) {
+        const barcode = item.barcode.trim();
+        if (barcodes.includes(barcode) && !duplicates.includes(barcode)) {
+          duplicates.push(barcode);
+        } else {
+          barcodes.push(barcode);
+        }
+      }
+    });
+    
+    return duplicates;
+  }
+
+  validateNoDuplicateBarcodes(): boolean {
+    const duplicates = this.getDuplicateBarcodes();
+    if (duplicates.length > 0) {
+      this.toastr.warning(`Duplicate barcodes found: ${duplicates.join(', ')}. Please use different products or combine quantities.`, 'Duplicate Barcodes');
+      return false;
+    }
+    return true;
   }
 
   clearAllItems() {
@@ -372,6 +401,11 @@ export class OrderPageComponent implements OnInit {
   submitOrder() {
     if (this.orderForm.invalid) {
       this.toastr.error('Fix the form before placing order');
+      return;
+    }
+
+    // Check for duplicate barcodes
+    if (!this.validateNoDuplicateBarcodes()) {
       return;
     }
 
@@ -454,75 +488,72 @@ export class OrderPageComponent implements OnInit {
     this.addItem();
   }
 
+  onOrderIdSearch() {
+    // Debounce the search to avoid too many API calls
+    setTimeout(() => {
+      this.applyFilters();
+    }, 300);
+  }
+
   loadOrders(page = 0) {
     this.loadingOrders = true;
     this.currentPage = page;
     
-    // Use the new OrderSearchForm structure
-    const searchForm = {
-      startDate: this.startDate || '',
-      endDate: this.endDate || '',
-      invoiceGenerated: this.invoiceStatus === 'all' ? null : this.invoiceStatus === 'true',
-      page: page,
-      size: this.pageSize
+    // Validate date range - max 31 days
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 31) {
+        this.toastr.error('Date range cannot be greater than 31 days', 'Invalid Date Range');
+        this.loadingOrders = false;
+        return;
+      }
+    }
+    
+    // Build query parameters for GET request
+    const params: any = {
+      page: page.toString(),
+      size: this.pageSize.toString()
     };
     
-    // Add search query if provided
-    if (this.searchQuery) {
-      // Check if search query is a number (Order ID)
-      const isOrderId = /^\d+$/.test(this.searchQuery.trim());
-      
-      if (isOrderId) {
-        // Search by Order ID - use POST with orderId in body
-        const searchFormWithId = {
-          ...searchForm,
-          orderId: parseInt(this.searchQuery.trim())
-        };
-        
-        this.api.post<any>('/order/search', searchFormWithId).subscribe({
-          next: (res) => {
-            this.orders = res.content.map((o: any) => ({
-              ...o,
-              placedAt: new Date(Number(o.time) * 1000),
-              items: []
-            }));
-            this.totalItems = res.totalItems;
-            this.totalPages = res.totalPages;
-            this.currentPage = res.currentPage;
-            this.pageSize = res.pageSize;
-            this.loadingOrders = false;
-          },
-          error: () => {
-            this.toastr.error('Failed to fetch orders');
-            this.loadingOrders = false;
-          }
-        });
-      } else {
-        // Invalid search query
-        this.toastr.error('Please enter a valid Order ID (numbers only)');
+    // Only add dates if they exist
+    if (this.startDate) {
+      params.startDate = new Date(this.startDate + 'T00:00:00').toISOString();
+    }
+    if (this.endDate) {
+      params.endDate = new Date(this.endDate + 'T23:59:59').toISOString();
+    }
+    
+    // Add optional parameters
+    if (this.searchOrderId) {
+      params.query = this.searchOrderId.toString();
+    }
+    if (this.invoiceStatus !== 'all') {
+      params.invoiceGenerated = this.invoiceStatus === 'true';
+    }
+    
+    // Use GET request with query parameters
+    this.api.get<any>('/order/search', { params }).subscribe({
+      next: (res) => {
+        this.orders = res.content.map((o: any) => ({
+          ...o,
+          placedAt: new Date(Number(o.placedAt) * 1000),
+          items: []
+        }));
+        this.totalItems = res.totalItems;
+        this.totalPages = res.totalPages;
+        this.currentPage = res.currentPage;
+        this.pageSize = res.pageSize;
+        this.loadingOrders = false;
+      },
+      error: () => {
+        this.toastr.error('Failed to fetch orders');
         this.loadingOrders = false;
       }
-    } else {
-      // Use the new OrderSearchForm structure
-      this.api.post<any>('/order/search', searchForm).subscribe({
-        next: (res) => {
-          this.orders = res.content.map((o: any) => ({
-            ...o,
-            placedAt: new Date(Number(o.time) * 1000),
-            items: []
-          }));
-          this.totalItems = res.totalItems;
-          this.totalPages = res.totalPages;
-          this.currentPage = res.currentPage;
-          this.pageSize = res.pageSize;
-          this.loadingOrders = false;
-        },
-        error: () => {
-          this.toastr.error('Failed to fetch orders');
-          this.loadingOrders = false;
-        }
-      });
-    }
+    });
   }
 
   applyFilters() {
@@ -532,11 +563,19 @@ export class OrderPageComponent implements OnInit {
 
   clearFilters() {
     this.searchQuery = '';
+    this.searchOrderId = null;
     this.startDate = '';
     this.endDate = '';
     this.invoiceStatus = 'all';
     this.currentPage = 0;
-    this.applyFilters();
+    
+    // Set default dates: start as beginning of current month, end as today
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    this.startDate = firstDayOfMonth.toISOString().split('T')[0];
+    this.endDate = today.toISOString().split('T')[0];
+    
+    this.loadOrders();
   }
 
   onSearchChange() {
@@ -571,35 +610,54 @@ export class OrderPageComponent implements OnInit {
     this.resetForm();
   }
 
-  handleInvoice(order: Order) {
-    if (order.invoicePath) {
-      // Download existing invoice - use direct API call
-      this.api.get(`/invoice/${order.id}`, { responseType: 'blob' }).subscribe({
-        next: (blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `invoice-${order.id}.pdf`;
-          link.click();
-          window.URL.revokeObjectURL(url);
-          this.toastr.success('Invoice downloaded');
-        },
-        error: () => {
-          this.toastr.error('Failed to download invoice');
-        }
-      });
+  onItemChange() {
+    // Save to localStorage when any item changes
+    this.saveCartToStorage();
+  }
+
+  handleInvoice(order: any) {
+    if (order.invoiceGenerated) {
+      // Download existing invoice
+      this.downloadInvoice(order.id);
     } else {
       // Generate new invoice
-      this.api.get(`/invoice/generate/${order.id}`).subscribe({
-        next: () => {
-          this.toastr.success('Invoice generated successfully');
-          this.loadOrders(this.currentPage);
-        },
-        error: () => {
-          this.toastr.error('Failed to generate invoice');
-        }
-      });
+      this.generateInvoice(order.id);
     }
+  }
+
+  generateInvoice(orderId: number) {
+    this.api.get(`/invoice/generate/${orderId}`).subscribe({
+      next: () => {
+        this.toastr.success('Invoice generated successfully');
+        // Refresh the orders list to show updated invoice status
+        this.loadOrders(this.currentPage);
+      },
+      error: (error) => {
+        this.toastr.error(error.error?.message || 'Failed to generate invoice');
+      }
+    });
+  }
+
+  downloadInvoice(orderId: number) {
+    this.api.get(`/invoice/${orderId}`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `invoice-${orderId}.pdf`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        this.toastr.success('Invoice downloaded successfully');
+      },
+      error: (error) => {
+        this.toastr.error(error.error?.message || 'Failed to download invoice');
+      }
+    });
   }
 
   fmtDate(date: Date): string {
@@ -648,10 +706,11 @@ export class OrderPageComponent implements OnInit {
         return dateInput.toString();
       }
       
-      // Return formatted date and time
-      return date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB', {
+      // Return formatted date and time in local timezone
+      return date.toLocaleDateString('en-IN') + ' ' + date.toLocaleTimeString('en-IN', {
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        hour12: true
       });
     } catch (error) {
       return dateInput.toString();
@@ -675,7 +734,7 @@ export class OrderPageComponent implements OnInit {
         return dateInput.toString();
       }
       
-      return date.toLocaleDateString('en-GB');
+      return date.toLocaleDateString('en-IN');
     } catch (error) {
       return dateInput.toString();
     }
@@ -698,9 +757,10 @@ export class OrderPageComponent implements OnInit {
         return '';
       }
       
-      return date.toLocaleTimeString('en-GB', {
+      return date.toLocaleTimeString('en-IN', {
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        hour12: true
       });
     } catch (error) {
       return '';

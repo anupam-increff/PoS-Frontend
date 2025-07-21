@@ -16,10 +16,10 @@
     <div class="feature-card">
       
       <!-- Header with New Order Button -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="page-title">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4 class="page-title">
           <i class="fas fa-list-ul me-2"></i>Order History
-        </h2>
+        </h4>
         <button class="btn btn-success" (click)="openNewOrderModal()">
           <i class="fas fa-plus-circle me-2"></i>New Order
         </button>
@@ -28,6 +28,18 @@
       <!-- Order History Filters -->
       <div class="filter-section">
         <div class="row align-items-end">
+          <div class="col-md-2">
+            <label class="form-label">
+              <i class="fas fa-search me-1"></i>
+              Order ID
+            </label>
+            <input type="number" 
+                   class="form-control form-control-custom"
+                   placeholder="Search by Order ID"
+                   [(ngModel)]="searchOrderId"
+                   (input)="onOrderIdSearch()"
+                   min="1">
+          </div>
           <div class="col-md-2">
             <label class="form-label">
               <i class="fas fa-calendar me-1"></i>
@@ -106,11 +118,11 @@
                 </td>
               <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
                   <button class="btn btn-sm"
-                          [ngClass]="order.invoicePath ? 'btn-success' : 'btn-warning'"
+                          [ngClass]="order.invoiceGenerated ? 'btn-success' : 'btn-warning'"
                         (click)="handleInvoice(order)"
-                        [title]="order.invoicePath ? 'Download Invoice' : 'Generate Invoice'">
-                    <i class="fas" [ngClass]="order.invoicePath ? 'fa-download' : 'fa-file-invoice'"></i>
-                    {{ order.invoicePath ? 'Download' : 'Generate' }}
+                        [title]="order.invoiceGenerated ? 'Download Invoice' : 'Generate Invoice'">
+                    <i class="fas" [ngClass]="order.invoiceGenerated ? 'fa-download' : 'fa-file-invoice'"></i>
+                    {{ order.invoiceGenerated ? 'Download' : 'Generate' }}
                   </button>
                 </td>
               <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
@@ -160,7 +172,7 @@
 </div>
 
 <!-- New Order Modal -->
-<div class="modern-modal-overlay" *ngIf="showNewOrderModal" (click)="closeNewOrderModal()">
+<div class="modern-modal-overlay h6" *ngIf="showNewOrderModal" (click)="closeNewOrderModal()">
   <div class="modern-modal-content large-modal" (click)="$event.stopPropagation()">
     <div class="modal-header-modern">
       
@@ -219,7 +231,7 @@
                         <div class="barcode-input-container">
                           <input formControlName="barcode" 
                                 class="form-control barcode-input"
-                                placeholder="Enter barcode"
+                                placeholder="Enter Product Barcode"
                                 (input)="onBarcodeInput(i)"
                                 (blur)="updateMRPForItem(i)"
                                 (keydown)="onBarcodeKeydown($event, i)"

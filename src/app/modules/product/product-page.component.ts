@@ -99,7 +99,19 @@ export class ProductPageComponent implements OnInit {
     this.loading = true;
     this.errorMsg = '';
     this.currentPage = page;
-    this.api.get<any>('/product', { params: { page: page.toString(), pageSize: this.pageSize.toString() } }).subscribe({
+    
+    // Build params object
+    const params: any = { 
+      page: page.toString(), 
+      pageSize: this.pageSize.toString() 
+    };
+    
+    // Add clientName filter if provided
+    if (this.searchClientName && this.searchClientName.trim()) {
+      params.clientName = this.searchClientName.trim();
+    }
+    
+    this.api.get<any>('/product', { params }).subscribe({
       next: (response) => {
         this.products = response.content || [];
         this.totalItems = response.totalItems || 0;
@@ -133,7 +145,7 @@ export class ProductPageComponent implements OnInit {
           this.productForm.reset();
           this.loadProducts(); // Reload products instead of redirecting
         } else {
-          // Handle validation errors with shorter message
+          // Handle validation errors with detailed message
           let errorMessage = `Upload failed: ${res.message}`;
           if (res.errors && res.errors.length > 0) {
             errorMessage += `\n\nFirst 3 errors:\n`;
@@ -153,11 +165,14 @@ export class ProductPageComponent implements OnInit {
             positionClass: 'toast-top-center'
           });
           
-          // Keep modal open for user to try again or close manually
           // Download the error TSV file if available
           if (res.downloadUrl) {
             this.downloadErrorTSV(res.downloadUrl);
           }
+          
+          // Keep modal open for user to try again or close manually
+          // this.closeAddProductModal();
+          // this.productForm.reset();
         }
       },
       error: (err) => {
@@ -311,35 +326,47 @@ export class ProductPageComponent implements OnInit {
     });
   }
 
-  searchByBarcode() {
-    if (!this.searchBarcode.trim()) {
-      this.loadProducts();
+  searchByClientFilter() {
+    if (!this.searchClientName.trim()) {
+      this.toastr.warning('Enter a client name to search');
       return;
     }
-    this.loading = true;
-    this.api.get<any>('/product/search', {
-      params: {
-        barcode: this.searchBarcode,
-        page: this.currentPage.toString(),
-        pageSize: this.pageSize.toString()
-      }
-    }).subscribe({
-      next: (response) => {
-        this.products = response.content || [];
-        this.totalItems = response.totalItems || 0;
-        this.totalPages = response.totalPages || 0;
-        this.pageSize = response.pageSize || this.pageSize;
-        this.loading = false;
-      },
-      error: () => {
-        this.errorMsg = 'Failed to search products.';
-        this.loading = false;
-      }
-    });
+    
+    // Clear barcode search when using client filter
+    this.searchBarcode = '';
+    this.searchSuggestions = [];
+    this.showSuggestions = false;
+    
+    this.searchByClientName();
   }
 
-  clearBarcodeSearch() {
+  searchByBarcode() {
+    if (!this.searchBarcode.trim()) {
+      this.toastr.warning('Enter a barcode or name to search');
+      return;
+    }
+    
+    // Clear client search when using barcode search
+    this.searchClientName = '';
+    this.clientSuggestions = [];
+    this.showClientSuggestions = false;
+    
+    this.searchByBarcodeWithValue(this.searchBarcode);
+  }
+
+  applyFilters() {
+    this.currentPage = 0;
+    this.loadProducts();
+  }
+
+  clearAllFilters() {
+    this.searchClientName = '';
     this.searchBarcode = '';
+    this.clientSuggestions = [];
+    this.showClientSuggestions = false;
+    this.searchSuggestions = [];
+    this.showSuggestions = false;
+    this.currentPage = 0;
     this.loadProducts();
   }
 
@@ -355,18 +382,14 @@ export class ProductPageComponent implements OnInit {
 
   saveEdit() {
     if (!this.editProduct) return;
-    // Validate imageUrl is required
-    if (!this.editProduct.imageUrl || this.editProduct.imageUrl.trim() === '') {
-      this.toastr.error('Image URL is required');
-      return;
-    }
+    
     // Ensure clientName is present in the payload
     const payload = {
       clientName: this.editProduct.clientName,
       barcode: this.editProduct.barcode,
       name: this.editProduct.name,
       mrp: this.editProduct.mrp,
-      imageUrl: this.editProduct.imageUrl
+      imageUrl: this.editProduct.imageUrl?.trim() || null
     };
     this.api.put(`/product/${this.editProduct.id}`, payload).subscribe({
       next: () => {
@@ -442,7 +465,10 @@ export class ProductPageComponent implements OnInit {
 
   addSingleProduct() {
     if (this.singleProductForm.invalid) return;
-    const payload = this.singleProductForm.value;
+    const payload = { 
+      ...this.singleProductForm.value,
+      imageUrl: this.singleProductForm.value.imageUrl?.trim() || null
+    };
     this.api.post('/product', payload).subscribe({
       next: (res: any) => {
         this.toastr.success(res?.message || 'Product added successfully!');
@@ -452,7 +478,7 @@ export class ProductPageComponent implements OnInit {
       },
       error: (err) => {
         this.toastr.error(err?.error?.message || 'Failed to add product');
-        this.closeAddProductModal();
+        // Keep modal open for single product errors so user can fix and retry
       }
     });
   }
@@ -570,8 +596,45 @@ export class ProductPageComponent implements OnInit {
   }
 
   selectClientSuggestion(client: any) {
-    this.singleProductForm.get('clientName')?.setValue(client.name);
+    // Check if we're in the form context (add product modal)
+    if (this.showAddProductModal) {
+      this.singleProductForm.get('clientName')?.setValue(client.name);
+    } else {
+      // We're in the search context
+      this.searchClientName = client.name;
+      this.applyFilters();
+    }
     this.clientSuggestions = [];
     this.showClientSuggestions = false;
+  }
+
+  onClientSearchChange() {
+    // Clear previous timeout
+    if (this.clientSearchTimeout) {
+      clearTimeout(this.clientSearchTimeout);
+    }
+    
+    // Get suggestions if input is not empty
+    if (this.searchClientName && this.searchClientName.length >= 2) {
+      this.clientSearchTimeout = setTimeout(() => {
+        this.getClientSuggestions(this.searchClientName);
+      }, 300); // 300ms delay for suggestions
+    } else {
+      this.clientSuggestions = [];
+      this.showClientSuggestions = false;
+    }
+  }
+
+  onClientSearchFocus() {
+    if (this.searchClientName && this.searchClientName.length >= 2) {
+      this.getClientSuggestions(this.searchClientName);
+    }
+  }
+
+  onClientSearchBlur() {
+    // Delay hiding suggestions to allow for click
+    setTimeout(() => {
+      this.showClientSuggestions = false;
+    }, 300);
   }
 }

@@ -125,6 +125,22 @@ export class AuthService {
     );
   }
 
+  signup(signupData: { email: string; password: string; confirmPassword: string }): Observable<any> {
+    console.log('Attempting signup with:', signupData);
+    return this.http.post<any>(`${environment.apiBaseUrl}/auth/signup`, signupData, {
+      withCredentials: true
+    }).pipe(
+      catchError(error => {
+        console.error('Signup error:', error);
+        return throwError(() => ({ 
+          error: { 
+            message: error.error?.message || 'Signup failed. Please try again.' 
+          } 
+        }));
+      })
+    );
+  }
+
   logout(): void {
     if (this.logoutInProgress) {
       return;

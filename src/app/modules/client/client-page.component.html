@@ -13,7 +13,7 @@
 
 <div class="page-header">
   <h5 class="mb-0">Client Management</h5>
-  <button class="btn btn-primary" (click)="openModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
+  <button class="btn btn-success" (click)="openModal()" *ngIf="authService.isAdmin() || authService.isSupervisor()">
     <i class="fas fa-plus me-1"></i>
     Add Client
   </button>
@@ -140,9 +140,9 @@
 <div class="modern-modal-overlay" *ngIf="showModal" (click)="closeModal()">
   <div class="modern-modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header-modern">
-      <div class="modal-icon">
+      <!-- <div class="modal-icon">
         <i class="fas fa-user-plus"></i>
-      </div>
+      </div> -->
       <h4 class="modal-title-modern">{{ editingId ? 'Edit Client' : 'Add Client' }}</h4>
       <p class="modal-subtitle-modern">{{ editingId ? 'Update client information' : 'Add a new client to your system' }}</p>
       <button class="modal-close-btn" (click)="closeModal()">
@@ -160,7 +160,7 @@
           <input type="text" 
                  class="form-control-modern" 
                  formControlName="name" 
-                 placeholder="Enter client name"
+                 placeholder="Enter Client Name"
                  [class.is-invalid]="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">
           <div class="invalid-feedback-modern"
                *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched">

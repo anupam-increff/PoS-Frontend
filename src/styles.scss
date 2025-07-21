@@ -725,7 +725,7 @@ table {
 
 .upload-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
 }
 
 .upload-title {
@@ -1692,7 +1692,7 @@ tr.focused-row .save-row-btn:hover, tr.focused-row .save-row-btn:focus {
   transition: none !important;
 }
 
-.edit-row-btn { background: #0d6efd; color: #fff; }
+.edit-row-btn { background: #ffc107; color: #212529; }
 .save-row-btn { background: #28a745; color: #fff; }
 .close-row-btn { background: #dc3545; color: #fff; }
 
@@ -1934,7 +1934,7 @@ th.edit-btn-cell {
   white-space: nowrap !important;
 }
 
-.edit-row-btn { background: #0d6efd !important; color: #fff !important; }
+.edit-row-btn { background: #ffc107 !important; color: #212529 !important; }
 .save-row-btn { background: #28a745 !important; color: #fff !important; }
 .close-row-btn { background: #dc3545 !important; color: #fff !important; }
 
@@ -2474,11 +2474,11 @@ div.suggestions-dropdown div.suggestion-item:hover {
       }
       
       &.btn-primary-modern {
-        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+        background: linear-gradient(135deg, #198754 0%, #157347 100%);
         color: white;
         
         &:hover {
-          background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+          background: linear-gradient(135deg, #157347 0%, #0f5132 100%);
           transform: translateY(-1px);
         }
         
@@ -2522,21 +2522,21 @@ div.suggestions-dropdown div.suggestion-item:hover {
       }
     }
     
-    &.btn-primary-modern {
-      background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
-      color: white;
-      
-      &:hover:not(:disabled) {
-        background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
-        transform: translateY(-1px);
+          &.btn-primary-modern {
+        background: linear-gradient(135deg, #198754 0%, #157347 100%);
+        color: white;
+        
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, #157347 0%, #0f5132 100%);
+          transform: translateY(-1px);
+        }
+        
+        &:disabled {
+          background: #6c757d;
+          cursor: not-allowed;
+          transform: none;
+        }
       }
-      
-      &:disabled {
-        background: #6c757d;
-        cursor: not-allowed;
-        transform: none;
-      }
-    }
   }
 }
 
@@ -2811,7 +2811,7 @@ input[type="number"]:not([readonly]) {
   opacity: 1 !important;
   cursor: pointer !important;
   pointer-events: auto !important;
-  padding-left: 1rem;
+  // padding-left: 1rem;
 }
 
 /* Filter Section Styling */

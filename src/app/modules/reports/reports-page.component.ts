@@ -5,7 +5,7 @@ import { ApiService } from '../../services/api.service';
 import { ToastrService } from 'ngx-toastr';
 
 interface DailyReportData {
-  date: number[];
+  reportDate: number;
   invoicedOrdersCount: number;
   invoicedItemsCount: number;
   totalRevenue: number;
@@ -101,9 +101,8 @@ export class ReportsPageComponent implements OnInit {
     this.loadClientSales();
   }
 
-  setTab(tab: string) {
-    this.tab = tab;
-    this.clearErrors();
+  setTab(tabName: string) {
+    this.tab = tabName;
   }
 
   clearErrors() {
@@ -123,6 +122,18 @@ export class ReportsPageComponent implements OnInit {
       // Validate date range
       if (new Date(startDate) > new Date(endDate)) {
         this.dateRangeError = 'Start date cannot be after end date';
+        return;
+      }
+      
+      // Validate date range - max 31 days
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 31) {
+        this.dateRangeError = 'Date range cannot be greater than 31 days';
+        this.toastr.error('Date range cannot be greater than 31 days', 'Invalid Date Range');
         return;
       }
       
@@ -159,15 +170,29 @@ export class ReportsPageComponent implements OnInit {
     this.clientSalesLoading = true;
     this.clientSalesCurrentPage = page;
     
+    // Validate date range - max 31 days
+    if (this.salesStartDate && this.salesEndDate) {
+      const start = new Date(this.salesStartDate);
+      const end = new Date(this.salesEndDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 31) {
+        this.toastr.error('Date range cannot be greater than 31 days', 'Invalid Date Range');
+        this.clientSalesLoading = false;
+        return;
+      }
+    }
+    
     const payload = {
-      startDate: this.salesStartDate ? new Date(this.salesStartDate).toISOString() : new Date().toISOString(),
-      endDate: this.salesEndDate ? new Date(this.salesEndDate).toISOString() : new Date().toISOString(),
+      startDate: this.salesStartDate ? new Date(this.salesStartDate + 'T00:00:00').toISOString() : null,
+      endDate: this.salesEndDate ? new Date(this.salesEndDate + 'T23:59:59').toISOString() : null,
       clientName: this.salesClientName || null,
       page: page,
       size: this.clientSalesPageSize
     };
     
-    this.apiService.post<any>('/report/sales/', payload).subscribe({
+    this.apiService.post<any>('/report/sales', payload).subscribe({
       next: (response) => {
         this.clientSales = response.content || [];
         this.clientSalesTotalItems = response.totalItems || 0;
@@ -261,7 +286,7 @@ export class ReportsPageComponent implements OnInit {
     this.salesEndDate = '';
     this.salesClientName = '';
     this.clientSalesCurrentPage = 0;
-    this.applyClientSalesFilters();
+    this.ngOnInit(); // Reset to initial state
   }
 
   onClientSalesPageChange(page: number): void {
@@ -285,10 +310,15 @@ export class ReportsPageComponent implements OnInit {
     return this.clientSalesForm.value.clientName || '';
   }
 
-  formatDate(dateArray: number[]): string {
-    if (dateArray && dateArray.length >= 3) {
-      const [year, month, day] = dateArray;
-      return new Date(year, month - 1, day).toLocaleDateString();
+  formatDate(timestamp: number): string {
+    if (timestamp) {
+      // Convert timestamp to date (assuming it's in seconds)
+      const date = new Date(timestamp * 1000);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
     }
     return 'Invalid Date';
   }
@@ -309,7 +339,7 @@ export class ReportsPageComponent implements OnInit {
 
     const headers = ['Date', 'Invoiced Orders', 'Invoiced Items', 'Total Revenue', 'Average Order Value'];
     const csvData = this.dateRangeData.map(row => [
-      this.formatDate(row.date),
+      this.formatDate(row.reportDate),
       row.invoicedOrdersCount,
       row.invoicedItemsCount,
       row.totalRevenue,

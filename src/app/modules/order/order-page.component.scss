@@ -497,6 +497,7 @@
   padding: 1rem;
   backdrop-filter: blur(3px);
   animation: fadeIn 0.3s ease;
+  height: 100vh;
 }
 
 @keyframes fadeIn {
@@ -588,7 +589,7 @@
 
 .modal-body-modern {
   padding: 1rem 1.5rem;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
   background: #f8f9fa;
 }
