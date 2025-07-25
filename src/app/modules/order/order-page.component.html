@@ -35,9 +35,9 @@
             </label>
             <input type="number" 
                    class="form-control form-control-custom"
-                   placeholder="Search by Order ID"
+                   placeholder="Search by Order ID (Enter to search)"
                    [(ngModel)]="searchOrderId"
-                   (input)="onOrderIdSearch()"
+                   (keydown)="onOrderIdKeyDown($event)"
                    min="1">
           </div>
           <div class="col-md-2">
@@ -60,7 +60,7 @@
                    [(ngModel)]="endDate"
                    (change)="applyFilters()">
           </div>
-          <div class="col-md-2" *ngIf="authService.isSupervisor() || authService.isAdmin()">
+          <div class="col-md-2" *ngIf="0>1">
             <label class="form-label">
               <i class="fas fa-file-invoice me-1"></i>
               Invoice Status
@@ -93,47 +93,54 @@
       </div>
 
       <!-- Orders Table -->
-      <div class="table-wrapper" *ngIf="!loadingOrders && orders.length > 0">
-        <table class="table-custom">
-            <thead>
-              <tr>
-              <th style="width: 15%;">Order ID</th>
-              <th style="width: 25%;">Date</th>
-              <th style="width: 20%;">Total</th>
-              <th style="width: 25%;" *ngIf="authService.isSupervisor() || authService.isAdmin()">Invoice</th>
-              <th style="width: 15%;" *ngIf="authService.isSupervisor() || authService.isAdmin()">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+      <div class="orders-table-container" *ngIf="!loadingOrders && orders.length > 0">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th *ngIf="authService.isSupervisor() || authService.isAdmin()">Invoice</th>
+              <th *ngIf="authService.isSupervisor() || authService.isAdmin()">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
             <tr *ngFor="let order of orders">
               <td><strong>#{{ order.id }}</strong></td>
-                <td>
-                <div class="d-flex flex-column">
-                  <span class="fw-semibold">{{ getOrderDate(order.placedAt) }}</span>
-                  <small>{{ getOrderTime(order.placedAt) }}</small>
-                  </div>
-                </td>
-                <td>
-                <span class="fw-bold">₹{{ order.total | number:'1.2-2' }}</span>
-                </td>
+              <td>
+                <div class="date-column">
+                  <span class="date-main">{{ getOrderDate(order.placedAt) }}</span>
+                  <small class="date-time">{{ getOrderTime(order.placedAt) }}</small>
+                </div>
+              </td>
+              <td>
+                <span *ngIf="!calculatingTotals && order.total !== undefined" class="total-amount">
+                  ₹{{ order.total | number:'1.2-2' }}
+                </span>
+                <span *ngIf="calculatingTotals || order.total === undefined" class="calculating">
+                  <i class="fas fa-spinner fa-spin"></i> Calculating...
+                </span>
+              </td>
               <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
-                  <button class="btn btn-sm"
-                          [ngClass]="order.invoiceGenerated ? 'btn-success' : 'btn-warning'"
+                <button class="btn btn-sm"
+                        [ngClass]="(order.orderStatus === 'INVOICE_GENERATED' && order.invoiceId) ? 'btn-success' : 'btn-warning'"
                         (click)="handleInvoice(order)"
-                        [title]="order.invoiceGenerated ? 'Download Invoice' : 'Generate Invoice'">
-                    <i class="fas" [ngClass]="order.invoiceGenerated ? 'fa-download' : 'fa-file-invoice'"></i>
-                    {{ order.invoiceGenerated ? 'Download' : 'Generate' }}
-                  </button>
-                </td>
+                        [title]="(order.orderStatus === 'INVOICE_GENERATED' && order.invoiceId) ? 'Download Invoice' : 'Generate Invoice'">
+                  <i class="fas" [ngClass]="(order.orderStatus === 'INVOICE_GENERATED' && order.invoiceId) ? 'fa-download' : 'fa-file-invoice'"></i>
+                  {{ (order.orderStatus === 'INVOICE_GENERATED' && order.invoiceId) ? 'Download' : 'Generate' }}
+                </button>
+              </td>
               <td *ngIf="authService.isSupervisor() || authService.isAdmin()">
-                <button class="btn btn-outline-primary btn-sm d-flex justify-content-center" (click)="openViewItems(order.id)" title="View Order Details">
-                      <i class="fas fa-eye"></i>
+                <button class="btn btn-outline-primary btn-sm" 
+                        (click)="openViewItems(order.id)" 
+                        title="View Order Details">
+                  <i class="fas fa-eye"></i>
                   View
-                    </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         
         <!-- Pagination and Range Display -->
         <div class="d-flex justify-content-between align-items-center mt-2 mb-3" *ngIf="totalItems > 0">
@@ -363,9 +370,9 @@
 <div class="modern-modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
   <div class="modern-modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header-modern">
-      <div class="modal-icon">
+      <!-- <div class="modal-icon">
         <i class="fas fa-receipt"></i>
-      </div>
+      </div> -->
       <h4 class="modal-title-modern">Confirm Order</h4>
       <p class="modal-subtitle-modern">Please review your order before confirming</p>
       <button class="modal-close-btn" (click)="closeConfirmModal()">
@@ -422,9 +429,9 @@
 <div class="modern-modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
   <div class="modern-modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header-modern">
-      <div class="modal-icon">
+      <!-- <div class="modal-icon">
         <i class="fas fa-shopping-cart"></i>
-      </div>
+      </div> -->
       <h3 class="modal-title-modern">Order #{{ viewedOrderId }}</h3>
       <p class="modal-subtitle-modern">Order items and details</p>
       <button class="modal-close-btn" (click)="closeViewModal()">

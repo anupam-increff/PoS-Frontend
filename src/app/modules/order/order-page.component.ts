@@ -24,8 +24,9 @@ interface OrderItem {
 interface Order {
   id: number;
   placedAt: Date;
-  invoiceGenerated: boolean;
-  total: number;
+  orderStatus: 'CREATED' | 'INVOICE_GENERATED';
+  invoiceId?: number;
+  total?: number; // Will be calculated from items
   items?: OrderItem[];
 }
 
@@ -51,6 +52,7 @@ export class OrderPageComponent implements OnInit {
   confirmSummary: OrderItem[] = [];
   confirmTotal = 0;
   private confirmModal: any;
+  calculatingTotals = false;
 
   searchQuery = '';
   startDate = '';
@@ -461,9 +463,10 @@ export class OrderPageComponent implements OnInit {
     this.loading = true;
     const payload = { items: this.confirmSummary };
 
-    this.api.post<number>('/order', payload).subscribe({
-      next: (id) => {
-        this.toastr.success(`Order #${id} placed`);
+    this.api.post<any>('/order', payload).subscribe({
+      next: (response) => {
+        const orderId = response?.id || response;
+        this.toastr.success(`Order #${orderId} placed successfully!`);
         this.loading = false;
         this.closeConfirmModal();
         this.closeNewOrderModal(); // Close the new order modal too
@@ -489,15 +492,23 @@ export class OrderPageComponent implements OnInit {
   }
 
   onOrderIdSearch() {
-    // Debounce the search to avoid too many API calls
-    setTimeout(() => {
+    // Remove automatic search on input change
+    // Search will only happen when Enter is pressed or Apply button is clicked
+  }
+
+  onOrderIdKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
       this.applyFilters();
-    }, 300);
+    }
   }
 
   loadOrders(page = 0) {
     this.loadingOrders = true;
     this.currentPage = page;
+    
+    // Clear totals cache when loading new orders
+    this.orderTotalsCache.clear();
     
     // Validate date range - max 31 days
     if (this.startDate && this.endDate) {
@@ -532,7 +543,7 @@ export class OrderPageComponent implements OnInit {
       params.query = this.searchOrderId.toString();
     }
     if (this.invoiceStatus !== 'all') {
-      params.invoiceGenerated = this.invoiceStatus === 'true';
+      params.orderStatus = this.invoiceStatus === 'true' ? 'INVOICE_GENERATED' : 'CREATED';
     }
     
     // Use GET request with query parameters
@@ -541,19 +552,65 @@ export class OrderPageComponent implements OnInit {
         this.orders = res.content.map((o: any) => ({
           ...o,
           placedAt: new Date(Number(o.placedAt) * 1000),
-          items: []
+          items: [],
+          total: 0 // Will be calculated
         }));
         this.totalItems = res.totalItems;
         this.totalPages = res.totalPages;
         this.currentPage = res.currentPage;
         this.pageSize = res.pageSize;
         this.loadingOrders = false;
+        
+        // Calculate totals for all orders
+        this.calculateOrderTotals();
       },
       error: () => {
         this.toastr.error('Failed to fetch orders');
         this.loadingOrders = false;
       }
     });
+  }
+
+  // Cache for order totals to avoid redundant API calls
+  private orderTotalsCache = new Map<number, number>();
+
+  async calculateOrderTotals() {
+    this.calculatingTotals = true;
+    // Calculate totals for all orders by fetching their items
+    const promises = this.orders.map(async (order) => {
+      try {
+        // Check cache first
+        if (this.orderTotalsCache.has(order.id)) {
+          order.total = this.orderTotalsCache.get(order.id);
+          return;
+        }
+        
+        const total = await this.fetchOrderTotal(order.id);
+        order.total = total;
+        // Cache the result
+        this.orderTotalsCache.set(order.id, total);
+      } catch (error) {
+        console.error(`Failed to calculate total for order ${order.id}:`, error);
+        order.total = 0;
+      }
+    });
+    
+    // Wait for all totals to be calculated
+    await Promise.all(promises);
+    this.calculatingTotals = false;
+  }
+
+  async fetchOrderTotal(orderId: number): Promise<number> {
+    try {
+      const items = await this.api.get<OrderItem[]>(`/order/${orderId}`).toPromise();
+      if (!items || items.length === 0) {
+        return 0;
+      }
+      return items.reduce((total, item) => total + (item.quantity * item.sellingPrice), 0);
+    } catch (error) {
+      console.error('Error fetching order items:', error);
+      return 0;
+    }
   }
 
   applyFilters() {
@@ -616,9 +673,12 @@ export class OrderPageComponent implements OnInit {
   }
 
   handleInvoice(order: any) {
-    if (order.invoiceGenerated) {
-      // Download existing invoice
-      this.downloadInvoice(order.id);
+    if (order.orderStatus === 'INVOICE_GENERATED' && order.invoiceId) {
+      // Download existing invoice using invoiceId
+      this.downloadInvoice(order.invoiceId, order.id);
+    } else if (order.orderStatus === 'INVOICE_GENERATED' && !order.invoiceId) {
+      // Edge case: invoice was generated but invoiceId is missing
+      this.toastr.warning('Invoice ID is missing. Please regenerate the invoice.', 'Invoice Error');
     } else {
       // Generate new invoice
       this.generateInvoice(order.id);
@@ -626,11 +686,17 @@ export class OrderPageComponent implements OnInit {
   }
 
   generateInvoice(orderId: number) {
-    this.api.get(`/invoice/generate/${orderId}`).subscribe({
-      next: () => {
+    this.api.post<number>(`/invoice/generate?orderId=${orderId}`, {}).subscribe({
+      next: (invoiceId: number) => {
         this.toastr.success('Invoice generated successfully');
-        // Refresh the orders list to show updated invoice status
-        this.loadOrders(this.currentPage);
+        // Update the order in the local list with the new invoiceId
+        const orderIndex = this.orders.findIndex(o => o.id === orderId);
+        if (orderIndex !== -1) {
+          this.orders[orderIndex].orderStatus = 'INVOICE_GENERATED';
+          this.orders[orderIndex].invoiceId = invoiceId;
+        }
+        // Optionally refresh the orders list to get latest data
+        // this.loadOrders(this.currentPage);
       },
       error: (error) => {
         this.toastr.error(error.error?.message || 'Failed to generate invoice');
@@ -638,8 +704,8 @@ export class OrderPageComponent implements OnInit {
     });
   }
 
-  downloadInvoice(orderId: number) {
-    this.api.get(`/invoice/${orderId}`, { responseType: 'blob' }).subscribe({
+  downloadInvoice(invoiceId: number, orderId: number) {
+    this.api.get(`/invoice/${invoiceId}`, { responseType: 'blob' }).subscribe({
       next: (blob: Blob) => {
         // Create download link
         const url = window.URL.createObjectURL(blob);
